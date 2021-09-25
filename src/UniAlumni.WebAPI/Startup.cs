@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using UniAlumni.Business;
+using UniAlumni.DataTier;
 
 namespace UniAlumni.WebAPI
 {
@@ -27,6 +29,12 @@ namespace UniAlumni.WebAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            
+            // register (DI) Core Modules
+            services.RegisterDataTierModule();
+            services.RegisterBusinessModule();
+            
+            
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "UniAlumni.WebAPI", Version = "v1"});
@@ -36,7 +44,7 @@ namespace UniAlumni.WebAPI
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            // if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
