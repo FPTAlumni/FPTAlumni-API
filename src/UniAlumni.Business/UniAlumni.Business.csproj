@@ -4,12 +4,4 @@
         <TargetFramework>net5.0</TargetFramework>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\UniAlumni.DataTier\UniAlumni.DataTier.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="FirebaseAdmin" Version="2.2.0" />
-    </ItemGroup>
-
 </Project>
