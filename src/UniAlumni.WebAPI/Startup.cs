@@ -12,6 +12,8 @@ using Microsoft.OpenApi.Models;
 using UniAlumni.Business;
 using UniAlumni.DataTier;
 using UniAlumni.WebAPI.Configurations;
+using UniAlumni.Business.Common;
+using UniAlumni.DataTier.AutoMapperModule;
 
 namespace UniAlumni.WebAPI
 {
@@ -67,6 +69,8 @@ namespace UniAlumni.WebAPI
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "UniAlumni.WebAPI", Version = "v1"});
             });
+            services.ConfigureAutoMapper();
+            services.InitializerDI();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -89,6 +93,7 @@ namespace UniAlumni.WebAPI
             
             app.UseAuthentication();
             app.UseAuthorization();
+
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
 
