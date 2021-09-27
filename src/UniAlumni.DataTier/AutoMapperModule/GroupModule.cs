@@ -16,6 +16,7 @@ namespace UniAlumni.DataTier.AutoMapperModule
         {
             mc.CreateMap<Group, GroupViewModel>();
             mc.CreateMap<GroupCreateRequest, Group>();
+            mc.CreateMap<GroupUpdateRequest, Group>();
         }
     }
 }

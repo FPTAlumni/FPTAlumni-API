@@ -32,7 +32,10 @@ namespace UniAlumni.Business.Services.GroupService
             if (isAdmin)
             {
                 group.Status = (int)GroupStatus.Active;
-                await _repository.InsertAsync(group);
+                group.CreatedDate = DateTime.Now;
+                group.UpdatedDate = DateTime.Now;
+                 _repository.Insert(group);
+                await _repository.SaveChangesAsync();
                 var groupModel = mapper.Map<GroupViewModel>(group);
                 return groupModel;
             }
@@ -43,7 +46,10 @@ namespace UniAlumni.Business.Services.GroupService
                     if (userId == parrentGroup.GroupLeaderId)
                     {
                         group.Status = (int)GroupStatus.Active;
-                        await _repository.InsertAsync(group);
+                        group.CreatedDate = DateTime.Now;
+                        group.UpdatedDate = DateTime.Now;
+                        _repository.Insert(group);
+                        await _repository.SaveChangesAsync();
                         var groupModel = mapper.Map<GroupViewModel>(group);
                         return groupModel;
                     }
