@@ -34,8 +34,8 @@ namespace UniAlumni.Business.Services
             var alumni =  LoadAlumniByUid(uid);
             if ( alumni.Result != null)
             {
-                var customTokenAsync = CreateCustomToken(uid);
-                return customTokenAsync;
+                var customToken = CreateCustomToken(uid);
+                return customToken;
             }
             return "";
         }
@@ -48,7 +48,6 @@ namespace UniAlumni.Business.Services
 
         private string CreateCustomToken(string uid)
         {
-            // authentication successful so generate jwt token
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration.GetSection("AppSettings").GetSection("Secret").Value);
             Console.WriteLine(_configuration.GetSection("AppSettings").GetSection("Secret").Value);
