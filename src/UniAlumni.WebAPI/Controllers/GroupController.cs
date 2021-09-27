@@ -16,8 +16,8 @@ namespace UniAlumni.WebAPI.Controllers
     [ApiController]
     public class GroupController : ControllerBase
     {
-        private readonly GroupService _groupService;
-        public GroupController(GroupService service)
+        private readonly IGroupService _groupService;
+        public GroupController(IGroupService service)
         {
             _groupService = service;
         }
@@ -43,7 +43,7 @@ namespace UniAlumni.WebAPI.Controllers
             return Created($"/api/groups", groupModel);
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateGroup([FromBody] GroupUpdateRequest item, [FromQuery] int id, int userId, bool isAdmin)
+        public async Task<IActionResult> UpdateGroup(int id, [FromBody] GroupUpdateRequest item, [FromQuery] int userId, bool isAdmin)
         {
             GroupViewModel groupModel = await _groupService.UpdateGroup(id, item, userId, isAdmin);
             return Ok(groupModel);
