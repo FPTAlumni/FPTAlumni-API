@@ -17,7 +17,6 @@ namespace UniAlumni.Business.Services
         public IEnumerable<Alumnus> GetAlumnis()
         {
             return _alumniRepository.GetAll();
-
         }
     }
 }

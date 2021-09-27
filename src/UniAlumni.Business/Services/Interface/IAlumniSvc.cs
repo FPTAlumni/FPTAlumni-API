@@ -11,8 +11,6 @@ namespace UniAlumni.Business.Services.Interface
         /// <summary>
         /// Get list of all Alumni.
         /// </summary>
-        /// <param name="requestQueryDto">An object contains manipulating and organizing criterias.</param>
-        /// <param name="applyPagination">An criteria decide whether apply pagination or not.</param>
         /// <returns>List of Users.</returns>
         IEnumerable<Alumnus> GetAlumnis();
 

@@ -14,7 +14,6 @@ namespace UniAlumni.Business.Services
         {
             services.AddScoped(typeof(IAlumniSvc), typeof(AlumniSrv));
             services.AddScoped(typeof(IAuthenticationSvc), typeof(AuthenticationSvc));
-            
             services.AddScoped<FirebaseAuth, FirebaseAuth>();
         }
     }
