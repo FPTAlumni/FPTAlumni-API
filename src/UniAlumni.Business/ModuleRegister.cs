@@ -12,7 +12,6 @@ namespace UniAlumni.Business
         public static IServiceCollection RegisterBusinessModule(this IServiceCollection services)
         {
             services.RegisterServicesModule();
-
             return services;
         }
     }
