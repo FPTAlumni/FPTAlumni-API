@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using UniAlumni.DataTier.Models;
 
 #nullable disable
@@ -7,8 +8,10 @@ namespace UniAlumni.DataTier
 {
     public partial class FPTAlumniContext : DbContext
     {
-        public FPTAlumniContext()
+        IConfiguration _configuration;
+        public FPTAlumniContext(IConfiguration configuration)
         {
+            _configuration = configuration;
         }
 
         public FPTAlumniContext(DbContextOptions<FPTAlumniContext> options)
@@ -38,7 +41,8 @@ namespace UniAlumni.DataTier
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=52.230.81.77; Database=FPTAlumni; Trusted_Connection = False;User Id=sa;Password=FPT@123");
+                // optionsBuilder.UseSqlServer("Server=52.230.81.77; Database=FPTAlumni; Trusted_Connection = False;User Id=sa;Password=FPT@123");
+                optionsBuilder.UseSqlServer(_configuration.GetConnectionString("UniAlumni"));
             }
         }
 
@@ -77,9 +81,9 @@ namespace UniAlumni.DataTier
 
                 entity.Property(e => e.Email).IsUnicode(false);
 
-                entity.Property(e => e.Password).IsUnicode(false);
-
                 entity.Property(e => e.Phone).IsUnicode(false);
+
+                entity.Property(e => e.Uid).IsUnicode(false);
 
                 entity.HasOne(d => d.Company)
                     .WithMany(p => p.Alumni)
@@ -254,13 +258,7 @@ namespace UniAlumni.DataTier
 
             modelBuilder.Entity<University>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
-
-                entity.Property(e => e.Address).IsUnicode(false);
-
                 entity.Property(e => e.Logo).IsUnicode(false);
-
-                entity.Property(e => e.Name).IsUnicode(false);
             });
 
             modelBuilder.Entity<Voucher>(entity =>

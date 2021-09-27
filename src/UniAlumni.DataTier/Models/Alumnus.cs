@@ -37,7 +37,7 @@ namespace UniAlumni.DataTier.Models
         public string Address { get; set; }
         [Required]
         [StringLength(256)]
-        public string Password { get; set; }
+        public string Uid { get; set; }
         [Column(TypeName = "date")]
         public DateTime DoB { get; set; }
         [StringLength(70)]

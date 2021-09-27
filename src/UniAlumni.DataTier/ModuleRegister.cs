@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories;
 
 namespace UniAlumni.DataTier
@@ -12,9 +15,15 @@ namespace UniAlumni.DataTier
         /// register all DataTier Layer.
         /// </summary>
         /// <param name="services">service collection from startup.</param>
-        public static void RegisterDataTierModule(this IServiceCollection services)
+        public static IServiceCollection RegisterDataTierModule(this IServiceCollection services)
         {
+            services.AddScoped<DbContext, FPTAlumniContext>();
+            
             services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+            
+            services.AddScoped<IAlumniRepository, AlumniRepository>();
+
+            return services;
         }
     }
 }
