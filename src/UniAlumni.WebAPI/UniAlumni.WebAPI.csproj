@@ -5,7 +5,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\UniAlumni.Business\UniAlumni.Business.csproj" />
+      <ProjectReference Include="..\UniAlumni.DataTier\UniAlumni.DataTier.csproj" />
     </ItemGroup>
 
 </Project>
