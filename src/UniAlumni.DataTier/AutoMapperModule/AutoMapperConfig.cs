@@ -15,7 +15,8 @@ namespace UniAlumni.DataTier.AutoMapperModule
         {
             var mappingConfig = new MapperConfiguration(mc =>
             {
-                mc.ConfigGroupModule();               
+                mc.ConfigGroupModule();   
+                mc.ConfigAlumniModule();
             });
             IMapper mapper = mappingConfig.CreateMapper();
             services.AddSingleton(mapper);

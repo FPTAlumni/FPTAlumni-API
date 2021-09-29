@@ -15,5 +15,18 @@
             /// </summary>
             public const int MaxPageSize = 500;
         }
+        
+        public enum OrderCriteria
+        {
+            /// <summary>
+            /// descendant
+            /// </summary>
+            DESC,
+
+            /// <summary>
+            /// ascendant
+            /// </summary>
+            ASC,
+        }
     }
 }

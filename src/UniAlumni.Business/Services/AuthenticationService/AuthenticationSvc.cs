@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -7,13 +6,12 @@ using System.Threading.Tasks;
 using FirebaseAdmin.Auth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using UniAlumni.Business.Services.Interface;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Object;
 using UniAlumni.DataTier.Repositories;
-using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
+using UniAlumni.DataTier.Repositories.AlumniRepo;
 
-namespace UniAlumni.Business.Services
+namespace UniAlumni.Business.Services.AuthenticationService
 {
     public class AuthenticationSvc : IAuthenticationSvc
     {
@@ -48,7 +46,7 @@ namespace UniAlumni.Business.Services
 
         private string CreateCustomToken(string uid)
         {
-           
+            var uidAdmin = _configuration.GetSection("AppSettings").GetSection("AdminUID").Value;
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration.GetSection("AppSettings").GetSection("Secret").Value);
             Console.WriteLine(_configuration.GetSection("AppSettings").GetSection("Secret").Value);
@@ -57,7 +55,7 @@ namespace UniAlumni.Business.Services
                 Subject = new ClaimsIdentity(new Claim[] 
                 {
                     new Claim("uid", uid),
-                    new Claim(ClaimTypes.Role, RolesConstants.ALUMNI)
+                    new Claim(ClaimTypes.Role, uid.Equals(uidAdmin) ? RolesConstants.ADMIN : RolesConstants.ALUMNI)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

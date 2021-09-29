@@ -1,6 +1,7 @@
 ﻿using FirebaseAdmin.Auth;
 using Microsoft.Extensions.DependencyInjection;
-using UniAlumni.Business.Services.Interface;
+using UniAlumni.Business.Services.AlumniService;
+using UniAlumni.Business.Services.AuthenticationService;
 
 namespace UniAlumni.Business.Services
 {

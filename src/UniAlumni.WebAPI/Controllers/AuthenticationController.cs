@@ -1,64 +1,44 @@
 ﻿using System;
-using System.IO;
-using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 using FirebaseAdmin.Auth;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using UniAlumni.Business.Services.Interface;
-using JsonSerializer = System.Text.Json.JsonSerializer;
+using UniAlumni.Business.Services.AuthenticationService;
+using UniAlumni.WebAPI.DTO.Token;
+using MediaType = UniAlumni.WebAPI.Configurations.MediaType;
 
 namespace UniAlumni.WebAPI.Controllers
 {
     [ApiController]
     [Route("api")]
+    [Consumes(MediaType.ApplicationJson)]
+    [Produces(MediaType.ApplicationJson)]
     public class AuthenticationController : ControllerBase
     {
-        private readonly string _url;
         private readonly IAuthenticationSvc _authenticationService;
         private readonly FirebaseAuth _firebaseAuth;
 
         public AuthenticationController(IAuthenticationSvc authenticationService)
         {
-            _url = "https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=";
             _authenticationService = authenticationService;
             _firebaseAuth = FirebaseAuth.DefaultInstance;
         }
 
-        [HttpPost("accessToken")]
-        public async Task<IActionResult> ParseAccessTokenAsync(string accessToken)
-        {
-            if (accessToken == null) return BadRequest();
-            HttpWebRequest request = (HttpWebRequest) WebRequest.Create(_url + accessToken);
-            request.Method = WebRequestMethods.Http.Get;
-            HttpWebResponse response = null;
-            try
-            {
-                response = (HttpWebResponse) request.GetResponse();
-                using (Stream dataStream = response.GetResponseStream())
-                {
-                    StreamReader reader = new StreamReader(dataStream);
-                    FirebaseResponse responseData = await JsonSerializer.DeserializeAsync<FirebaseResponse>(dataStream);
-                    string jwtToken = _authenticationService.Authenticate(responseData.user_id);
-                    if (jwtToken.Length != 0)
-                        return Ok(new {token = jwtToken, message = "Login success"});
-                    else
-                        return Ok(new {message = "Alumni has not been register"});
-                }
-            }
-            catch (WebException)
-            {
-                return Unauthorized();
-            }
-            finally
-            {
-                if (response != null) response.Close();
-            }
-        }
-
-        [HttpPost("token")]
-        public async Task<IActionResult> ParseIdTokenAsync(string idToken)
+        /// <summary>
+        /// [GUEST] Endpoint For Alumni Account Login
+        /// </summary>
+        /// <param name="idToken">Authentication Token Get From Firebase Service</param>
+        /// <returns>Custom Token</returns>
+        /// <response code="200">Returns the custom token</response>
+        /// <response code="201">Returns the UID if alumni is not exist</response>
+        /// <response code="400">Return if the idToken is null</response> 
+        /// <response code="401">Return if the idToken is invalid</response> 
+        [AllowAnonymous]
+        [HttpPost("login")]
+        [ProducesResponseType(typeof(TokenResponse), 200)]
+        [ProducesResponseType(typeof(String), StatusCodes.Status201Created)]
+        public async Task<IActionResult> LoginWithIdTokenAsync(string idToken)
         {
             if (idToken == null) return BadRequest();
             try
@@ -68,13 +48,13 @@ namespace UniAlumni.WebAPI.Controllers
                 string uid = decodedToken.Uid;
                 string jwtToken = _authenticationService.Authenticate(uid);
                 if (jwtToken.Length != 0)
-                    return Ok(new {token = jwtToken, message = "Login success"});
+                    return Ok(TokenResponse.BuildTokenResponse(jwtToken));
                 else
-                    return Ok(new {message = "Alumni has not been register"});
+                    return Ok(uid);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                return BadRequest();
+                return Unauthorized();
             }
         }
     }

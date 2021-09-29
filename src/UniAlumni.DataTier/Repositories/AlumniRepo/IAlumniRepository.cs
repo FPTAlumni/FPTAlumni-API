@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using UniAlumni.DataTier.Models;
 
-namespace UniAlumni.DataTier.Repositories
+namespace UniAlumni.DataTier.Repositories.AlumniRepo
 {
     public interface IAlumniRepository : IBaseRepository<Alumnus>
     {

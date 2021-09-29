@@ -158,8 +158,7 @@ namespace UniAlumni.DataTier.Repositories
             }
 
             this._dbset.Add(entity);
-
-            // Not implement Context.SaveChanges() here because of using UnitOfWork pattern
+            
         }
 
         /// <inheritdoc/>
@@ -171,8 +170,7 @@ namespace UniAlumni.DataTier.Repositories
             }
 
             await this._dbset.AddAsync(entity);
-
-            // Not implement Context.SaveChanges() here because of using UnitOfWork pattern
+            
         }
 
         /// <inheritdoc/>
@@ -184,8 +182,7 @@ namespace UniAlumni.DataTier.Repositories
             }
 
             this._dbset.AddRange(entities);
-
-            // Not implement Context.SaveChanges() here because of using UnitOfWork pattern
+            
         }
 
         /// <inheritdoc/>
@@ -197,8 +194,7 @@ namespace UniAlumni.DataTier.Repositories
             }
 
             await this._dbset.AddRangeAsync(entities);
-
-            // Not implement Context.SaveChanges() here because of using UnitOfWork pattern
+            
         }
 
         /// <inheritdoc/>
@@ -211,8 +207,7 @@ namespace UniAlumni.DataTier.Repositories
 
             this._dbset.Attach(entity);
             this.CurrentContext.Update<TEntity>(entity);
-
-            // Not implement Context.SaveChanges() here because of using UnitOfWork pattern
+            
         }
 
         /// <inheritdoc/>
@@ -226,8 +221,7 @@ namespace UniAlumni.DataTier.Repositories
             var enumerable = entities as TEntity[] ?? entities.ToArray();
             this._dbset.AttachRange(enumerable);
             this.CurrentContext.UpdateRange(enumerable);
-
-            // Not implement Context.SaveChanges() here because of using UnitOfWork pattern
+            
         }
 
         /// <inheritdoc/>
@@ -244,8 +238,6 @@ namespace UniAlumni.DataTier.Repositories
             }
 
             this._dbset.Remove(entity);
-
-            // Not implement Context.SaveChanges() here because of using UnitOfWork pattern
         }
 
         /// <inheritdoc/>
@@ -265,8 +257,7 @@ namespace UniAlumni.DataTier.Repositories
             }
 
             this._dbset.RemoveRange(entities);
-
-            // Not implement Context.SaveChanges() here because of using UnitOfWork pattern
+            
         }
         public virtual async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken))
         {

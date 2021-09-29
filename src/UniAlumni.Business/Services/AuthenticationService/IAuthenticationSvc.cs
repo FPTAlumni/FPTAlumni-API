@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace UniAlumni.Business.Services.Interface
+﻿namespace UniAlumni.Business.Services.AuthenticationService
 {
     /// <summary>
     /// Interface for service layer of Authentication in Business module.
