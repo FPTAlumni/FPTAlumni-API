@@ -1,8 +1,11 @@
-﻿namespace UniAlumni.DataTier.ViewModels.Category
+﻿using System.ComponentModel;
+
+namespace UniAlumni.DataTier.ViewModels.Category
 {
     public class SearchCategoryModel
     {
-        public string Categoryname { get; set; }
-        public string Description { get; set; }
+        [DefaultValue("")] public string Categoryname { get; set; } = "";
+
+        [DefaultValue("")] public string Description { get; set; } = "";
     }
 }

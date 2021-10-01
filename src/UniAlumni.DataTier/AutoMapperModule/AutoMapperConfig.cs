@@ -12,6 +12,7 @@ namespace UniAlumni.DataTier.AutoMapperModule
             {
                 mc.ConfigGroupModule();   
                 mc.ConfigAlumniModule();
+                mc.ConfigCategoryModule();
             });
             IMapper mapper = mappingConfig.CreateMapper();
             services.AddSingleton(mapper);

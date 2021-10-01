@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories;
 using UniAlumni.DataTier.Repositories.AlumniRepo;
+using UniAlumni.DataTier.Repositories.CategoryRepo;
 using UniAlumni.DataTier.Repositories.GroupRepo;
 
 namespace UniAlumni.DataTier
@@ -25,6 +26,8 @@ namespace UniAlumni.DataTier
             services.AddScoped<IAlumniRepository, AlumniRepository>();
 
             services.AddScoped<IGroupRepository, GroupRepository>();
+
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
 
             return services;
         }
