@@ -3,12 +3,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using FirebaseAdmin.Auth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Object;
-using UniAlumni.DataTier.Repositories;
 using UniAlumni.DataTier.Repositories.AlumniRepo;
 
 namespace UniAlumni.Business.Services.AuthenticationService
@@ -16,19 +14,16 @@ namespace UniAlumni.Business.Services.AuthenticationService
     public class AuthenticationSvc : IAuthenticationSvc
     {
         private readonly IAlumniRepository _alumniRepository;
-        private readonly FirebaseAuth _firebaseAuth;
         private readonly IConfiguration _configuration;
 
         public AuthenticationSvc(IAlumniRepository alumniRepository,IConfiguration configuration)
         {
             _alumniRepository = alumniRepository;
             _configuration = configuration;
-            _firebaseAuth = FirebaseAuth.DefaultInstance;
         }
 
         public string Authenticate(string uid)
         {
-            Console.WriteLine(uid);
             var alumni =  LoadAlumniByUid(uid);
             if ( alumni.Result != null)
             {
@@ -52,7 +47,7 @@ namespace UniAlumni.Business.Services.AuthenticationService
             Console.WriteLine(_configuration.GetSection("AppSettings").GetSection("Secret").Value);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new Claim[] 
+                Subject = new ClaimsIdentity(new[] 
                 {
                     new Claim("uid", uid),
                     new Claim(ClaimTypes.Role, uid.Equals(uidAdmin) ? RolesConstants.ADMIN : RolesConstants.ALUMNI)

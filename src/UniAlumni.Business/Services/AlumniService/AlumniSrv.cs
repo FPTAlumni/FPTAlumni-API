@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using FirebaseAdmin.Auth;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
-using UniAlumni.DataTier.Repositories;
 using UniAlumni.DataTier.Repositories.AlumniRepo;
 using UniAlumni.DataTier.Utility.Paging;
 using UniAlumni.DataTier.ViewModels.Alumni;
@@ -43,11 +43,11 @@ namespace UniAlumni.Business.Services.AlumniService
             IQueryable<GetAlumniDetail> queryAlumniDto = _mapper.ProjectTo<GetAlumniDetail>(queryAlumni);
             // Apply Sort
             queryAlumniDto =
-                queryAlumniDto.GetWithSorting<GetAlumniDetail>(paginationModel.SortKey.ToString(),
+                queryAlumniDto.GetWithSorting(paginationModel.SortKey.ToString(),
                     paginationModel.SortOrder);
-            
+
             // Apply Paging
-            return queryAlumniDto.GetWithPaging<GetAlumniDetail>(paginationModel.Page, paginationModel.PageSize).ToList();
+            return queryAlumniDto.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
         }
 
         public async Task<GetAlumniDetail> GetAlumniProfile(int id)
@@ -57,9 +57,37 @@ namespace UniAlumni.Business.Services.AlumniService
             return alumniDetail;
         }
 
-        // public async Task<GetAlumniDetail> CreateAlumni(CreateAlumniRequestBody requestBody)
-        // {
-        //     throw new System.NotImplementedException();
-        // }
+        public async Task<GetAlumniDetail> CreateAlumniAsync(CreateAlumniRequestBody requestBody)
+        {
+            Alumnus alumnus = _mapper.Map<Alumnus>(requestBody);
+            UserRecord user = await FirebaseAuth.DefaultInstance.GetUserAsync(alumnus.Uid);
+            if (user != null)
+            {
+                alumnus.Email = user.Email;
+            }
+
+            alumnus = await _alumniRepository.CreateAlumniAsync(alumnus);
+            GetAlumniDetail alumniDetail = _mapper.Map<GetAlumniDetail>(alumnus);
+            return alumniDetail;
+        }
+
+        public async Task<GetAlumniDetail> UpdateAlumniAsync(UpdateAlumniRequestBody requestBody)
+        {
+            Alumnus alumnus = await _alumniRepository.GetFirstOrDefaultAsync(alu => alu.Id == requestBody.Id);
+            alumnus = _mapper.Map(requestBody, alumnus);
+            Alumnus updateAlumni = await _alumniRepository.UpdateAlumniAsync(alumnus);
+            GetAlumniDetail alumniDetail = _mapper.Map<GetAlumniDetail>(updateAlumni);
+            return alumniDetail;
+        }
+
+        public async Task ActivateAlumniAsync(ActivateAlumniRequestBody requestBody)
+        {
+            await _alumniRepository.ActivateAlumniAsync(requestBody);
+        }
+
+        public async Task DeleteAlumniAsync(int id)
+        {
+            await _alumniRepository.DeleteAlumniAsync(id);
+        }
     }
 }

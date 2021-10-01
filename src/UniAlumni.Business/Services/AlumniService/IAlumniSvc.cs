@@ -27,7 +27,34 @@ namespace UniAlumni.Business.Services.AlumniService
         /// <returns>A Alumni Detail.</returns>>
         public Task<GetAlumniDetail> GetAlumniProfile(int id);
 
-        public Task<GetAlumniDetail> CreateAlumni(CreateAlumniRequestBody requestBody);
+        /// <summary>
+        /// Create Alumni.
+        /// </summary>
+        /// <param name="requestBody">Model create alumni request of Alumni.</param>
+        /// <returns>A Alumni Detail.</returns>>
+        public Task<GetAlumniDetail> CreateAlumniAsync(CreateAlumniRequestBody requestBody);
+        
+        /// <summary>
+        /// Update Alumni.
+        /// </summary>
+        /// <param name="requestBody">Model Update alumni request of Alumni.</param>
+        /// <returns>A Alumni Detail.</returns>>
+        public Task<GetAlumniDetail> UpdateAlumniAsync(UpdateAlumniRequestBody requestBody);
 
+        
+        /// <summary>
+        /// Activate Alumni - Change Status to Active
+        /// </summary>
+        /// <param name="requestBody">Model Active Alumni</param>
+        /// <returns></returns>
+        public Task ActivateAlumniAsync(ActivateAlumniRequestBody requestBody);
+        
+        
+        /// <summary>
+        /// Delete Alumni - Change Status to Deactivate
+        /// </summary>
+        /// <param name="id">ID of Alumni</param>
+        /// <returns></returns>
+        public Task DeleteAlumniAsync(int id);
     }
 }

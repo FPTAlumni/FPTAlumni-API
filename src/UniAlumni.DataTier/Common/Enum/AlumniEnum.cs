@@ -7,22 +7,22 @@
             /// <summary>
             /// Status for first login
             /// </summary>
-            Unregistered = (byte)0,
+            Unregistered = 0,
             
             /// <summary>
             /// Status for waiting Admin accept
             /// </summary>
-            Pending = (byte)1,
+            Pending = 1,
             
             /// <summary>
             /// Status for Alumni
             /// </summary>
-            Active = (byte)2,
+            Active = 2,
             
             /// <summary>
             /// Status for block alumni
             /// </summary>
-            Deactive = (byte)3,
+            Deactive = 3,
         }
         
         

@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using UniAlumni.DataTier.Object;
 
 namespace UniAlumni.WebAPI.DTO.Token
 {

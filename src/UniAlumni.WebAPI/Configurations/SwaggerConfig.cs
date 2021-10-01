@@ -2,10 +2,8 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Xml.Linq;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
@@ -30,9 +28,8 @@ namespace UniAlumni.WebAPI.Configurations
                         Name = "AlumniDev"
                     }
                 });
-                
-                c.DescribeAllParametersInCamelCase();
 
+                c.DescribeAllParametersInCamelCase();
                 // Set the comments path for the Swagger JSON and UI.
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);

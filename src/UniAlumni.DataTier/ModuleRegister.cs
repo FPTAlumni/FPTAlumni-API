@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories;
 using UniAlumni.DataTier.Repositories.AlumniRepo;
 

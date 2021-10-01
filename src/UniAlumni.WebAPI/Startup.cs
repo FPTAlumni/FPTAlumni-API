@@ -35,7 +35,7 @@ namespace UniAlumni.WebAPI
 
             services.AddControllers().AddNewtonsoftJson(o =>
             {
-                o.SerializerSettings.Converters.Add(new StringEnumConverter{CamelCaseText = true});
+                o.SerializerSettings.Converters.Add(new StringEnumConverter());
             });
 
 

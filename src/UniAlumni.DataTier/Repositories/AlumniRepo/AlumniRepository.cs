@@ -1,7 +1,9 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Models;
+using UniAlumni.DataTier.ViewModels.Alumni;
 
 namespace UniAlumni.DataTier.Repositories.AlumniRepo
 {
@@ -28,6 +30,50 @@ namespace UniAlumni.DataTier.Repositories.AlumniRepo
             IQueryable<Alumnus> query = Table;
             return await query.FirstOrDefaultAsync(x => x.Email == email);
         }
+
+        public async Task<Alumnus> GetByUidAsync(string uid)
+        {
+            Alumnus alumnusDb = await GetFirstOrDefaultAsync(alu=> alu.Uid == uid);
+            
+            return alumnusDb;
+        }
         
+        public async Task<Alumnus> CreateAlumniAsync(Alumnus newAlumnus)
+        {
+            await InsertAsync(newAlumnus);
+
+            await SaveChangesAsync();
+            
+            return newAlumnus;
+        }
+
+        public async Task<Alumnus> UpdateAlumniAsync(Alumnus updateAlumni)
+        {
+            
+            
+            Update(updateAlumni);
+
+            await SaveChangesAsync();
+
+            return updateAlumni;
+        }
+
+        public async Task DeleteAlumniAsync(int id)
+        {
+            Alumnus alumnusDb = await GetFirstOrDefaultAsync(alu => alu.Id == id);
+            alumnusDb.Status = (byte?) AlumniEnum.AlumniStatus.Deactive;
+
+            await SaveChangesAsync();
+        }
+        
+        public async Task ActivateAlumniAsync(ActivateAlumniRequestBody requestBody){
+            Alumnus alumnus = await GetFirstOrDefaultAsync(alu => alu.Uid.Equals(requestBody.Uid));
+            if (alumnus != null)
+            {
+                alumnus.Status = (byte?) requestBody.Status;
+            }
+
+            await SaveChangesAsync();
+        }
     }
 }

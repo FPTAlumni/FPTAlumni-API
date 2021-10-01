@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Xml.Serialization;
 using UniAlumni.DataTier.Common.Enum;
 
 namespace UniAlumni.DataTier.ViewModels.Alumni
