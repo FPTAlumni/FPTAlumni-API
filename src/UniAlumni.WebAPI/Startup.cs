@@ -1,16 +1,16 @@
-using System.IO;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Converters;
+using System.IO;
 using UniAlumni.Business;
 using UniAlumni.DataTier;
-using UniAlumni.WebAPI.Configurations;
-using UniAlumni.Business.Common;
 using UniAlumni.DataTier.AutoMapperModule;
+using UniAlumni.WebAPI.Configurations;
 
 namespace UniAlumni.WebAPI
 {
@@ -37,7 +37,12 @@ namespace UniAlumni.WebAPI
             {
                 o.SerializerSettings.Converters.Add(new StringEnumConverter());
             });
-
+            services.AddApiVersioning(x =>
+            {
+                x.DefaultApiVersion = new ApiVersion(1, 0);
+                x.AssumeDefaultVersionWhenUnspecified = true;
+                x.ReportApiVersions = true;
+            });
 
             // register (DI) Core Modules
             services.RegisterDataTierModule();
@@ -46,7 +51,6 @@ namespace UniAlumni.WebAPI
             services.RegisterSwaggerModule();
 
             services.ConfigureAutoMapper();
-            services.InitializerDI();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,7 +1,9 @@
 ﻿using FirebaseAdmin.Auth;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using UniAlumni.Business.Services.AlumniService;
 using UniAlumni.Business.Services.AuthenticationService;
+using UniAlumni.Business.Services.GroupSrv;
 
 namespace UniAlumni.Business.Services
 {
@@ -15,7 +17,9 @@ namespace UniAlumni.Business.Services
         {
             services.AddScoped(typeof(IAlumniSvc), typeof(AlumniSrv));
             services.AddScoped(typeof(IAuthenticationSvc), typeof(AuthenticationSvc));
-            services.AddScoped<FirebaseAuth, FirebaseAuth>();
+            //services.AddScoped<FirebaseAuth, FirebaseAuth>();
+
+            services.AddScoped<IGroupService, GroupService>();
         }
     }
 }

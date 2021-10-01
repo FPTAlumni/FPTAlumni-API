@@ -1,19 +1,15 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using UniAlumni.Business.Services.GroupService;
+using UniAlumni.Business.Services.GroupSrv;
+using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
-using UniAlumni.DataTier.Request.Group;
-using UniAlumni.DataTier.ViewModels;
+using UniAlumni.DataTier.ViewModels.Group;
 
 namespace UniAlumni.WebAPI.Controllers
 {
-    [Route("api/groups")]
     [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/groups")]
     public class GroupController : ControllerBase
     {
         private readonly IGroupService _groupService;
@@ -23,9 +19,9 @@ namespace UniAlumni.WebAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllPosts([FromQuery]PaginationModel paginationModel)
+        public IActionResult GetPosts([FromQuery] SearchGroupModel searchGroupModel, [FromQuery] PagingParam<GroupEnum.GroupSortCriteria> paginationModel)
         {
-            var groups = await _groupService.GetAllGroups(paginationModel);
+            var groups = _groupService.GetGroups(paginationModel, searchGroupModel);
             return Ok(groups);
         }
 
@@ -40,7 +36,7 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> PostGroup([FromBody] GroupCreateRequest item, [FromQuery] int userId, bool isAdmin)
         {
             GroupViewModel groupModel = await _groupService.CreateGroup(item, userId, isAdmin);
-            return Created($"/api/groups", groupModel);
+            return Created(string.Empty, groupModel);
         }
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateGroup(int id, [FromBody] GroupUpdateRequest item, [FromQuery] int userId, bool isAdmin)
@@ -49,9 +45,9 @@ namespace UniAlumni.WebAPI.Controllers
             return Ok(groupModel);
         }
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteGroup([FromRoute] int id)
+        public async Task<IActionResult> DeleteGroup([FromRoute] int id, [FromQuery] int userId, bool isAdmin)
         {
-            await _groupService.DeleteGroup(id);
+            await _groupService.DeleteGroup(id, userId, isAdmin);
             return NoContent();
         }
     }

@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
-using UniAlumni.DataTier.Request.Group;
-using UniAlumni.DataTier.ViewModels;
+using UniAlumni.DataTier.ViewModels.Group;
 
-namespace UniAlumni.Business.Services.GroupService
+namespace UniAlumni.Business.Services.GroupSrv
 {
     public interface IGroupService
     {
-        Task<List<GroupViewModel>> GetAllGroups(PaginationModel paginationModel);
+        List<GroupViewModel> GetGroups(PagingParam<GroupEnum.GroupSortCriteria> paginationModel,
+            SearchGroupModel searchGroupModel);
         Task<GroupViewModel> GetGroupById(int id);
         Task<GroupViewModel> CreateGroup(GroupCreateRequest request, int userId, bool isAdmin);
         Task<GroupViewModel> UpdateGroup(int id, GroupUpdateRequest request, int userId, bool isAdmin);
-        Task DeleteGroup(int id);
+        Task DeleteGroup(int id, int userId, bool isAdmin);
     }
 }
