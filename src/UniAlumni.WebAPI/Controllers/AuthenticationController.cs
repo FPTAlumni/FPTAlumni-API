@@ -11,7 +11,8 @@ using MediaType = UniAlumni.WebAPI.Configurations.MediaType;
 namespace UniAlumni.WebAPI.Controllers
 {
     [ApiController]
-    [Route("api")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}")]
     [Consumes(MediaType.ApplicationJson)]
     [Produces(MediaType.ApplicationJson)]
     public class AuthenticationController : ControllerBase

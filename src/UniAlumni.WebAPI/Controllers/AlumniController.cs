@@ -15,7 +15,8 @@ using MediaType = UniAlumni.WebAPI.Configurations.MediaType;
 namespace UniAlumni.WebAPI.Controllers
 {
     [ApiController]
-    [Route("api/alumnus")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/alumnus")]
     [Consumes(MediaType.ApplicationJson)]
     [Produces(MediaType.ApplicationJson)]
     public class AlumniController : ControllerBase

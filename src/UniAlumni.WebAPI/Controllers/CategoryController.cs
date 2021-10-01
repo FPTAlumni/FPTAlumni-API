@@ -16,7 +16,8 @@ using UniAlumni.WebAPI.Configurations;
 namespace UniAlumni.WebAPI.Controllers
 {
     [ApiController]
-    [Route("api/category")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/category")]
     [Consumes(MediaType.ApplicationJson)]
     [Produces(MediaType.ApplicationJson)]
     public class CategoryController : ControllerBase
