@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UniAlumni.DataTier.ViewModels
+namespace UniAlumni.DataTier.ViewModels.Group
 {
     public class GroupViewModel
     {
@@ -16,5 +16,6 @@ namespace UniAlumni.DataTier.ViewModels
         public int? GroupLeaderId { get; set; }
         public int? MajorId { get; set; }
         public int? ParentGroupId { get; set; }
+        public int? UniversityId { get; set; }
     }
 }

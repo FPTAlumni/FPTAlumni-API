@@ -1,12 +1,6 @@
 ﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UniAlumni.DataTier.Models;
-using UniAlumni.DataTier.Request.Group;
-using UniAlumni.DataTier.ViewModels;
+using UniAlumni.DataTier.ViewModels.Group;
 
 namespace UniAlumni.DataTier.AutoMapperModule
 {

@@ -4,16 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories.GroupRepo;
-using UniAlumni.DataTier.Request.Group;
-using UniAlumni.DataTier.ViewModels;
+using UniAlumni.DataTier.Utility.Paging;
+using UniAlumni.DataTier.ViewModels.Group;
 
-namespace UniAlumni.Business.Services.GroupService
+namespace UniAlumni.Business.Services.GroupSrv
 {
     public class GroupService : IGroupService
     {
@@ -31,7 +30,7 @@ namespace UniAlumni.Business.Services.GroupService
             var group = mapper.Map<Group>(request);
             if (isAdmin)
             {
-                group.Status = (int)GroupStatus.Active;
+                group.Status = (int)GroupEnum.GroupStatus.Active;
                 group.CreatedDate = DateTime.Now;
                 group.UpdatedDate = DateTime.Now;
                  _repository.Insert(group);
@@ -45,7 +44,7 @@ namespace UniAlumni.Business.Services.GroupService
                 if (parrentGroup != null)
                     if (userId == parrentGroup.GroupLeaderId)
                     {
-                        group.Status = (int)GroupStatus.Active;
+                        group.Status = (int)GroupEnum.GroupStatus.Active;
                         group.CreatedDate = DateTime.Now;
                         group.UpdatedDate = DateTime.Now;
                         _repository.Insert(group);
@@ -57,64 +56,66 @@ namespace UniAlumni.Business.Services.GroupService
             return null;
         }
 
-        public async Task DeleteGroup(int id)
+        public async Task DeleteGroup(int id, int userId, bool isAdmin)
         {
-            var group = _repository.Get(p => p.Id == id).FirstOrDefault();
+            var group = await _repository.GetFirstOrDefaultAsync(p => p.Id == id);
             if (group != null)
             {
-                group.Status = (int)GroupStatus.Inactive;
-                group.UpdatedDate = DateTime.Now;
-                _repository.Update(group);
-                await _repository.SaveChangesAsync();
+                if (userId == group.GroupLeaderId || isAdmin)
+                {
+                    group.Status = (int)GroupEnum.GroupStatus.Inactive;
+                    group.UpdatedDate = DateTime.Now;
+                    _repository.Update(group);
+                    await _repository.SaveChangesAsync();
+                }
             }
         }
 
-        public async Task<List<GroupViewModel>> GetAllGroups(PaginationModel paginationModel)
+        public List<GroupViewModel> GetGroups(PagingParam<GroupEnum.GroupSortCriteria> paginationModel,
+            SearchGroupModel searchGroupModel)
         {
-            var result = _repository.Get(p => p.Status == (int)GroupStatus.Active)
-                .ProjectTo<GroupViewModel>(_mapper)
-                .PagingIQueryable<GroupViewModel>(paginationModel);
-            return await result.ToListAsync();
+            var queryGroups = _repository.GetAll();
+            if (searchGroupModel.GroupName.Length > 0) 
+            {
+                queryGroups = queryGroups.Where(group => group.GroupName.IndexOf(searchGroupModel.GroupName, StringComparison.OrdinalIgnoreCase) >= 0);
+            }
+            if (searchGroupModel.MajorId != null)
+                queryGroups = queryGroups.Where(g => g.MajorId == searchGroupModel.MajorId);
+            if (searchGroupModel.ParentGroupId != null)
+                queryGroups = queryGroups.Where(g => g.ParentGroupId == searchGroupModel.ParentGroupId);
+            if (searchGroupModel.UniversityId != null)
+                queryGroups = queryGroups.Where(g => g.UniversityId == searchGroupModel.UniversityId);
+            queryGroups = queryGroups.Where(group => group.Status == (byte?)searchGroupModel.Status);
+            var groupViewModels = queryGroups.ProjectTo<GroupViewModel>(_mapper);
+            groupViewModels = groupViewModels.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
+
+            // Apply Paging
+            return groupViewModels.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
         }
 
         public async Task<GroupViewModel> GetGroupById(int id)
         {
-            var groupModel = await _repository.Get(p => p.Id == id && p.Status == (int)GroupStatus.Active).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
+            var group = await _repository.GetFirstOrDefaultAsync(p => p.Id == id);
+            var groupModel = _mapper.CreateMapper().Map<GroupViewModel>(group);
             return groupModel;
         }
-        public async Task<List<GroupViewModel>> GetGroups(PaginationModel paginationModel, string groupName)
-        {
-            var result = _repository.Get(p => p.GroupName.Contains(groupName) && p.Status == (int)GroupStatus.Active)
-                .ProjectTo<GroupViewModel>(_mapper)
-                .PagingIQueryable<GroupViewModel>(paginationModel);
-            return await result.ToListAsync();
-        }
-
+ 
         public async Task<GroupViewModel> UpdateGroup(int id, GroupUpdateRequest request, int userId, bool isAdmin)
         {
-            var group = await _repository.Get(p => p.Id == id).FirstOrDefaultAsync();
+            var group = await _repository.GetFirstOrDefaultAsync(p => p.Id == id);
             if (group != null)
             {
                 if (userId == group.GroupLeaderId || isAdmin)
                 {
                     var mapper = _mapper.CreateMapper();
-                    var requestGroup = mapper.Map<Group>(request);
-                    group.GroupName = requestGroup.GroupName;
-                    group.GroupLeaderId = requestGroup.GroupLeaderId;
-                    group.ParentGroupId = requestGroup.ParentGroupId;
-                    group.MajorId = requestGroup.MajorId;
-                    group.Banner = requestGroup.Banner;
-                    group.Status = requestGroup.Status;
+                    group = mapper.Map(request, group);
                     group.UpdatedDate = DateTime.Now;
                     _repository.Update(group);
                     await _repository.SaveChangesAsync();
                     return mapper.Map<GroupViewModel>(group);
                 }
             }
-
             return null;
-
-
         }
     }
 }

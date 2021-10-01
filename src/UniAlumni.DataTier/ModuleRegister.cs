@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories;
 using UniAlumni.DataTier.Repositories.AlumniRepo;
+using UniAlumni.DataTier.Repositories.GroupRepo;
 
 namespace UniAlumni.DataTier
 {
@@ -21,6 +23,8 @@ namespace UniAlumni.DataTier
             services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
             
             services.AddScoped<IAlumniRepository, AlumniRepository>();
+
+            services.AddScoped<IGroupRepository, GroupRepository>();
 
             return services;
         }
