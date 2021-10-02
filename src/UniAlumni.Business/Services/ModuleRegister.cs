@@ -22,13 +22,10 @@ namespace UniAlumni.Business.Services
             //services.AddScoped<FirebaseAuth, FirebaseAuth>();
 
             services.AddScoped<IGroupService, GroupService>();
-<<<<<<< HEAD
             services.AddScoped<IMajorService, MajorService>();
-=======
             
             services.AddScoped<ICategorySvc, CategorySvc>();
             services.AddScoped<ICompanySvc, CompanySvc>();
->>>>>>> dev
         }
     }
 }

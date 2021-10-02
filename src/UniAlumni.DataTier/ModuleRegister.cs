@@ -31,11 +31,9 @@ namespace UniAlumni.DataTier
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();
 
-<<<<<<< HEAD
             services.AddScoped<IMajorRepository, MajorRepository>();
-=======
+
             services.AddScoped<ICompanyRepository, CompanyRepository>();
->>>>>>> dev
 
             return services;
         }
