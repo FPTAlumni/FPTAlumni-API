@@ -24,7 +24,7 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public IActionResult GetPosts([FromQuery] SearchGroupModel searchGroupModel, [FromQuery] PagingParam<GroupEnum.GroupSortCriteria> paginationModel)
         {
-            var userId = int.Parse(User.Identity.Name);
+            
             var groups = _groupService.GetGroups(paginationModel, searchGroupModel);
             return Ok(groups);
         }
@@ -39,23 +39,25 @@ namespace UniAlumni.WebAPI.Controllers
 
         [HttpPost]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        public async Task<IActionResult> PostGroup([FromBody] GroupCreateRequest item, [FromQuery] int userId)
+        public async Task<IActionResult> PostGroup([FromBody] GroupCreateRequest item)
         {
+            var userId = int.Parse(User.FindFirst("id")?.Value);
             GroupViewModel groupModel = await _groupService.CreateGroup(item, userId, User.IsInRole(RolesConstants.ADMIN));
             return Created(string.Empty, groupModel);
         }
         [HttpPut("{id}")]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        public async Task<IActionResult> UpdateGroup(int id, [FromBody] GroupUpdateRequest item, [FromQuery] int userId)
+        public async Task<IActionResult> UpdateGroup(int id, [FromBody] GroupUpdateRequest item)
         {
+            var userId = int.Parse(User.FindFirst("id")?.Value);
             GroupViewModel groupModel = await _groupService.UpdateGroup(id, item, userId, User.IsInRole(RolesConstants.ADMIN));
             return Ok(groupModel);
         }
         [HttpDelete("{id}")]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        public async Task<IActionResult> DeleteGroup([FromRoute] int id, [FromQuery] int userId)
+        public async Task<IActionResult> DeleteGroup([FromRoute] int id)
         {
-            var u = User;
+            var userId = int.Parse(User.FindFirst("id")?.Value);
             await _groupService.DeleteGroup(id, userId, User.IsInRole(RolesConstants.ADMIN));
             return NoContent();
         }
