@@ -27,7 +27,7 @@ namespace UniAlumni.Business.Services.AuthenticationService
             var alumni =  LoadAlumniByUid(uid);
             if ( alumni.Result != null)
             {
-                var customTokenAsync = CreateCustomToken(uid);
+                var customTokenAsync = CreateCustomToken(uid, alumni.Result.Id);
                 return customTokenAsync;
             }
             return "";
@@ -36,10 +36,10 @@ namespace UniAlumni.Business.Services.AuthenticationService
 
         private async Task<Alumnus> LoadAlumniByUid(string uid)
         {
-            return await _alumniRepository.GetFirstOrDefaultAsync(alumnus => alumnus.Uid == uid);
+            return await _alumniRepository.GetFirstOrDefaultAsync(alumnus => alumnus.Uid.Equals(uid));
         }
 
-        private string CreateCustomToken(string uid)
+        private string CreateCustomToken(string uid, int id)
         {
             var uidAdmin = _configuration.GetSection("AppSettings").GetSection("AdminUID").Value;
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -49,6 +49,7 @@ namespace UniAlumni.Business.Services.AuthenticationService
             {
                 Subject = new ClaimsIdentity(new[] 
                 {
+                    new Claim("id", id.ToString()),
                     new Claim("uid", uid),
                     new Claim(ClaimTypes.Role, uid.Equals(uidAdmin) ? RolesConstants.ADMIN : RolesConstants.ALUMNI)
                 }),
