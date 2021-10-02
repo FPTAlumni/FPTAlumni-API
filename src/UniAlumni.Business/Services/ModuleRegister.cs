@@ -5,6 +5,7 @@ using UniAlumni.Business.Services.AuthenticationService;
 using UniAlumni.Business.Services.CategoryService;
 
 using UniAlumni.Business.Services.GroupSrv;
+using UniAlumni.Business.Services.MajorSrv;
 
 namespace UniAlumni.Business.Services
 {
@@ -22,6 +23,7 @@ namespace UniAlumni.Business.Services
             //services.AddScoped<FirebaseAuth, FirebaseAuth>();
 
             services.AddScoped<IGroupService, GroupService>();
+            services.AddScoped<IMajorService, MajorService>();
         }
     }
 }

@@ -5,6 +5,7 @@ using UniAlumni.DataTier.Repositories;
 using UniAlumni.DataTier.Repositories.AlumniRepo;
 using UniAlumni.DataTier.Repositories.CategoryRepo;
 using UniAlumni.DataTier.Repositories.GroupRepo;
+using UniAlumni.DataTier.Repositories.MajorRepo;
 
 namespace UniAlumni.DataTier
 {
@@ -28,6 +29,8 @@ namespace UniAlumni.DataTier
             services.AddScoped<IGroupRepository, GroupRepository>();
 
             services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+            services.AddScoped<IMajorRepository, MajorRepository>();
 
             return services;
         }

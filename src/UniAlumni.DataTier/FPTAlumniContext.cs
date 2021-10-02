@@ -10,6 +10,7 @@ namespace UniAlumni.DataTier.Models
     public partial class FPTAlumniContext : DbContext
     {
         IConfiguration _configuration;
+   
         public FPTAlumniContext(IConfiguration configuration)
         {
             _configuration = configuration;
