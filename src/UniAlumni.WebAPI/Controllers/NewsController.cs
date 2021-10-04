@@ -35,7 +35,7 @@ namespace UniAlumni.WebAPI.Controllers
         // GET api/<NewsController>/5
         [HttpGet("{id}")]
         //[Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        public async Task<IActionResult> GetPost(int id)
+        public async Task<IActionResult> GetNewsById(int id)
         {
             var news = await _newsService.GetNewsById(id, 1);
             return Ok(news);
@@ -62,7 +62,7 @@ namespace UniAlumni.WebAPI.Controllers
         // DELETE api/<NewsController>/5
         [HttpDelete("{id}")]
         //[Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        public async Task<IActionResult> DeleteGroup([FromRoute] int id)
+        public async Task<IActionResult> DeleteNews([FromRoute] int id)
         {
             //var userId = int.Parse(User.FindFirst("id")?.Value);
             await _newsService.DeleteNews(id, 1, true);
