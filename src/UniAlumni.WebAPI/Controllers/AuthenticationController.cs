@@ -29,14 +29,14 @@ namespace UniAlumni.WebAPI.Controllers
         /// </summary>
         /// <param name="idToken">Authentication Token Get From Firebase Service</param>
         /// <returns>Custom Token</returns>
-        /// <response code="200">Returns the custom token</response>
-        /// <response code="201">Returns the UID if alumni is not exist</response>
+        /// <response code="200">Return the custom token</response>
+        /// <response code="203">Return if alumni is not exist</response>
         /// <response code="400">Return if the idToken is null</response> 
         /// <response code="401">Return if the idToken is invalid</response> 
         [AllowAnonymous]
         [HttpPost("login")]
-        [ProducesResponseType(typeof(TokenResponse), 200)]
-        [ProducesResponseType(typeof(String), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(String), StatusCodes.Status204NoContent)]
         public async Task<IActionResult> LoginWithIdTokenAsync(string idToken)
         {
             if (idToken == null) return BadRequest();
@@ -49,7 +49,7 @@ namespace UniAlumni.WebAPI.Controllers
                 if (jwtToken.Length != 0)
                     return Ok(TokenResponse.BuildTokenResponse(jwtToken));
                 else
-                    return Ok(uid);
+                    return NoContent();
             }
             catch (Exception)
             {

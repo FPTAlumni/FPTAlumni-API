@@ -9,10 +9,11 @@ namespace UniAlumni.DataTier.Models
 {
     public partial class FPTAlumniContext : DbContext
     {
-        private IConfiguration _config;
+        private readonly IConfiguration _configuration;
+
         public FPTAlumniContext(IConfiguration configuration)
         {
-            _config = configuration;
+            _configuration = configuration;
         }
 
         public FPTAlumniContext(DbContextOptions<FPTAlumniContext> options)
@@ -23,6 +24,7 @@ namespace UniAlumni.DataTier.Models
         public virtual DbSet<AlumniGroup> AlumniGroups { get; set; }
         public virtual DbSet<Alumnus> Alumni { get; set; }
         public virtual DbSet<Category> Categories { get; set; }
+        public virtual DbSet<Class> Classes { get; set; }
         public virtual DbSet<Company> Companies { get; set; }
         public virtual DbSet<Event> Events { get; set; }
         public virtual DbSet<EventRegistration> EventRegistrations { get; set; }
@@ -42,9 +44,7 @@ namespace UniAlumni.DataTier.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                //optionsBuilder.UseSqlServer("Server=52.230.81.77; Database=FPTAlumni; Trusted_Connection = False;User Id=sa;Password=FPT@123");
-                optionsBuilder.UseSqlServer(_config.GetConnectionString("UniAlumni"));
+                optionsBuilder.UseSqlServer(_configuration.GetConnectionString("UniAlumni"));
             }
         }
 
@@ -54,14 +54,10 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<AlumniGroup>(entity =>
             {
-                entity.HasKey(e => new { e.AlumniId, e.GroupId })
+                entity.HasKey(e => new {e.AlumniId, e.GroupId})
                     .HasName("PK__AlumniGr__227F8B5CCBD17A38");
 
-                entity.ToTable("AlumniGroup");
-
-                entity.Property(e => e.RegisteredDate)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
+                entity.Property(e => e.RegisteredDate).HasDefaultValueSql("(getdate())");
 
                 entity.HasOne(d => d.Alumni)
                     .WithMany(p => p.AlumniGroups)
@@ -78,121 +74,38 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<Alumnus>(entity =>
             {
-                entity.HasIndex(e => e.Phone, "UQ__Alumni__5C7E359E27655E6B")
-                    .IsUnique();
+                entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getdate())");
 
-                entity.HasIndex(e => e.Email, "UQ__Alumni__A9D10534D1C935CC")
-                    .IsUnique();
+                entity.Property(e => e.Email).IsUnicode(false);
 
-                entity.Property(e => e.AboutMe).HasMaxLength(500);
+                entity.Property(e => e.Phone).IsUnicode(false);
 
-                entity.Property(e => e.Address)
-                    .IsRequired()
-                    .HasMaxLength(150);
+                entity.Property(e => e.Uid).IsUnicode(false);
 
-                entity.Property(e => e.CreatedDate)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.DoB).HasColumnType("date");
-
-                entity.Property(e => e.Email)
-                    .IsRequired()
-                    .HasMaxLength(320)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.FullName)
-                    .IsRequired()
-                    .HasMaxLength(70);
-
-                entity.Property(e => e.Job).HasMaxLength(70);
-
-                entity.Property(e => e.Phone)
-                    .IsRequired()
-                    .HasMaxLength(15)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.Uid)
-                    .IsRequired()
-                    .HasMaxLength(256)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
+                entity.HasOne(d => d.Class)
+                    .WithMany(p => p.Alumni)
+                    .HasForeignKey(d => d.ClassId)
+                    .HasConstraintName("FK_Alumni_Class");
 
                 entity.HasOne(d => d.Company)
                     .WithMany(p => p.Alumni)
                     .HasForeignKey(d => d.CompanyId)
                     .HasConstraintName("FK__Alumni__CompanyI__3C69FB99");
 
-                entity.HasOne(d => d.Major)
+                entity.HasOne(d => d.UniversityMajor)
                     .WithMany(p => p.Alumni)
-                    .HasForeignKey(d => d.MajorId)
+                    .HasForeignKey(d => d.UniversityMajorId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Alumni_Major");
+                    .HasConstraintName("FK_Alumni_UniversityMajor");
             });
 
-            modelBuilder.Entity<Category>(entity =>
-            {
-                entity.ToTable("Category");
+            modelBuilder.Entity<Category>(entity => { entity.Property(e => e.Description).IsUnicode(false); });
 
-                entity.Property(e => e.CategoryName)
-                    .IsRequired()
-                    .HasMaxLength(70);
-
-                entity.Property(e => e.Description)
-                    .HasMaxLength(500)
-                    .IsUnicode(false);
-            });
-
-            modelBuilder.Entity<Company>(entity =>
-            {
-                entity.ToTable("Company");
-
-                entity.Property(e => e.Business)
-                    .IsRequired()
-                    .HasMaxLength(100);
-
-                entity.Property(e => e.CompanyName)
-                    .IsRequired()
-                    .HasMaxLength(70)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.Description).HasMaxLength(500);
-
-                entity.Property(e => e.Location)
-                    .IsRequired()
-                    .HasMaxLength(150);
-            });
+            modelBuilder.Entity<Company>(entity => { entity.Property(e => e.CompanyName).IsUnicode(false); });
 
             modelBuilder.Entity<Event>(entity =>
             {
-                entity.ToTable("Event");
-
-                entity.Property(e => e.Banner).HasMaxLength(200);
-
-                entity.Property(e => e.CreatedDate)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.EndDate).HasColumnType("datetime");
-
-                entity.Property(e => e.EventContent).IsRequired();
-
-                entity.Property(e => e.EventName)
-                    .IsRequired()
-                    .HasMaxLength(100);
-
-                entity.Property(e => e.Location)
-                    .IsRequired()
-                    .HasMaxLength(150);
-
-                entity.Property(e => e.RegistrationEndDate).HasColumnType("datetime");
-
-                entity.Property(e => e.RegistrationStartDate).HasColumnType("datetime");
-
-                entity.Property(e => e.StartDate).HasColumnType("datetime");
-
-                entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
+                entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getdate())");
 
                 entity.HasOne(d => d.Group)
                     .WithMany(p => p.Events)
@@ -202,14 +115,10 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<EventRegistration>(entity =>
             {
-                entity.HasKey(e => new { e.AlumniId, e.EventId })
+                entity.HasKey(e => new {e.AlumniId, e.EventId})
                     .HasName("PK__EventReg__84A268EBD1435ABC");
 
-                entity.ToTable("EventRegistration");
-
-                entity.Property(e => e.RegisteredDate)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
+                entity.Property(e => e.RegisteredDate).HasDefaultValueSql("(getdate())");
 
                 entity.HasOne(d => d.Alumni)
                     .WithMany(p => p.EventRegistrations)
@@ -226,36 +135,19 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<FptstudentInfo>(entity =>
             {
-                entity.ToTable("FPTStudentInfo");
+                entity.Property(e => e.Class).IsUnicode(false);
 
-                entity.Property(e => e.Class)
-                    .HasMaxLength(3)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.EduMail).HasMaxLength(35);
-
-                entity.Property(e => e.Major).HasMaxLength(50);
-
-                entity.Property(e => e.StudentId)
-                    .HasMaxLength(10)
-                    .IsUnicode(false);
+                entity.Property(e => e.StudentId).IsUnicode(false);
             });
 
             modelBuilder.Entity<Group>(entity =>
             {
-                entity.ToTable("Group");
+                entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.Banner).HasMaxLength(200);
-
-                entity.Property(e => e.CreatedDate)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.GroupName)
-                    .IsRequired()
-                    .HasMaxLength(100);
-
-                entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
+                entity.HasOne(d => d.Class)
+                    .WithMany(p => p.Groups)
+                    .HasForeignKey(d => d.ClassId)
+                    .HasConstraintName("FK_Group_Class");
 
                 entity.HasOne(d => d.GroupLeader)
                     .WithMany(p => p.Groups)
@@ -275,42 +167,12 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<Major>(entity =>
             {
-                entity.ToTable("Major");
-
-                entity.Property(e => e.CreatedDate)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.FullName)
-                    .IsRequired()
-                    .HasMaxLength(50);
-
-                entity.Property(e => e.ShortName)
-                    .IsRequired()
-                    .HasMaxLength(5);
-
-                entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
-
-                entity.Property(e => e.VietnameseName)
-                    .IsRequired()
-                    .HasMaxLength(50);
+                entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getdate())");
             });
 
             modelBuilder.Entity<News>(entity =>
             {
-                entity.Property(e => e.Banner).HasMaxLength(200);
-
-                entity.Property(e => e.Content).IsRequired();
-
-                entity.Property(e => e.CreatedDate)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.Title)
-                    .IsRequired()
-                    .HasMaxLength(70);
-
-                entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
+                entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getdate())");
 
                 entity.HasOne(d => d.Category)
                     .WithMany(p => p.News)
@@ -325,40 +187,13 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<Recruitment>(entity =>
             {
-                entity.ToTable("Recruitment");
+                entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.CreatedDate)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
+                entity.Property(e => e.Description).IsUnicode(false);
 
-                entity.Property(e => e.Description)
-                    .IsRequired()
-                    .HasMaxLength(500)
-                    .IsUnicode(false);
+                entity.Property(e => e.Email).IsUnicode(false);
 
-                entity.Property(e => e.Email)
-                    .IsRequired()
-                    .HasMaxLength(320)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.EndDate).HasColumnType("datetime");
-
-                entity.Property(e => e.ExperienceLevel).HasMaxLength(70);
-
-                entity.Property(e => e.Phone)
-                    .IsRequired()
-                    .HasMaxLength(15)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.Position)
-                    .IsRequired()
-                    .HasMaxLength(70);
-
-                entity.Property(e => e.Title)
-                    .IsRequired()
-                    .HasMaxLength(100);
-
-                entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
+                entity.Property(e => e.Phone).IsUnicode(false);
 
                 entity.HasOne(d => d.Alumni)
                     .WithMany(p => p.Recruitments)
@@ -383,30 +218,11 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<Referral>(entity =>
             {
-                entity.ToTable("Referral");
+                entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.Address)
-                    .IsRequired()
-                    .HasMaxLength(150);
+                entity.Property(e => e.Phone).IsUnicode(false);
 
-                entity.Property(e => e.CreatedDate)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.FullName)
-                    .IsRequired()
-                    .HasMaxLength(70);
-
-                entity.Property(e => e.Phone)
-                    .IsRequired()
-                    .HasMaxLength(15)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
-
-                entity.Property(e => e.VoucherCode)
-                    .HasMaxLength(15)
-                    .IsUnicode(false);
+                entity.Property(e => e.VoucherCode).IsUnicode(false);
 
                 entity.HasOne(d => d.Nominator)
                     .WithMany(p => p.Referrals)
@@ -419,18 +235,9 @@ namespace UniAlumni.DataTier.Models
                     .HasConstraintName("FK__Referral__Vouche__5AEE82B9");
             });
 
-            modelBuilder.Entity<Tag>(entity =>
-            {
-                entity.ToTable("Tag");
-
-                entity.Property(e => e.Tagname)
-                    .IsRequired()
-                    .HasMaxLength(70);
-            });
-
             modelBuilder.Entity<TagNews>(entity =>
             {
-                entity.HasKey(e => new { e.NewsId, e.TagId })
+                entity.HasKey(e => new {e.NewsId, e.TagId})
                     .HasName("PK__TagNews__431972694EF07ADF");
 
                 entity.HasOne(d => d.News)
@@ -446,23 +253,10 @@ namespace UniAlumni.DataTier.Models
                     .HasConstraintName("FK__TagNews__TagId__6E01572D");
             });
 
-            modelBuilder.Entity<University>(entity =>
-            {
-                entity.ToTable("University");
-
-                entity.Property(e => e.Address).HasMaxLength(200);
-
-                entity.Property(e => e.Logo)
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.Name).HasMaxLength(50);
-            });
+            modelBuilder.Entity<University>(entity => { entity.Property(e => e.Logo).IsUnicode(false); });
 
             modelBuilder.Entity<UniversityMajor>(entity =>
             {
-                entity.ToTable("UniversityMajor");
-
                 entity.HasOne(d => d.Major)
                     .WithMany(p => p.UniversityMajors)
                     .HasForeignKey(d => d.MajorId)
@@ -478,19 +272,7 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<Voucher>(entity =>
             {
-                entity.ToTable("Voucher");
-
-                entity.Property(e => e.CreatedDate)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.DiscountValue).HasColumnType("decimal(3, 2)");
-
-                entity.Property(e => e.RelationshipName)
-                    .IsRequired()
-                    .HasMaxLength(50);
-
-                entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
+                entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getdate())");
 
                 entity.HasOne(d => d.Major)
                     .WithMany(p => p.Vouchers)
