@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
@@ -67,7 +69,7 @@ namespace UniAlumni.Business.Services.GroupSrv
             }
         }
 
-        public List<GroupViewModel> GetGroups(PagingParam<GroupEnum.GroupSortCriteria> paginationModel,
+        public ModelsResponse<GroupViewModel> GetGroups(PagingParam<GroupEnum.GroupSortCriteria> paginationModel,
             SearchGroupModel searchGroupModel)
         {
             var queryGroups = _repository.GetAll();
@@ -84,7 +86,21 @@ namespace UniAlumni.Business.Services.GroupSrv
             groupViewModels = groupViewModels.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
 
             // Apply Paging
-            return groupViewModels.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
+            var data = groupViewModels.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
+
+            return new ModelsResponse<GroupViewModel>()
+            {
+                Code = StatusCodes.Status200OK,
+                Msg = "",
+                Data = data,
+                Metadata = new PagingMetadata()
+                {
+                    Page = paginationModel.Page,
+                    Size = paginationModel.PageSize,
+                    Total = data.Count
+                }
+            };
+                
         }
 
         public async Task<GroupViewModel> GetGroupById(int id)

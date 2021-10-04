@@ -31,7 +31,7 @@ namespace UniAlumni.Business.Services.MajorSrv
             major.Status = (int)MajorEnum.MajorStatus.Active;
             _repository.Insert(major);
             await _repository.SaveChangesAsync();
-            var majorModel = await GetMajorById(major.Id);
+            var majorModel = mapper.Map<MajorViewModel>(major);
             return majorModel;
         }
 
@@ -85,7 +85,7 @@ namespace UniAlumni.Business.Services.MajorSrv
                     major.UpdatedDate = DateTime.Now;
                     _repository.Update(major);
                     await _repository.SaveChangesAsync();
-                    return await GetMajorById(id);
+                    return mapper.Map<MajorViewModel>(major);
             }
             return null;
         }
