@@ -11,7 +11,7 @@ namespace UniAlumni.DataTier.AutoMapperModule
             configuration.CreateMap<Category, GetCategoryDetail>().ReverseMap();
             configuration.CreateMap<Category, CreateCategoryRequestBody>().ReverseMap();
             configuration.CreateMap<Category, UpdateCategoryRequestBody>().ReverseMap();
-
+            configuration.CreateMap<Category, BaseCategoryModel>().ReverseMap();
             return configuration;
         }
     }

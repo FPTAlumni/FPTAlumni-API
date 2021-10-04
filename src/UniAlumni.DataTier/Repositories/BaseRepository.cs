@@ -145,7 +145,7 @@ namespace UniAlumni.DataTier.Repositories
             {
                 query = includeProperties.Aggregate(query, (current, include) => current.Include(include));
             }
-
+            var a = await query.FirstOrDefaultAsync();
             return await query.FirstOrDefaultAsync();
         }
 

@@ -9,11 +9,10 @@ namespace UniAlumni.DataTier.Models
 {
     public partial class FPTAlumniContext : DbContext
     {
-        IConfiguration _configuration;
-   
+        private IConfiguration _config;
         public FPTAlumniContext(IConfiguration configuration)
         {
-            _configuration = configuration;
+            _config = configuration;
         }
 
         public FPTAlumniContext(DbContextOptions<FPTAlumniContext> options)
@@ -36,6 +35,7 @@ namespace UniAlumni.DataTier.Models
         public virtual DbSet<Tag> Tags { get; set; }
         public virtual DbSet<TagNews> TagNews { get; set; }
         public virtual DbSet<University> Universities { get; set; }
+        public virtual DbSet<UniversityMajor> UniversityMajors { get; set; }
         public virtual DbSet<Voucher> Vouchers { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -44,7 +44,7 @@ namespace UniAlumni.DataTier.Models
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
                 //optionsBuilder.UseSqlServer("Server=52.230.81.77; Database=FPTAlumni; Trusted_Connection = False;User Id=sa;Password=FPT@123");
-                optionsBuilder.UseSqlServer(_configuration.GetConnectionString("UniAlumni"));
+                optionsBuilder.UseSqlServer(_config.GetConnectionString("UniAlumni"));
             }
         }
 
@@ -124,17 +124,18 @@ namespace UniAlumni.DataTier.Models
                     .HasForeignKey(d => d.CompanyId)
                     .HasConstraintName("FK__Alumni__CompanyI__3C69FB99");
 
-                entity.HasOne(d => d.University)
+                entity.HasOne(d => d.Major)
                     .WithMany(p => p.Alumni)
-                    .HasForeignKey(d => d.UniversityId)
-                    .HasConstraintName("FK_Alumni_University");
+                    .HasForeignKey(d => d.MajorId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Alumni_Major");
             });
 
             modelBuilder.Entity<Category>(entity =>
             {
                 entity.ToTable("Category");
 
-                entity.Property(e => e.Categoryname)
+                entity.Property(e => e.CategoryName)
                     .IsRequired()
                     .HasMaxLength(70);
 
@@ -261,20 +262,15 @@ namespace UniAlumni.DataTier.Models
                     .HasForeignKey(d => d.GroupLeaderId)
                     .HasConstraintName("FK__Group__GroupLead__4316F928");
 
-                entity.HasOne(d => d.Major)
-                    .WithMany(p => p.Groups)
-                    .HasForeignKey(d => d.MajorId)
-                    .HasConstraintName("FK__Group__MajorId__440B1D61");
-
                 entity.HasOne(d => d.ParentGroup)
                     .WithMany(p => p.InverseParentGroup)
                     .HasForeignKey(d => d.ParentGroupId)
                     .HasConstraintName("FK__Group__ParentGro__44FF419A");
 
-                entity.HasOne(d => d.University)
+                entity.HasOne(d => d.UniversityMajor)
                     .WithMany(p => p.Groups)
-                    .HasForeignKey(d => d.UniversityId)
-                    .HasConstraintName("FK_Group_University");
+                    .HasForeignKey(d => d.UniversityMajorId)
+                    .HasConstraintName("FK_Group_UniversityMajor");
             });
 
             modelBuilder.Entity<Major>(entity =>
@@ -298,11 +294,6 @@ namespace UniAlumni.DataTier.Models
                 entity.Property(e => e.VietnameseName)
                     .IsRequired()
                     .HasMaxLength(50);
-
-                entity.HasOne(d => d.University)
-                    .WithMany(p => p.Majors)
-                    .HasForeignKey(d => d.UniversityId)
-                    .HasConstraintName("FK_Major_University");
             });
 
             modelBuilder.Entity<News>(entity =>
@@ -466,6 +457,23 @@ namespace UniAlumni.DataTier.Models
                     .IsUnicode(false);
 
                 entity.Property(e => e.Name).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<UniversityMajor>(entity =>
+            {
+                entity.ToTable("UniversityMajor");
+
+                entity.HasOne(d => d.Major)
+                    .WithMany(p => p.UniversityMajors)
+                    .HasForeignKey(d => d.MajorId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_UniversityMajor_Major");
+
+                entity.HasOne(d => d.University)
+                    .WithMany(p => p.UniversityMajors)
+                    .HasForeignKey(d => d.UniversityId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_UniversityMajor_University");
             });
 
             modelBuilder.Entity<Voucher>(entity =>

@@ -28,11 +28,11 @@ namespace UniAlumni.DataTier.Models
         public DateTime? CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public byte? Status { get; set; }
-        public int? UniversityId { get; set; }
+        public int MajorId { get; set; }
         public int? CompanyId { get; set; }
 
         public virtual Company Company { get; set; }
-        public virtual University University { get; set; }
+        public virtual Major Major { get; set; }
         public virtual ICollection<AlumniGroup> AlumniGroups { get; set; }
         public virtual ICollection<EventRegistration> EventRegistrations { get; set; }
         public virtual ICollection<Group> Groups { get; set; }

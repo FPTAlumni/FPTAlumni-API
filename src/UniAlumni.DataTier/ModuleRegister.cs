@@ -7,6 +7,9 @@ using UniAlumni.DataTier.Repositories.CategoryRepo;
 using UniAlumni.DataTier.Repositories.CompanyRepo;
 using UniAlumni.DataTier.Repositories.GroupRepo;
 using UniAlumni.DataTier.Repositories.MajorRepo;
+using UniAlumni.DataTier.Repositories.NewsRepo;
+using UniAlumni.DataTier.Repositories.TagNewsRepo;
+using UniAlumni.DataTier.Repositories.TagRepo;
 
 namespace UniAlumni.DataTier
 {
@@ -34,6 +37,12 @@ namespace UniAlumni.DataTier
             services.AddScoped<IMajorRepository, MajorRepository>();
 
             services.AddScoped<ICompanyRepository, CompanyRepository>();
+
+            services.AddScoped<INewsRepository, NewsRepository>();
+
+            services.AddScoped<ITagRepository, TagRepository>();
+
+            services.AddScoped<ITagNewsRepository, TagNewsRepository>();
 
             return services;
         }

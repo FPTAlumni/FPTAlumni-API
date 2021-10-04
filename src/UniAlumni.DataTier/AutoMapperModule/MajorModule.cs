@@ -11,6 +11,7 @@ namespace UniAlumni.DataTier.AutoMapperModule
             mc.CreateMap<Major, MajorViewModel>();
             mc.CreateMap<MajorCreateRequest, Major>();
             mc.CreateMap<MajorUpdateRequest, Major>();
+            mc.CreateMap<Major, BaseMajorModel>();
         }
     }
 }

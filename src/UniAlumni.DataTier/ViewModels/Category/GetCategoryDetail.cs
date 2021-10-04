@@ -1,9 +1,13 @@
 ﻿namespace UniAlumni.DataTier.ViewModels.Category
 {
-    public class GetCategoryDetail
+    public class BaseCategoryModel 
     {
         public int Id { get; set; }
-        public string Categoryname { get; set; }
+        public string CategoryName { get; set; }
+    }
+    public class GetCategoryDetail: BaseCategoryModel
+    {
+        
         public string Description { get; set; }
     }
 }

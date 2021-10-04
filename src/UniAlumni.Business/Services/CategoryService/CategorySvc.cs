@@ -27,9 +27,9 @@ namespace UniAlumni.Business.Services.CategoryService
         {
             IQueryable<Category> queryCategory = _categoryRepository.Table;
 
-            if (searchCategoryModel.Categoryname.Length > 0 || searchCategoryModel.Description.Length > 0)
+            if (searchCategoryModel.CategoryName.Length > 0 || searchCategoryModel.Description.Length > 0)
             {
-                queryCategory = queryCategory.Where(c => c.Categoryname.Contains(searchCategoryModel.Categoryname) &&
+                queryCategory = queryCategory.Where(c => c.CategoryName.Contains(searchCategoryModel.CategoryName) &&
                                                          c.Description.Contains(searchCategoryModel.Description));
             }
 

@@ -17,7 +17,7 @@
         
         public enum CategorySortCriteria
         {
-            Categoryname
+            CategoryName
         }
     }
 }

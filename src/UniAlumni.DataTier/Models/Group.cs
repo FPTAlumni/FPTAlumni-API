@@ -24,14 +24,12 @@ namespace UniAlumni.DataTier.Models
         public DateTime? UpdatedDate { get; set; }
         public byte? Status { get; set; }
         public int? GroupLeaderId { get; set; }
-        public int? MajorId { get; set; }
+        public int? UniversityMajorId { get; set; }
         public int? ParentGroupId { get; set; }
-        public int? UniversityId { get; set; }
 
         public virtual Alumnus GroupLeader { get; set; }
-        public virtual Major Major { get; set; }
         public virtual Group ParentGroup { get; set; }
-        public virtual University University { get; set; }
+        public virtual UniversityMajor UniversityMajor { get; set; }
         public virtual ICollection<AlumniGroup> AlumniGroups { get; set; }
         public virtual ICollection<Event> Events { get; set; }
         public virtual ICollection<Group> InverseParentGroup { get; set; }

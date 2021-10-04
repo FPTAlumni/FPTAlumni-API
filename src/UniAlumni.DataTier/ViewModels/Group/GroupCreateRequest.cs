@@ -15,8 +15,7 @@ namespace UniAlumni.DataTier.ViewModels.Group
         [StringLength(200)]
         public string Banner { get; set; }
         public int? GroupLeaderId { get; set; }
-        public int? MajorId { get; set; }
+        public int? UniversityMajorId { get; set; }
         public int? ParentGroupId { get; set; }
-        public int? UniversityId { get; set; }
     }
 }

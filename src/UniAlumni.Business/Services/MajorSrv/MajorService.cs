@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,11 +29,9 @@ namespace UniAlumni.Business.Services.MajorSrv
             var mapper = _mapper.CreateMapper();
             var major = mapper.Map<Major>(request);
             major.Status = (int)MajorEnum.MajorStatus.Active;
-            major.CreatedDate = DateTime.Now;
-            major.UpdatedDate = DateTime.Now;
             _repository.Insert(major);
             await _repository.SaveChangesAsync();
-            var majorModel = mapper.Map<MajorViewModel>(major);
+            var majorModel = await GetMajorById(major.Id);
             return majorModel;
         }
 
@@ -50,8 +49,7 @@ namespace UniAlumni.Business.Services.MajorSrv
 
         public async Task<MajorViewModel> GetMajorById(int id)
         {
-            var major = await _repository.GetFirstOrDefaultAsync(p => p.Id == id);
-            var majorModel = _mapper.CreateMapper().Map<MajorViewModel>(major);
+            var majorModel = await _repository.Get(p => p.Id == id).ProjectTo<MajorViewModel>(_mapper).FirstOrDefaultAsync();
             return majorModel;
         }
 
@@ -66,7 +64,7 @@ namespace UniAlumni.Business.Services.MajorSrv
             }
 
             if (searchMajorModel.UniversityId != null)
-                queryMajors = queryMajors.Where(m => m.UniversityId == searchMajorModel.UniversityId);
+                queryMajors = queryMajors.Where(m => m.UniversityMajors.Any(um => um.UniversityId == searchMajorModel.UniversityId));
 
             queryMajors = queryMajors.Where(m => m.Status == (byte?)searchMajorModel.Status);
 
@@ -87,7 +85,7 @@ namespace UniAlumni.Business.Services.MajorSrv
                     major.UpdatedDate = DateTime.Now;
                     _repository.Update(major);
                     await _repository.SaveChangesAsync();
-                    return mapper.Map<MajorViewModel>(major);
+                    return await GetMajorById(id);
             }
             return null;
         }

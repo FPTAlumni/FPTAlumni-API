@@ -9,7 +9,8 @@ namespace UniAlumni.DataTier.Models
     {
         public Major()
         {
-            Groups = new HashSet<Group>();
+            Alumni = new HashSet<Alumnus>();
+            UniversityMajors = new HashSet<UniversityMajor>();
             Vouchers = new HashSet<Voucher>();
         }
 
@@ -20,10 +21,9 @@ namespace UniAlumni.DataTier.Models
         public DateTime? CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public byte? Status { get; set; }
-        public int? UniversityId { get; set; }
 
-        public virtual University University { get; set; }
-        public virtual ICollection<Group> Groups { get; set; }
+        public virtual ICollection<Alumnus> Alumni { get; set; }
+        public virtual ICollection<UniversityMajor> UniversityMajors { get; set; }
         public virtual ICollection<Voucher> Vouchers { get; set; }
     }
 }

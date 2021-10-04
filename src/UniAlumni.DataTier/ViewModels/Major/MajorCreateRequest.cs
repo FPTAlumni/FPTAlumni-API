@@ -11,6 +11,5 @@ namespace UniAlumni.DataTier.ViewModels.Major
         public string ShortName { get; set; }
         public string FullName { get; set; }
         public string VietnameseName { get; set; }
-        public int? UniversityId { get; set; }
     }
 }

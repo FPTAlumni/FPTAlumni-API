@@ -15,19 +15,13 @@ namespace UniAlumni.DataTier.Common.Enum
         }
         public enum MajorSortCriteria
         {
-            /// <summary>
-            /// Fullname attr
-            /// </summary>
+
             ShortName,
 
-            /// <summary>
-            /// CreateDate attr
-            /// </summary>
+
             CreatedDate,
 
-            /// <summary>
-            /// Status attr
-            /// </summary>
+
             Status
         }
     }

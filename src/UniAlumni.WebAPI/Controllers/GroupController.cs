@@ -22,7 +22,7 @@ namespace UniAlumni.WebAPI.Controllers
 
         [HttpGet]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        public IActionResult GetPosts([FromQuery] SearchGroupModel searchGroupModel, [FromQuery] PagingParam<GroupEnum.GroupSortCriteria> paginationModel)
+        public IActionResult GetGroups([FromQuery] SearchGroupModel searchGroupModel, [FromQuery] PagingParam<GroupEnum.GroupSortCriteria> paginationModel)
         {
             
             var groups = _groupService.GetGroups(paginationModel, searchGroupModel);
@@ -31,7 +31,7 @@ namespace UniAlumni.WebAPI.Controllers
 
         [HttpGet("{id}")]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        public async Task<IActionResult> GetPost(int id)
+        public async Task<IActionResult> GetGroup(int id)
         {
             var group = await _groupService.GetGroupById(id);
             return Ok(group);

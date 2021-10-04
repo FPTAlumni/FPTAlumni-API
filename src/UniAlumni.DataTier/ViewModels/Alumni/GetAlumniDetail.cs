@@ -2,13 +2,16 @@
 
 namespace UniAlumni.DataTier.ViewModels.Alumni
 {
-    public class GetAlumniDetail
+    public class BaseAlumniModel
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; }
+    }
+    public class GetAlumniDetail: BaseAlumniModel
     {
         
-        public int Id { get; set; }
         public string Email { get; set; }
         public string Phone { get; set; }
-        public string FullName { get; set; }
         public string Address { get; set; }
         public string Uid { get; set; }
         public DateTime DoB { get; set; }

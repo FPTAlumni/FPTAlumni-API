@@ -6,6 +6,7 @@ using UniAlumni.Business.Services.CategoryService;
 using UniAlumni.Business.Services.CompanyService;
 using UniAlumni.Business.Services.GroupSrv;
 using UniAlumni.Business.Services.MajorSrv;
+using UniAlumni.Business.Services.NewsSrv;
 
 namespace UniAlumni.Business.Services
 {
@@ -26,6 +27,7 @@ namespace UniAlumni.Business.Services
             
             services.AddScoped<ICategorySvc, CategorySvc>();
             services.AddScoped<ICompanySvc, CompanySvc>();
+            services.AddScoped<INewsService, NewsService>();
         }
     }
 }
