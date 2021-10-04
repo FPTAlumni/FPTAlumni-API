@@ -28,6 +28,7 @@ namespace UniAlumni.WebAPI.Controllers
         /// [GUEST] Endpoint For Alumni Account Login
         /// </summary>
         /// <param name="idToken">Authentication Token Get From Firebase Service</param>
+        /// <param name="universityId">Id of University</param>
         /// <returns>Custom Token</returns>
         /// <response code="200">Returns the custom token</response>
         /// <response code="201">Returns the UID if alumni is not exist</response>
@@ -37,7 +38,7 @@ namespace UniAlumni.WebAPI.Controllers
         [HttpPost("login")]
         [ProducesResponseType(typeof(TokenResponse), 200)]
         [ProducesResponseType(typeof(String), StatusCodes.Status201Created)]
-        public async Task<IActionResult> LoginWithIdTokenAsync(string idToken)
+        public async Task<IActionResult> LoginWithIdTokenAsync(string idToken, int universityId)
         {
             if (idToken == null) return BadRequest();
             try
@@ -45,14 +46,15 @@ namespace UniAlumni.WebAPI.Controllers
                 FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance
                     .VerifyIdTokenAsync(idToken);
                 string uid = decodedToken.Uid;
-                string jwtToken = _authenticationService.Authenticate(uid);
+                string jwtToken = await _authenticationService.Authenticate(uid, universityId);
                 if (jwtToken.Length != 0)
                     return Ok(TokenResponse.BuildTokenResponse(jwtToken));
                 else
                     return Ok(uid);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Console.WriteLine(e);
                 return Unauthorized();
             }
         }

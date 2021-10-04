@@ -12,7 +12,9 @@ namespace UniAlumni.DataTier.ViewModels.University
         public string Name { get; set; }
 
     }
-    class UniversityViewModel
+   public class UniversityViewModel : BaseUniversityModel
     {
+        public string Address { get; set; }
+        public string Logo { get; set; }
     }
 }

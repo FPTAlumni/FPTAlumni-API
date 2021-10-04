@@ -20,6 +20,12 @@
     <ItemGroup>
       <Folder Include="Common\" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Services\EventRegistrationService\IEventRegistrationSvc.cs" />
+      <Compile Remove="Services\AlumniGroupService\IAlumniGroupSvc.cs" />
+      <Compile Remove="Services\EventService\IEventSvc.cs" />
+    </ItemGroup>
     
 
 </Project>

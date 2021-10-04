@@ -10,6 +10,7 @@ using UniAlumni.DataTier.Repositories.MajorRepo;
 using UniAlumni.DataTier.Repositories.NewsRepo;
 using UniAlumni.DataTier.Repositories.TagNewsRepo;
 using UniAlumni.DataTier.Repositories.TagRepo;
+using UniAlumni.DataTier.Repositories.UniversityRepo;
 
 namespace UniAlumni.DataTier
 {
@@ -43,6 +44,8 @@ namespace UniAlumni.DataTier
             services.AddScoped<ITagRepository, TagRepository>();
 
             services.AddScoped<ITagNewsRepository, TagNewsRepository>();
+            
+            services.AddScoped<IUniversityRepository, UniversityRepository>();
 
             return services;
         }
