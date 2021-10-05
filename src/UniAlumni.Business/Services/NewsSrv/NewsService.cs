@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
@@ -78,21 +80,65 @@ namespace UniAlumni.Business.Services.NewsSrv
             }
         }
 
-        public List<NewsViewModel> GetNews(PagingParam<NewsEnum.NewsSortCriteria> paginationModel, SearchNewsModel searchNewsModel, int universityId)
+        public ModelsResponse<NewsViewModel> GetNews(PagingParam<NewsEnum.NewsSortCriteria> paginationModel, SearchNewsModel searchNewsModel, int universityId)
         {
-            var queryNews = _newsRepository.Get(p => p.Group.UniversityMajor.UniversityId == universityId);
+            var queryNews = _newsRepository.Get(p => p.Group.UniversityMajor.UniversityId == universityId &&
+                                        p.Status == (byte?)searchNewsModel.Status);
             if (searchNewsModel.GroupId != null)
                 queryNews = queryNews.Where(p => p.GroupId == searchNewsModel.GroupId);
             if (searchNewsModel.CategoryId != null)
                 queryNews = queryNews.Where(p => p.CategoryId == searchNewsModel.CategoryId);
             if (searchNewsModel.TagId != null)
                 queryNews = queryNews.Where(p => p.TagNews.Any(tn => tn.TagId == searchNewsModel.TagId));
-            queryNews = queryNews.Where(p => p.Status == (byte?)searchNewsModel.Status);
+
             var newsViewModels = queryNews.ProjectTo<NewsViewModel>(_mapper);
             newsViewModels = newsViewModels.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
 
-            // Apply Paging
-            return newsViewModels.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
+            var data = newsViewModels.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
+
+            return new ModelsResponse<NewsViewModel>()
+            {
+                Code = StatusCodes.Status200OK,
+                Msg = "",
+                Data = data,
+                Metadata = new PagingMetadata()
+                {
+                    Page = paginationModel.Page,
+                    Size = paginationModel.PageSize,
+                    Total = data.Count
+                }
+            };
+        }
+
+        public ModelsResponse<NewsViewModel> GetNewsByGroupId(PagingParam<NewsEnum.NewsSortCriteria> paginationModel, UserSearchNewsModel searchNewsModel, 
+                                                       int universityId, int groupId)
+        {
+            var queryNews = _newsRepository.Get(p => p.Group.UniversityMajor.UniversityId == universityId &&
+                                        p.GroupId == groupId &&
+                                        p.Status == (byte?) NewsEnum.NewsStatus.Active);
+            
+            if (searchNewsModel.CategoryId != null)
+                queryNews = queryNews.Where(p => p.CategoryId == searchNewsModel.CategoryId);
+            if (searchNewsModel.TagId != null)
+                queryNews = queryNews.Where(p => p.TagNews.Any(tn => tn.TagId == searchNewsModel.TagId));
+
+            var newsViewModels = queryNews.ProjectTo<NewsViewModel>(_mapper);
+            newsViewModels = newsViewModels.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
+
+            var data = newsViewModels.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
+
+            return new ModelsResponse<NewsViewModel>()
+            {
+                Code = StatusCodes.Status200OK,
+                Msg = "",
+                Data = data,
+                Metadata = new PagingMetadata()
+                {
+                    Page = paginationModel.Page,
+                    Size = paginationModel.PageSize,
+                    Total = data.Count
+                }
+            };
         }
 
         public async Task<NewsDetailModel> GetNewsById(int id, int universityId)

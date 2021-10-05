@@ -10,8 +10,8 @@ namespace UniAlumni.Business.Services.GroupSrv
     public interface IGroupService
     {
         ModelsResponse<GroupViewModel> GetGroups(PagingParam<GroupEnum.GroupSortCriteria> paginationModel,
-            SearchGroupModel searchGroupModel);
-        Task<GroupViewModel> GetGroupById(int id);
+            SearchGroupModel searchGroupModel, int universityId);
+        Task<GroupViewModel> GetGroupById(int id, int universityId);
         Task<GroupViewModel> CreateGroup(GroupCreateRequest request, int userId, bool isAdmin);
         Task<GroupViewModel> UpdateGroup(int id, GroupUpdateRequest request, int userId, bool isAdmin);
         Task DeleteGroup(int id, int userId, bool isAdmin);

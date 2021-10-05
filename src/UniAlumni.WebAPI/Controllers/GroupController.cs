@@ -26,8 +26,8 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public IActionResult GetGroups([FromQuery] SearchGroupModel searchGroupModel, [FromQuery] PagingParam<GroupEnum.GroupSortCriteria> paginationModel)
         {
-            
-            var groups = _groupService.GetGroups(paginationModel, searchGroupModel);
+            var uniId = int.Parse(User.FindFirst("universityId")?.Value);
+            var groups = _groupService.GetGroups(paginationModel, searchGroupModel, uniId);
             return Ok(groups);
         }
 
@@ -35,8 +35,14 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public async Task<IActionResult> GetGroup(int id)
         {
-            var group = await _groupService.GetGroupById(id);
-            return Ok(group);
+            var uniId = int.Parse(User.FindFirst("universityId")?.Value);
+            var group = await _groupService.GetGroupById(id, uniId);
+            return Ok(new BaseResponse<GroupViewModel>()
+            {
+                Code = StatusCodes.Status200OK,
+                Msg = "",
+                Data = group
+            });
         }
 
         [HttpPost]
@@ -58,7 +64,12 @@ namespace UniAlumni.WebAPI.Controllers
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
             GroupViewModel groupModel = await _groupService.UpdateGroup(id, item, userId, User.IsInRole(RolesConstants.ADMIN));
-            return Ok(groupModel);
+            return Ok(new BaseResponse<GroupViewModel>()
+            {
+                Code = StatusCodes.Status200OK,
+                Msg = "",
+                Data = groupModel
+            });
         }
         [HttpDelete("{id}")]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
@@ -66,7 +77,11 @@ namespace UniAlumni.WebAPI.Controllers
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
             await _groupService.DeleteGroup(id, userId, User.IsInRole(RolesConstants.ADMIN));
-            return NoContent();
+            return Ok(new BaseResponse<GroupViewModel>()
+            {
+                Code = StatusCodes.Status204NoContent,
+                Msg = "",
+            });
         }
     }
 }

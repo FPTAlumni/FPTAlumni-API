@@ -17,8 +17,6 @@ namespace UniAlumni.DataTier.ViewModels.Group
 
         public int? MajorId { get; set; } = null;
 
-        public int? UniversityId { get; set; } = null;
-
         [DefaultValue(GroupEnum.GroupStatus.Active)]
         public GroupEnum.GroupStatus? Status { get; set; } = GroupEnum.GroupStatus.Active;
     }
