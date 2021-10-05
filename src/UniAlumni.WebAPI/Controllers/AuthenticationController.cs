@@ -28,16 +28,17 @@ namespace UniAlumni.WebAPI.Controllers
         /// [GUEST] Endpoint For Alumni Account Login
         /// </summary>
         /// <param name="idToken">Authentication Token Get From Firebase Service</param>
+        /// <param name="universityId">Id of University</param>
         /// <returns>Custom Token</returns>
-        /// <response code="200">Return the custom token</response>
-        /// <response code="203">Return if alumni is not exist</response>
+        /// <response code="200">Returns the custom token</response>
+        /// <response code="201">Returns the UID if alumni is not exist</response>
         /// <response code="400">Return if the idToken is null</response> 
         /// <response code="401">Return if the idToken is invalid</response> 
         [AllowAnonymous]
         [HttpPost("login")]
-        [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(String), StatusCodes.Status204NoContent)]
-        public async Task<IActionResult> LoginWithIdTokenAsync(string idToken)
+        [ProducesResponseType(typeof(TokenResponse), 200)]
+        [ProducesResponseType(typeof(String), StatusCodes.Status201Created)]
+        public async Task<IActionResult> LoginWithIdTokenAsync(string idToken, int universityId)
         {
             if (idToken == null) return BadRequest();
             try
@@ -45,14 +46,15 @@ namespace UniAlumni.WebAPI.Controllers
                 FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance
                     .VerifyIdTokenAsync(idToken);
                 string uid = decodedToken.Uid;
-                string jwtToken = _authenticationService.Authenticate(uid);
+                string jwtToken = await _authenticationService.Authenticate(uid, universityId);
                 if (jwtToken.Length != 0)
                     return Ok(TokenResponse.BuildTokenResponse(jwtToken));
                 else
-                    return NoContent();
+                    return Ok(uid);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Console.WriteLine(e);
                 return Unauthorized();
             }
         }

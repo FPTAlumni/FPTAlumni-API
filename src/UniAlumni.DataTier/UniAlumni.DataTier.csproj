@@ -17,4 +17,11 @@
       <Folder Include="Utility\ErrorHandling" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="Repositories\EventRegistrationRepo\IEventRegistrationRepository.cs" />
+      <Compile Remove="Repositories\AlumniGroupRepo\IAlumniGroupRepository.cs" />
+      <Compile Remove="Repositories\EventRepo\IEventRepository.cs" />
+      <Compile Remove="Common\Enum\EventEnum.cs" />
+    </ItemGroup>
+
 </Project>

@@ -31,7 +31,7 @@ namespace UniAlumni.WebAPI.Controllers
         /// <summary>
         /// [Admin] Endpoint for get all alumni with condition
         /// </summary>
-        /// <param name="searchAlumniModel">An object contains search and filter criteria</param>
+        /// <param name="searchUniversityModel">An object contains search and filter criteria</param>
         /// <param name="paginationModel">An object contains paging criteria</param>
         /// <returns>List of alumni</returns>
         /// <response code="200">Returns the list of alumni</response>
@@ -40,10 +40,10 @@ namespace UniAlumni.WebAPI.Controllers
         [HttpGet]
         [Authorize(Roles = RolesConstants.ADMIN)]
         [ProducesResponseType(typeof(IList<GetAlumniDetail>), StatusCodes.Status200OK)]
-        public IActionResult GetAllAlumnus([FromQuery] SearchAlumniModel searchAlumniModel,
+        public IActionResult GetAllAlumnus([FromQuery] SearchAlumniModel searchUniversityModel,
             [FromQuery] PagingParam<AlumniEnum.AlumniSortCriteria> paginationModel)
         {
-            IList<GetAlumniDetail> result = _alumniSvc.GetAlumniPage(paginationModel, searchAlumniModel);
+            IList<GetAlumniDetail> result = _alumniSvc.GetAlumniPage(paginationModel, searchUniversityModel);
 
             if (result == null || !result.Any())
             {
@@ -78,7 +78,7 @@ namespace UniAlumni.WebAPI.Controllers
         }
 
         /// <summary>
-        /// [Alumni] Endpoint for create pending alumni
+        /// [Guest] Endpoint for create pending alumni
         /// </summary>
         /// <param name="requestBody">An obj contains input info of an Alumni.</param>
         /// <returns>A Alumni within status 201 or error status.</returns>
@@ -86,7 +86,7 @@ namespace UniAlumni.WebAPI.Controllers
         /// <response code="204">Returns if the alumni is not exist</response>
         /// <response code="403">Return if token is access denied</response>
         [HttpPost]
-        [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(GetAlumniDetail), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateAlumni([FromBody] CreateAlumniRequestBody requestBody)
         {
