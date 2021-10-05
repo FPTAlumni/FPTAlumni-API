@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UniAlumni.Business.Services.MajorSrv;
+using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
@@ -27,17 +29,26 @@ namespace UniAlumni.WebAPI.Controllers
         }
         
         [HttpGet]
+        [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public IActionResult GetMajors([FromQuery] SearchMajorModel searchMajorModel, [FromQuery] PagingParam<MajorEnum.MajorSortCriteria> paginationModel)
         {
-            var majors = _majorService.GetMajors(paginationModel, searchMajorModel);
+            var uniId = int.Parse(User.FindFirst("universityId")?.Value);
+            var majors = _majorService.GetMajors(paginationModel, searchMajorModel, uniId);
             return Ok(majors);
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public async Task<IActionResult> GetMajor(int id)
         {
-            var major = await _majorService.GetMajorById(id);
-            return Ok(major);
+            var uniId = int.Parse(User.FindFirst("universityId")?.Value);
+            var major = await _majorService.GetMajorById(id, uniId);
+            return Ok(new BaseResponse<MajorViewModel>()
+            {
+                Code = StatusCodes.Status200OK,
+                Msg = "",
+                Data = major
+            });
         }
 
         [HttpPost]

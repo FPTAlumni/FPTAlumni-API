@@ -13,8 +13,6 @@ namespace UniAlumni.DataTier.ViewModels.Major
         [DefaultValue("")]
         public string Name { get; set; } = "";
 
-        public int? UniversityId { get; set; } = null;
-
         [DefaultValue(MajorEnum.MajorStatus.Active)]
         public MajorEnum.MajorStatus? Status { get; set; } = MajorEnum.MajorStatus.Active;
     }

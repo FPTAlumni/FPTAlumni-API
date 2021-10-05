@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
@@ -47,15 +49,17 @@ namespace UniAlumni.Business.Services.MajorSrv
             }
         }
 
-        public async Task<MajorViewModel> GetMajorById(int id)
+        public async Task<MajorViewModel> GetMajorById(int id, int universityId)
         {
-            var majorModel = await _repository.Get(p => p.Id == id).ProjectTo<MajorViewModel>(_mapper).FirstOrDefaultAsync();
+            var majorModel = await _repository.Get(m => m.Id == id && m.UniversityMajors.Any(um => um.UniversityId == universityId)).ProjectTo<MajorViewModel>(_mapper).FirstOrDefaultAsync();
             return majorModel;
         }
 
-        public List<MajorViewModel> GetMajors(PagingParam<MajorEnum.MajorSortCriteria> paginationModel, SearchMajorModel searchMajorModel)
+        public ModelsResponse<MajorViewModel> GetMajors(PagingParam<MajorEnum.MajorSortCriteria> paginationModel, SearchMajorModel searchMajorModel, int universityId)
         {
-            var queryMajors = _repository.GetAll();
+            var queryMajors = _repository.Get(m => m.UniversityMajors.Any(um => um.UniversityId == universityId) &&
+                                        m.Status == (byte?)searchMajorModel.Status);
+
             if (searchMajorModel.Name.Length > 0)
             {
                 queryMajors = queryMajors.Where(m => m.ShortName.IndexOf(searchMajorModel.Name, StringComparison.OrdinalIgnoreCase) >= 0 ||
@@ -63,16 +67,23 @@ namespace UniAlumni.Business.Services.MajorSrv
                 m.VietnameseName.IndexOf(searchMajorModel.Name, StringComparison.OrdinalIgnoreCase) >= 0);
             }
 
-            if (searchMajorModel.UniversityId != null)
-                queryMajors = queryMajors.Where(m => m.UniversityMajors.Any(um => um.UniversityId == searchMajorModel.UniversityId));
-
-            queryMajors = queryMajors.Where(m => m.Status == (byte?)searchMajorModel.Status);
-
             var majorViewModels = queryMajors.ProjectTo<MajorViewModel>(_mapper);
             majorViewModels = majorViewModels.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
 
             // Apply Paging
-            return majorViewModels.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
+            var data = majorViewModels.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
+            return new ModelsResponse<MajorViewModel>()
+            {
+                Code = StatusCodes.Status200OK,
+                Msg = "",
+                Data = data,
+                Metadata = new PagingMetadata()
+                {
+                    Page = paginationModel.Page,
+                    Size = paginationModel.PageSize,
+                    Total = data.Count
+                }
+            };
         }
 
         public async Task<MajorViewModel> UpdateMajor(int id, MajorUpdateRequest request)
