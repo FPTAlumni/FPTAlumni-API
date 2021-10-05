@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
@@ -16,11 +17,26 @@ namespace UniAlumni.WebAPI.Configurations
         
         public static IServiceCollection RegisterSwaggerModule(this IServiceCollection services)
         {
+ 
+            services.AddApiVersioning(x =>
+            {
+                x.DefaultApiVersion = new ApiVersion(1, 0);
+                x.AssumeDefaultVersionWhenUnspecified = true;
+                x.ReportApiVersions = true;
+            });
+            services.AddVersionedApiExplorer(setup =>
+            {
+                setup.GroupNameFormat = "'v'VVV";
+                setup.SubstituteApiVersionInUrl = true;
+            });
+            
             
             services.AddSwaggerGen(c =>
             {
                 // Set Description Swagger
-                c.SwaggerDoc("v1", new OpenApiInfo {Title = "UniAlumni.WebAPI", 
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "UniAlumni.WebAPI",
                     Version = "v1",
                     Description = "Alumni API Endpoints",
                     Contact = new OpenApiContact()
@@ -34,9 +50,9 @@ namespace UniAlumni.WebAPI.Configurations
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
-                
+
                 // c.SchemaFilter<EnumSchemaFilter>();
-                
+
                 // Set Authorize box to swagger
                 var jwtSecuriyScheme = new OpenApiSecurityScheme
                 {
@@ -52,7 +68,7 @@ namespace UniAlumni.WebAPI.Configurations
                         Type = ReferenceType.SecurityScheme
                     }
                 };
-                
+
                 c.AddSecurityDefinition(jwtSecuriyScheme.Reference.Id, jwtSecuriyScheme);
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
@@ -67,10 +83,13 @@ namespace UniAlumni.WebAPI.Configurations
 
         public static IApplicationBuilder UseApplicationSwagger(this IApplicationBuilder app)
         {
-            app.UseSwagger();
+            app.UseSwagger(c =>
+            {
+                c.RouteTemplate = "{documentName}/api-docs";
+            });
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "UniAlumni.WebAPI v1");
+                c.SwaggerEndpoint("/v1/api-docs", "UniAlumni.WebAPI v1");
                 c.RoutePrefix = string.Empty;
             });
 

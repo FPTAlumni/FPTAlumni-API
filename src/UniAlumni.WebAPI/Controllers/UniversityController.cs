@@ -61,7 +61,7 @@ namespace UniAlumni.WebAPI.Controllers
         [HttpGet("{id}")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(UniversityViewModel), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAlumniProfile(int id)
+        public async Task<IActionResult> GetUniversityById(int id)
         {
             UniversityViewModel result = await _universitySvc.GetUniversityById(id);
 

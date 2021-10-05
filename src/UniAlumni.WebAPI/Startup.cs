@@ -37,12 +37,6 @@ namespace UniAlumni.WebAPI
             {
                 o.SerializerSettings.Converters.Add(new StringEnumConverter());
             });
-            services.AddApiVersioning(x =>
-            {
-                x.DefaultApiVersion = new ApiVersion(1, 0);
-                x.AssumeDefaultVersionWhenUnspecified = true;
-                x.ReportApiVersions = true;
-            });
 
             // register (DI) Core Modules
             services.RegisterDataTierModule();

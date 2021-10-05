@@ -38,6 +38,7 @@ namespace UniAlumni.WebAPI.Controllers
         /// <response code="204">Returns if list of alumni is empty</response>
         /// <response code="403">Return if token is access denied</response>
         [HttpGet]
+        [MapToApiVersion("1.0")]
         [Authorize(Roles = RolesConstants.ADMIN)]
         [ProducesResponseType(typeof(IList<GetAlumniDetail>), StatusCodes.Status200OK)]
         public IActionResult GetAllAlumnus([FromQuery] SearchAlumniModel searchUniversityModel,
