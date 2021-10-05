@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.ViewModels.Group;
@@ -8,7 +9,7 @@ namespace UniAlumni.Business.Services.GroupSrv
 {
     public interface IGroupService
     {
-        List<GroupViewModel> GetGroups(PagingParam<GroupEnum.GroupSortCriteria> paginationModel,
+        ModelsResponse<GroupViewModel> GetGroups(PagingParam<GroupEnum.GroupSortCriteria> paginationModel,
             SearchGroupModel searchGroupModel);
         Task<GroupViewModel> GetGroupById(int id);
         Task<GroupViewModel> CreateGroup(GroupCreateRequest request, int userId, bool isAdmin);

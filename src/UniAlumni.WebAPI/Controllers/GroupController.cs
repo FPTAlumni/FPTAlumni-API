@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using UniAlumni.Business.Services.GroupSrv;
+using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Object;
@@ -43,7 +45,12 @@ namespace UniAlumni.WebAPI.Controllers
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
             GroupViewModel groupModel = await _groupService.CreateGroup(item, userId, User.IsInRole(RolesConstants.ADMIN));
-            return Created(string.Empty, groupModel);
+            return Ok(new BaseResponse<GroupViewModel>()
+            {
+                Code = StatusCodes.Status201Created,
+                Msg = "",
+                Data = groupModel
+            });
         }
         [HttpPut("{id}")]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
