@@ -42,7 +42,6 @@ namespace UniAlumni.DataTier.Models
         public int? CompanyId { get; set; }
         public int? GroupOriginId { get; set; }
         public int? Type { get; set; }
-        public int? MajorId { get; set; }
 
         [ForeignKey(nameof(AlumniId))]
         [InverseProperty(nameof(Alumnus.Recruitments))]
@@ -56,8 +55,5 @@ namespace UniAlumni.DataTier.Models
         [ForeignKey(nameof(GroupOriginId))]
         [InverseProperty("RecruitmentGroupOrigins")]
         public virtual Group GroupOrigin { get; set; }
-        [ForeignKey(nameof(MajorId))]
-        [InverseProperty("Recruitments")]
-        public virtual Major Major { get; set; }
     }
 }

@@ -9,6 +9,7 @@ namespace UniAlumni.DataTier.ViewModels.Group
 {
     public class GroupUpdateRequest
     {
+        public int Id { get; set; }
         [Required]
         [StringLength(100)]
         public string GroupName { get; set; }

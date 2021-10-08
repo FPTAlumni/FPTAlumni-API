@@ -148,9 +148,9 @@ namespace UniAlumni.Business.Services.NewsSrv
             return newsDetail;
         }
 
-        public async Task<NewsDetailModel> UpdateNews(int id, NewsUpdateRequest request, int userId, bool isAdmin)
+        public async Task<NewsDetailModel> UpdateNews(NewsUpdateRequest request, int userId, bool isAdmin)
         {
-            var news = await _newsRepository.Get(n => n.Id == id)
+            var news = await _newsRepository.Get(n => n.Id == request.Id)
                 .Include(n => n.TagNews)
                 .ThenInclude(tn => tn.Tag)
                 .FirstOrDefaultAsync();
@@ -158,7 +158,7 @@ namespace UniAlumni.Business.Services.NewsSrv
             news = mapper.Map(request, news);
             news.UpdatedDate = DateTime.Now;
             var tagNames = request.TagNames.Distinct();
-            var newsTagNews = _tagNewsRepository.Get(p => p.NewsId == id);
+            var newsTagNews = _tagNewsRepository.Get(p => p.NewsId == request.Id);
             var removingTagNews = newsTagNews.Where(tn => tagNames.All(r => r != tn.Tag.Tagname));
             _tagNewsRepository.TagNews.RemoveRange(removingTagNews);
 

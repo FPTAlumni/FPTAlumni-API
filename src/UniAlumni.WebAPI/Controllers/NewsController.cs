@@ -82,7 +82,7 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public async Task<IActionResult> UpdateNews(int id, [FromBody] NewsUpdateRequest item)
         {
-            var newsDetail = await _newsService.UpdateNews(id, item, 1, true);
+            var newsDetail = await _newsService.UpdateNews(item, 1, true);
             return Ok(new BaseResponse<NewsDetailModel>()
             {
                 Code = StatusCodes.Status200OK,

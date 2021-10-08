@@ -114,9 +114,9 @@ namespace UniAlumni.Business.Services.GroupSrv
             return groupModel;
         }
  
-        public async Task<GroupViewModel> UpdateGroup(int id, GroupUpdateRequest request, int userId, bool isAdmin)
+        public async Task<GroupViewModel> UpdateGroup(GroupUpdateRequest request, int userId, bool isAdmin)
         {
-            var group = await _repository.GetFirstOrDefaultAsync(p => p.Id == id);
+            var group = await _repository.GetFirstOrDefaultAsync(p => p.Id == request.Id);
             if (group != null)
             {
                 if (userId == group.GroupLeaderId || isAdmin)
@@ -126,7 +126,7 @@ namespace UniAlumni.Business.Services.GroupSrv
                     group.UpdatedDate = DateTime.Now;
                     _repository.Update(group);
                     await _repository.SaveChangesAsync();
-                    return await _repository.Get(g => g.Id == id).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
+                    return await _repository.Get(g => g.Id == request.Id).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
                 }
             }
             return null;

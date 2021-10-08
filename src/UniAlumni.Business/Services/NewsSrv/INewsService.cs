@@ -18,7 +18,7 @@ namespace UniAlumni.Business.Services.NewsSrv
                                                        int universityId, int groupId);
         Task<NewsDetailModel> GetNewsById(int id, int universityId);
         Task<NewsDetailModel> CreateNews(NewsCreateRequest request, int userId, bool isAdmin);
-        Task<NewsDetailModel> UpdateNews(int id, NewsUpdateRequest request, int userId, bool isAdmin);
+        Task<NewsDetailModel> UpdateNews(NewsUpdateRequest request, int userId, bool isAdmin);
         Task DeleteNews(int id, int userId, bool isAdmin);
     }
 }

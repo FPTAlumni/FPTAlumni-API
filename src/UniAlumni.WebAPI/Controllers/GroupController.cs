@@ -63,7 +63,7 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> UpdateGroup(int id, [FromBody] GroupUpdateRequest item)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            GroupViewModel groupModel = await _groupService.UpdateGroup(id, item, userId, User.IsInRole(RolesConstants.ADMIN));
+            GroupViewModel groupModel = await _groupService.UpdateGroup(item, userId, User.IsInRole(RolesConstants.ADMIN));
             return Ok(new BaseResponse<GroupViewModel>()
             {
                 Code = StatusCodes.Status200OK,

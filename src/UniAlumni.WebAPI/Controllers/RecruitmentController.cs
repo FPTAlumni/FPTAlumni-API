@@ -66,7 +66,7 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> UpdateGroup(int id, [FromBody] RecruitmentUpdateRequest item)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            RecruitmentViewModel recruitmentModel = await _recruitmetService.UpdateRecruitment(id, item, userId, User.IsInRole(RolesConstants.ADMIN));
+            RecruitmentViewModel recruitmentModel = await _recruitmetService.UpdateRecruitment(item, userId, User.IsInRole(RolesConstants.ADMIN));
             return Ok(new BaseResponse<RecruitmentViewModel>()
             {
                 Code = StatusCodes.Status200OK,

@@ -62,7 +62,7 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN)]
         public async Task<IActionResult> UpdateMajor(int id, [FromBody] MajorUpdateRequest item)
         {
-            MajorViewModel majorModel = await _majorService.UpdateMajor(id, item);
+            MajorViewModel majorModel = await _majorService.UpdateMajor(item);
             return Ok(majorModel);
         }
         [HttpDelete("{id}")]

@@ -86,9 +86,9 @@ namespace UniAlumni.Business.Services.MajorSrv
             };
         }
 
-        public async Task<MajorViewModel> UpdateMajor(int id, MajorUpdateRequest request)
+        public async Task<MajorViewModel> UpdateMajor(MajorUpdateRequest request)
         {
-            var major = await _repository.GetFirstOrDefaultAsync(p => p.Id == id);
+            var major = await _repository.GetFirstOrDefaultAsync(p => p.Id == request.Id);
             if (major != null)
             {
                     var mapper = _mapper.CreateMapper();

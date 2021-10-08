@@ -8,6 +8,7 @@ namespace UniAlumni.DataTier.ViewModels.Recruitment
 {
     public class RecruitmentUpdateRequest: RecruitmentCreateRequest
     {
+        public int Id { get; set; }
         public int? Status { get; set; }
     }
 }

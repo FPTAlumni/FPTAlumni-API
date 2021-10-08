@@ -14,8 +14,11 @@ namespace UniAlumni.DataTier.AutoMapperModule
     {
         public static void ConfigRecruitmentModule(this IMapperConfigurationExpression mc)
         {
-            mc.CreateMap<Recruitment, RecruitmentViewModel>().ForMember(des => des.Type, opt => opt.MapFrom(
-                src => ((RecruitmentEnum.RecruitmentType)src.Type).ToString()));
+            mc.CreateMap<Recruitment, RecruitmentViewModel>()
+                .ForMember(des => des.Type, opt => opt.MapFrom(
+                    src => ((RecruitmentEnum.RecruitmentType)src.Type).ToString()))
+                .ForMember(des => des.Major, opt => opt.MapFrom(
+                    src => src.Group.UniversityMajor.Major));
             mc.CreateMap<RecruitmentCreateRequest, Recruitment>();
             mc.CreateMap<RecruitmentUpdateRequest, Recruitment>();
         }

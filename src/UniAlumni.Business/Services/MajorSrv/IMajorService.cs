@@ -16,7 +16,7 @@ namespace UniAlumni.Business.Services.MajorSrv
             SearchMajorModel searchMajorModel, int universityId);
         Task<MajorViewModel> GetMajorById(int id, int universityId);
         Task<MajorViewModel> CreateMajor(MajorCreateRequest request);
-        Task<MajorViewModel> UpdateMajor(int id, MajorUpdateRequest request);
+        Task<MajorViewModel> UpdateMajor(MajorUpdateRequest request);
         Task DeleteMajor(int id);
     }
 }

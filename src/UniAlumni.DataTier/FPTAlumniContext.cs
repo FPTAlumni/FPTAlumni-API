@@ -16,11 +16,6 @@ namespace UniAlumni.DataTier.Models
             _configuration = configuration;
         }
 
-        public FPTAlumniContext(DbContextOptions<FPTAlumniContext> options)
-            : base(options)
-        {
-        }
-
         public virtual DbSet<AlumniGroup> AlumniGroups { get; set; }
         public virtual DbSet<Alumnus> Alumni { get; set; }
         public virtual DbSet<Category> Categories { get; set; }
@@ -221,11 +216,6 @@ namespace UniAlumni.DataTier.Models
                     .WithMany(p => p.RecruitmentGroupOrigins)
                     .HasForeignKey(d => d.GroupOriginId)
                     .HasConstraintName("FK__Recruitme__Group__619B8048");
-
-                entity.HasOne(d => d.Major)
-                    .WithMany(p => p.Recruitments)
-                    .HasForeignKey(d => d.MajorId)
-                    .HasConstraintName("FK_Recruitment_Major");
             });
 
             modelBuilder.Entity<Referral>(entity =>

@@ -90,7 +90,7 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
                                     r.Status == (byte?)searchRecruitmentModel.Status &&
                                     r.Type == (byte?)searchRecruitmentModel.Type);
             if (searchRecruitmentModel.MajorId != null)
-                queryRecruitments = queryRecruitments.Where(r => r.MajorId == searchRecruitmentModel.MajorId);
+                queryRecruitments = queryRecruitments.Where(r => r.Group.UniversityMajor.MajorId == searchRecruitmentModel.MajorId);
             if (searchRecruitmentModel.CompanyId != null)
                 queryRecruitments = queryRecruitments.Where(r => r.CompanyId == searchRecruitmentModel.CompanyId);
             if (searchRecruitmentModel.GroupId != null)
@@ -114,9 +114,9 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
             };
         }
 
-        public async Task<RecruitmentViewModel> UpdateRecruitment(int id, RecruitmentUpdateRequest request, int userId, bool isAdmin)
+        public async Task<RecruitmentViewModel> UpdateRecruitment(RecruitmentUpdateRequest request, int userId, bool isAdmin)
         {
-            var recruitment = await _repository.GetFirstOrDefaultAsync(r => r.Id == id);
+            var recruitment = await _repository.GetFirstOrDefaultAsync(r => r.Id == request.Id);
             var mapper = _mapper.CreateMapper();
             if (recruitment != null)
             {

@@ -32,6 +32,5 @@ namespace UniAlumni.DataTier.ViewModels.Recruitment
         public int? CompanyId { get; set; }
         public int? GroupOriginId { get; set; }
         public int? Type { get; set; }
-        public int? MajorId { get; set; }
     }
 }

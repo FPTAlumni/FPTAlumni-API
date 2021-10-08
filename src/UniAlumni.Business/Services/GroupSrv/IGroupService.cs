@@ -13,7 +13,7 @@ namespace UniAlumni.Business.Services.GroupSrv
             SearchGroupModel searchGroupModel, int universityId);
         Task<GroupViewModel> GetGroupById(int id, int universityId);
         Task<GroupViewModel> CreateGroup(GroupCreateRequest request, int userId, bool isAdmin);
-        Task<GroupViewModel> UpdateGroup(int id, GroupUpdateRequest request, int userId, bool isAdmin);
+        Task<GroupViewModel> UpdateGroup(GroupUpdateRequest request, int userId, bool isAdmin);
         Task DeleteGroup(int id, int userId, bool isAdmin);
     }
 }
