@@ -13,6 +13,8 @@ namespace UniAlumni.DataTier.ViewModels.Group
         [DefaultValue("")]
         public string GroupName { get; set; } = "";
 
+        public int? AlumniId { get; set; } = null;
+
         public int? ParentGroupId { get; set; } = null;
 
         public int? MajorId { get; set; } = null;

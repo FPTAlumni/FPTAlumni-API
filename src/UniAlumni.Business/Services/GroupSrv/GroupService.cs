@@ -10,6 +10,7 @@ using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
+using UniAlumni.DataTier.Repositories.AlumniGroupRepo;
 using UniAlumni.DataTier.Repositories.GroupRepo;
 using UniAlumni.DataTier.Utility.Paging;
 using UniAlumni.DataTier.ViewModels.Group;
@@ -20,6 +21,7 @@ namespace UniAlumni.Business.Services.GroupSrv
     {
         private readonly IGroupRepository _repository;
         private readonly IConfigurationProvider _mapper;
+        private readonly IAlumniGroupRepository _alumniGroupRepository;
 
         public GroupService(IGroupRepository repository, IMapper mapper)
         {
@@ -30,20 +32,24 @@ namespace UniAlumni.Business.Services.GroupSrv
         {
             var mapper = _mapper.CreateMapper();
             var group = mapper.Map<Group>(request);
-            if (isAdmin)
+            if (group.ParentGroupId == null)
             {
-                group.Status = (int)GroupEnum.GroupStatus.Active;
-                 _repository.Insert(group);
-                await _repository.SaveChangesAsync();
-                return await _repository.Get(g => g.Id == group.Id).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
+                if (isAdmin)
+                {
+                    group.Status = (int)GroupEnum.GroupStatus.Active;
+                    _repository.Insert(group);
+                    await _repository.SaveChangesAsync();
+                    return await _repository.Get(g => g.Id == group.Id).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
+                }
             }
-            else if (group.ParentGroupId != null)
+            else 
             {
                 var parrentGroup = _repository.GetById(group.ParentGroupId);
-                if (parrentGroup != null)
-                    if (userId == parrentGroup.GroupLeaderId)
+                if (parrentGroup != null && parrentGroup.ParentGroupId == null)
+                    if (userId == parrentGroup.GroupLeaderId || isAdmin)
                     {
                         group.Status = (int)GroupEnum.GroupStatus.Active;
+                        group.UniversityMajorId = parrentGroup.UniversityMajorId;
                         _repository.Insert(group);
                         await _repository.SaveChangesAsync();
                         return await _repository.Get(g => g.Id == group.Id).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
@@ -72,6 +78,8 @@ namespace UniAlumni.Business.Services.GroupSrv
         {
             var queryGroups = _repository.Get(g => g.UniversityMajor.UniversityId == universityId &&
                                     g.Status == (byte?)searchGroupModel.Status);
+            if (searchGroupModel.AlumniId != null)
+                queryGroups = queryGroups.Where(g => g.AlumniGroups.Any(ag => ag.AlumniId == searchGroupModel.AlumniId));
             if (searchGroupModel.GroupName.Length > 0)             
                 queryGroups = queryGroups.Where(group => group.GroupName.IndexOf(searchGroupModel.GroupName, StringComparison.OrdinalIgnoreCase) >= 0);            
             if (searchGroupModel.MajorId != null)

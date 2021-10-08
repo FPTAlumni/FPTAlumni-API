@@ -13,6 +13,7 @@ namespace UniAlumni.DataTier.Models
     {
         public Major()
         {
+            Recruitments = new HashSet<Recruitment>();
             UniversityMajors = new HashSet<UniversityMajor>();
             Vouchers = new HashSet<Voucher>();
         }
@@ -34,6 +35,8 @@ namespace UniAlumni.DataTier.Models
         public DateTime? UpdatedDate { get; set; }
         public byte? Status { get; set; }
 
+        [InverseProperty(nameof(Recruitment.Major))]
+        public virtual ICollection<Recruitment> Recruitments { get; set; }
         [InverseProperty(nameof(UniversityMajor.Major))]
         public virtual ICollection<UniversityMajor> UniversityMajors { get; set; }
         [InverseProperty(nameof(Voucher.Major))]

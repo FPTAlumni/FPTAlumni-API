@@ -44,6 +44,7 @@ namespace UniAlumni.DataTier.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
                 optionsBuilder.UseSqlServer(_configuration.GetConnectionString("UniAlumni"));
             }
         }
@@ -54,7 +55,7 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<AlumniGroup>(entity =>
             {
-                entity.HasKey(e => new {e.AlumniId, e.GroupId})
+                entity.HasKey(e => new { e.AlumniId, e.GroupId })
                     .HasName("PK__AlumniGr__227F8B5CCBD17A38");
 
                 entity.Property(e => e.RegisteredDate).HasDefaultValueSql("(getdate())");
@@ -99,9 +100,15 @@ namespace UniAlumni.DataTier.Models
                     .HasConstraintName("FK_Alumni_UniversityMajor");
             });
 
-            modelBuilder.Entity<Category>(entity => { entity.Property(e => e.Description).IsUnicode(false); });
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.Property(e => e.Description).IsUnicode(false);
+            });
 
-            modelBuilder.Entity<Company>(entity => { entity.Property(e => e.CompanyName).IsUnicode(false); });
+            modelBuilder.Entity<Company>(entity =>
+            {
+                entity.Property(e => e.CompanyName).IsUnicode(false);
+            });
 
             modelBuilder.Entity<Event>(entity =>
             {
@@ -115,7 +122,7 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<EventRegistration>(entity =>
             {
-                entity.HasKey(e => new {e.AlumniId, e.EventId})
+                entity.HasKey(e => new { e.AlumniId, e.EventId })
                     .HasName("PK__EventReg__84A268EBD1435ABC");
 
                 entity.Property(e => e.RegisteredDate).HasDefaultValueSql("(getdate())");
@@ -214,6 +221,11 @@ namespace UniAlumni.DataTier.Models
                     .WithMany(p => p.RecruitmentGroupOrigins)
                     .HasForeignKey(d => d.GroupOriginId)
                     .HasConstraintName("FK__Recruitme__Group__619B8048");
+
+                entity.HasOne(d => d.Major)
+                    .WithMany(p => p.Recruitments)
+                    .HasForeignKey(d => d.MajorId)
+                    .HasConstraintName("FK_Recruitment_Major");
             });
 
             modelBuilder.Entity<Referral>(entity =>
@@ -237,7 +249,7 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<TagNews>(entity =>
             {
-                entity.HasKey(e => new {e.NewsId, e.TagId})
+                entity.HasKey(e => new { e.NewsId, e.TagId })
                     .HasName("PK__TagNews__431972694EF07ADF");
 
                 entity.HasOne(d => d.News)
@@ -253,7 +265,10 @@ namespace UniAlumni.DataTier.Models
                     .HasConstraintName("FK__TagNews__TagId__6E01572D");
             });
 
-            modelBuilder.Entity<University>(entity => { entity.Property(e => e.Logo).IsUnicode(false); });
+            modelBuilder.Entity<University>(entity =>
+            {
+                entity.Property(e => e.Logo).IsUnicode(false);
+            });
 
             modelBuilder.Entity<UniversityMajor>(entity =>
             {
