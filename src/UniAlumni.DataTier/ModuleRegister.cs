@@ -2,10 +2,15 @@
 using Microsoft.Extensions.DependencyInjection;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories;
+using UniAlumni.DataTier.Repositories.AlumniGroupRepo;
 using UniAlumni.DataTier.Repositories.AlumniRepo;
 using UniAlumni.DataTier.Repositories.CategoryRepo;
+using UniAlumni.DataTier.Repositories.ClassRepo;
 using UniAlumni.DataTier.Repositories.CompanyRepo;
+using UniAlumni.DataTier.Repositories.EventRegistrationRepo;
+using UniAlumni.DataTier.Repositories.EventRepo;
 using UniAlumni.DataTier.Repositories.GroupRepo;
+using UniAlumni.DataTier.Repositories.Interface;
 using UniAlumni.DataTier.Repositories.MajorRepo;
 using UniAlumni.DataTier.Repositories.NewsRepo;
 using UniAlumni.DataTier.Repositories.TagNewsRepo;
@@ -46,6 +51,14 @@ namespace UniAlumni.DataTier
             services.AddScoped<ITagNewsRepository, TagNewsRepository>();
             
             services.AddScoped<IUniversityRepository, UniversityRepository>();
+
+            services.AddScoped<IClassRepository, ClassRepository>();
+
+            services.AddScoped<IEventRepository, EventRepository>();
+
+            services.AddScoped<IAlumniGroupRepository, AlumniGroupRepository>();
+
+            services.AddScoped<IEventRegistrationRepository, EventRegistrationRepository>();
 
             return services;
         }
