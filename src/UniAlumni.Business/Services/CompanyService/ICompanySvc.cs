@@ -30,7 +30,7 @@ namespace UniAlumni.Business.Services.CompanyService
         /// <param name="requestBody">Model create Company request of Company.</param>
         /// <returns>A Company detail.</returns>>
         public Task<GetCompanyDetail> CreateCompanyAsync(CreateCompanyRequestBody requestBody);
-        
+
         /// <summary>
         /// Update Company.
         /// </summary>
@@ -44,5 +44,11 @@ namespace UniAlumni.Business.Services.CompanyService
         /// <param name="id">ID of Company</param>
         /// <returns></returns>
         public Task DeleteCompanyAsync(int id);
+        
+        /// <summary>
+        /// Get total of Company
+        /// </summary>
+        /// <returns>Total of Company</returns>
+        public Task<int> GetTotal();
     }
 }

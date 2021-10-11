@@ -6,7 +6,7 @@ namespace UniAlumni.DataTier.ViewModels.Alumni
     public class ActivateAlumniRequestBody
     {
         [Required]
-        public string Uid { get; set; }
+        public int Id { get; set; }
         
         public AlumniEnum.AlumniStatus Status { get; set; }
     }

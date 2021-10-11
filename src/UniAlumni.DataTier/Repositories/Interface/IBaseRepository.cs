@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace UniAlumni.DataTier.Repositories
+namespace UniAlumni.DataTier.Repositories.Interface
 {
     /// <summary>
     /// Interface for Generic repository.

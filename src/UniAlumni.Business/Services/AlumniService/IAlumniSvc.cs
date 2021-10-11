@@ -33,7 +33,7 @@ namespace UniAlumni.Business.Services.AlumniService
         /// <param name="requestBody">Model create alumni request of Alumni.</param>
         /// <returns>A Alumni Detail.</returns>>
         public Task<GetAlumniDetail> CreateAlumniAsync(CreateAlumniRequestBody requestBody);
-        
+
         /// <summary>
         /// Update Alumni.
         /// </summary>
@@ -56,5 +56,11 @@ namespace UniAlumni.Business.Services.AlumniService
         /// <param name="id">ID of Alumni</param>
         /// <returns></returns>
         public Task DeleteAlumniAsync(int id);
+
+        /// <summary>
+        /// Get total of Alumni
+        /// </summary>
+        /// <returns>Total of Alumni</returns>
+        public Task<int> GetTotal();
     }
 }

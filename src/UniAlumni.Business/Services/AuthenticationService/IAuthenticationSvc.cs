@@ -1,5 +1,6 @@
-﻿using System;
+﻿
 using System.Threading.Tasks;
+using UniAlumni.DataTier.ViewModels.Token;
 
 namespace UniAlumni.Business.Services.AuthenticationService
 {
@@ -8,7 +9,6 @@ namespace UniAlumni.Business.Services.AuthenticationService
     /// </summary>
     public interface IAuthenticationSvc
     {
-        Task<String> Authenticate(string accessToken, int universityId
-        );
+        Task<TokenResponse> Authenticate(string accessToken, int universityId);
     }
 }

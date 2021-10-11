@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Microsoft.AspNetCore.Mvc;
 using UniAlumni.DataTier.Common.Enum;
 
 namespace UniAlumni.DataTier.ViewModels.Alumni
@@ -12,13 +13,14 @@ namespace UniAlumni.DataTier.ViewModels.Alumni
         public string Phone { get; set; } = "";
         
         [DefaultValue("")]
+        [FromQuery(Name = "fullname")]
         public string FullName { get; set; } = "";
         
         [DefaultValue("")]
         public string Uid { get; set; } = "";
+
+        [DefaultValue("")] public int? GroupId { get; set; } = null;
         
-       
-        [DefaultValue(AlumniEnum.AlumniStatus.Active)]
-        public AlumniEnum.AlumniStatus? Status { get; set; } =  AlumniEnum.AlumniStatus.Active;
+        public AlumniEnum.AlumniStatus? Status { get; set; } = null;
     }
 }

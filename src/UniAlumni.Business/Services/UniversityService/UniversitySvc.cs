@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
@@ -22,22 +23,30 @@ namespace UniAlumni.Business.Services.UniversityService
             _mapper = mapper;
         }
 
-        public IList<UniversityViewModel> GetAllUniversity(PagingParam<UniversityEnum.UniversitySortCriteria> paginationModel, SearchUniversityModel searchUniversityModel)
+        public IList<UniversityViewModel> GetAllUniversity(
+            PagingParam<UniversityEnum.UniversitySortCriteria> paginationModel,
+            SearchUniversityModel searchUniversityModel)
         {
             IQueryable<University> queryUniversity = _universityRepository.Table;
-            if (searchUniversityModel.Name.Length > 0)
+            if (searchUniversityModel.Name is {Length : > 0})
             {
-                queryUniversity = queryUniversity.Where(university => university.Name.Contains(searchUniversityModel.Name));
+                queryUniversity =
+                    queryUniversity.Where(university => university.Name.Contains(searchUniversityModel.Name));
             }
 
-            IQueryable<UniversityViewModel> queryUniversityDto = _mapper.ProjectTo<UniversityViewModel>(queryUniversity);
             // Apply Sort
-            queryUniversityDto =
-                queryUniversityDto.GetWithSorting(paginationModel.SortKey.ToString(),
-                    paginationModel.SortOrder);
-
+            if (paginationModel.SortKey.ToString().Trim().Length > 0)
+                queryUniversity =
+                    queryUniversity.GetWithSorting(paginationModel.SortKey.ToString(),
+                        paginationModel.SortOrder);
             // Apply Paging
-            return queryUniversityDto.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
+            queryUniversity = queryUniversity.GetWithPaging(paginationModel.Page, paginationModel.PageSize)
+                .AsQueryable();
+            // Mapping
+            IQueryable<UniversityViewModel>
+                queryUniversityDto = _mapper.ProjectTo<UniversityViewModel>(queryUniversity);
+
+            return queryUniversityDto.ToList();
         }
 
         public async Task<UniversityViewModel> GetUniversityById(int id)
@@ -45,6 +54,39 @@ namespace UniAlumni.Business.Services.UniversityService
             University university = await _universityRepository.GetByIdAsync(id);
             UniversityViewModel universityDetail = _mapper.Map<UniversityViewModel>(university);
             return universityDetail;
+        }
+
+        public async Task<UniversityViewModel> CreateUniversityAsync(CreateUniversityRequestBody requestBody)
+        {
+            University university = _mapper.Map<University>(requestBody);
+
+            await _universityRepository.InsertAsync(university);
+            await _universityRepository.SaveChangesAsync();
+
+            UniversityViewModel universityDetail = _mapper.Map<UniversityViewModel>(university);
+            return universityDetail;
+        }
+
+        public async Task<UniversityViewModel> UpdateUniversityAsync(UpdateUniversityRequestBody requestBody)
+        {
+            University university = await _universityRepository.GetFirstOrDefaultAsync(alu => alu.Id == requestBody.Id);
+            university = _mapper.Map(requestBody, university);
+            _universityRepository.Update(university);
+            await _universityRepository.SaveChangesAsync();
+            UniversityViewModel universityDetail = _mapper.Map<UniversityViewModel>(university);
+            return universityDetail;
+        }
+
+        public async Task DeleteUniversityAsync(int id)
+        {
+            University university = await _universityRepository.GetFirstOrDefaultAsync(alu => alu.Id == id);
+            _universityRepository.Delete(university);
+            await _universityRepository.SaveChangesAsync();
+        }
+
+        public async Task<int> GetTotal()
+        {
+            return await _universityRepository.GetAll().CountAsync();
         }
     }
 }

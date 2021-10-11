@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UniAlumni.Business.Services.CompanyService;
+using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Object;
@@ -33,24 +34,35 @@ namespace UniAlumni.WebAPI.Controllers
         /// </summary>
         /// <param name="searchCompanyModel"></param>
         /// <param name="paginationModel">An object contains paging criteria</param>
-        /// <returns>List of Company</returns>
+        /// <returns ref="BaseResponse">List of Company</returns>
         /// <response code="200">Returns the list of Company</response>
         /// <response code="204">Returns if list of Company is empty</response>
         /// <response code="403">Return if token is access denied</response>
         [HttpGet]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        [ProducesResponseType(typeof(IList<GetCompanyDetail>), StatusCodes.Status200OK)]
-        public IActionResult GetAllCompany([FromQuery] SearchCompanyModel searchCompanyModel,
+        [ProducesResponseType(typeof(BaseResponse<GetCompanyDetail>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllCompany([FromQuery] SearchCompanyModel searchCompanyModel,
             [FromQuery] PagingParam<CompanyEnum.CompanySortCriteria> paginationModel)
         {
             IList<GetCompanyDetail> result = _companySvc.GetCompanyPage(paginationModel, searchCompanyModel);
-
+            int total = await _companySvc.GetTotal();
             if (result == null || !result.Any())
             {
                 return NoContent();
             }
 
-            return Ok(result);
+            return Ok(new ModelsResponse<GetCompanyDetail>()
+            {
+                Code = StatusCodes.Status200OK,
+                Data = result.ToList(),
+                 Metadata = new PagingMetadata()
+                 {
+                     Page = paginationModel.Page,
+                     Size = paginationModel.PageSize,
+                     Total = total
+                 },
+                 Msg = ""
+            });
         }
 
 
@@ -87,12 +99,17 @@ namespace UniAlumni.WebAPI.Controllers
         /// <response code="403">Return if token is access denied</response>
         [HttpPost]
         [Authorize(Roles = RolesConstants.ADMIN)]
-        [ProducesResponseType(typeof(GetCompanyDetail), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(BaseResponse<GetCompanyDetail>), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateCompany([FromBody] CreateCompanyRequestBody requestBody)
         {
             var result = await _companySvc.CreateCompanyAsync(requestBody);
 
-            return Created(string.Empty, result);
+            return Created(string.Empty, new BaseResponse<GetCompanyDetail>()
+            {
+                Code = StatusCodes.Status200OK,
+                Data = result,
+                Msg = ""
+            });
         }
 
         /// <summary>

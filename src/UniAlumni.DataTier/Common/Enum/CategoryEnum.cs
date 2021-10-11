@@ -17,6 +17,9 @@
         
         public enum CategorySortCriteria
         {
+            /// <summary>
+            /// Category Attr
+            /// </summary>
             CategoryName
         }
     }

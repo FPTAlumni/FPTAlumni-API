@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using FirebaseAdmin.Auth;
+using Microsoft.EntityFrameworkCore;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
+using UniAlumni.DataTier.Repositories.AlumniGroupRepo;
 using UniAlumni.DataTier.Repositories.AlumniRepo;
 using UniAlumni.DataTier.Utility.Paging;
 using UniAlumni.DataTier.ViewModels.Alumni;
@@ -15,10 +18,13 @@ namespace UniAlumni.Business.Services.AlumniService
     public class AlumniSrv : IAlumniSvc
     {
         private readonly IAlumniRepository _alumniRepository;
+        private readonly IAlumniGroupRepository _alumniGroupRepository;
         private readonly IMapper _mapper;
 
-        public AlumniSrv(IAlumniRepository alumniRepository, IMapper mapper)
+        public AlumniSrv(IAlumniRepository alumniRepository, IMapper mapper,
+            IAlumniGroupRepository alumniGroupRepository)
         {
+            _alumniGroupRepository = alumniGroupRepository;
             _alumniRepository = alumniRepository;
             _mapper = mapper;
         }
@@ -26,33 +32,59 @@ namespace UniAlumni.Business.Services.AlumniService
         public IList<GetAlumniDetail> GetAlumniPage(PagingParam<AlumniEnum.AlumniSortCriteria> paginationModel,
             SearchAlumniModel searchAlumniModel)
         {
-            IQueryable<Alumnus> queryAlumni = _alumniRepository.Table;
-            if (searchAlumniModel.Email.Length > 0 ||
-                searchAlumniModel.Phone.Length > 0 ||
-                searchAlumniModel.FullName.Length > 0 ||
-                searchAlumniModel.Uid.Length > 0)
+            IQueryable<Alumnus> queryAlumni = _alumniRepository.Table.Include(a => a.UniversityMajor)
+                .ThenInclude(um => um.Major)
+                .Include(a => a.Company)
+                .Include(a => a.Class);
+            if (searchAlumniModel.Email is {Length: > 0})
+                queryAlumni = queryAlumni.Where(alu => alu.Email.Contains(searchAlumniModel.Email));
+
+            if (searchAlumniModel.Phone is {Length: > 0})
+                queryAlumni = queryAlumni.Where(alu => alu.Phone.Contains(searchAlumniModel.Phone));
+
+            if (searchAlumniModel.FullName is {Length: > 0})
+                queryAlumni = queryAlumni.Where(alu => alu.FullName.Contains(searchAlumniModel.FullName));
+
+            if (searchAlumniModel.Uid is {Length: > 0})
+                queryAlumni = queryAlumni.Where(alu => alu.Uid.Contains(searchAlumniModel.Uid));
+
+            if (searchAlumniModel.Status != null)
+                queryAlumni = queryAlumni.Where(alu => alu.Status == (byte?) searchAlumniModel.Status);
+
+            // Apply GroupId
+            if (searchAlumniModel.GroupId != null)
             {
-                queryAlumni = queryAlumni.Where(alumni => alumni.Email.Contains(searchAlumniModel.Email) &&
-                                                          alumni.Phone.Contains(searchAlumniModel.Phone) &&
-                                                          alumni.FullName.Contains(searchAlumniModel.FullName) &&
-                                                          alumni.Uid.Contains(searchAlumniModel.Uid));
+                IQueryable<AlumniGroup> queryAlumniGroup =
+                    _alumniGroupRepository.Table.Where(ag => ag.GroupId == searchAlumniModel.GroupId &&
+                                                             ag.Status == (byte?) AlumniGroupEnum.AlumniGroupStatus
+                                                                 .Active);
+                List<int> listAlumniIdInGroup = queryAlumniGroup.Select(ag => ag.AlumniId).ToList();
+                if (listAlumniIdInGroup.Count != 0)
+                {
+                    queryAlumni = queryAlumni.Where(alu => listAlumniIdInGroup.Contains(alu.Id));
+                }
             }
 
-            queryAlumni = queryAlumni.Where(alu => alu.Status == (byte?) searchAlumniModel.Status);
+
+            // Apply Sort
+            if (paginationModel.SortKey.ToString().Trim().Length > 0)
+                queryAlumni = queryAlumni.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
+            // Apply Paging
+            queryAlumni = queryAlumni.GetWithPaging(paginationModel.Page, paginationModel.PageSize).AsQueryable();
+
 
             IQueryable<GetAlumniDetail> queryAlumniDto = _mapper.ProjectTo<GetAlumniDetail>(queryAlumni);
-            // Apply Sort
-            queryAlumniDto =
-                queryAlumniDto.GetWithSorting(paginationModel.SortKey.ToString(),
-                    paginationModel.SortOrder);
-
             // Apply Paging
-            return queryAlumniDto.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
+            return queryAlumniDto.ToList();
         }
 
         public async Task<GetAlumniDetail> GetAlumniProfile(int id)
         {
-            Alumnus alumnus = await _alumniRepository.GetByIdAsync(id);
+            Alumnus alumnus = await _alumniRepository.Get(a => a.Id == id)
+                .Include(a => a.Class)
+                .Include(a => a.Company)
+                .Include(a => a.UniversityMajor)
+                .ThenInclude(um => um.Major).FirstOrDefaultAsync();
             GetAlumniDetail alumniDetail = _mapper.Map<GetAlumniDetail>(alumnus);
             return alumniDetail;
         }
@@ -66,6 +98,7 @@ namespace UniAlumni.Business.Services.AlumniService
                 alumnus.Email = user.Email;
             }
 
+            alumnus.Status = (byte?) AlumniEnum.AlumniStatus.Pending;
             alumnus = await _alumniRepository.CreateAlumniAsync(alumnus);
             GetAlumniDetail alumniDetail = _mapper.Map<GetAlumniDetail>(alumnus);
             return alumniDetail;
@@ -75,6 +108,7 @@ namespace UniAlumni.Business.Services.AlumniService
         {
             Alumnus alumnus = await _alumniRepository.GetFirstOrDefaultAsync(alu => alu.Id == requestBody.Id);
             alumnus = _mapper.Map(requestBody, alumnus);
+            alumnus.UpdatedDate = DateTime.Now;
             Alumnus updateAlumni = await _alumniRepository.UpdateAlumniAsync(alumnus);
             GetAlumniDetail alumniDetail = _mapper.Map<GetAlumniDetail>(updateAlumni);
             return alumniDetail;
@@ -88,6 +122,11 @@ namespace UniAlumni.Business.Services.AlumniService
         public async Task DeleteAlumniAsync(int id)
         {
             await _alumniRepository.DeleteAlumniAsync(id);
+        }
+
+        public async Task<int> GetTotal()
+        {
+            return await _alumniRepository.GetAll().CountAsync();
         }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UniAlumni.Business.Services.CategoryService;
+using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Object;
@@ -40,18 +41,29 @@ namespace UniAlumni.WebAPI.Controllers
         /// <response code="403">Return if token is access denied</response>
         [HttpGet]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        [ProducesResponseType(typeof(IList<GetCategoryDetail>), StatusCodes.Status200OK)]
-        public IActionResult GetAllCategory([FromQuery] SearchCategoryModel searchCategoryModel,
+        [ProducesResponseType(typeof(ModelsResponse<GetCategoryDetail>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllCategory([FromQuery] SearchCategoryModel searchCategoryModel,
             [FromQuery] PagingParam<CategoryEnum.CategorySortCriteria> paginationModel)
         {
             IList<GetCategoryDetail> result = _categorySvc.GetCategoryPage(paginationModel, searchCategoryModel);
-
+            int total = await _categorySvc.GetTotal();
             if (result == null || !result.Any())
             {
                 return NoContent();
             }
 
-            return Ok(result);
+            return Ok(new ModelsResponse<GetCategoryDetail>()
+            {
+                Code = StatusCodes.Status200OK,
+                Data = result.ToList(),
+                Metadata = new PagingMetadata()
+                {
+                    Page = paginationModel.Page,
+                    Size = paginationModel.PageSize,
+                    Total = total
+                },
+                Msg = ""
+            });
         }
 
 
@@ -75,7 +87,12 @@ namespace UniAlumni.WebAPI.Controllers
                 return NoContent();
             }
             
-            return Ok(result);
+            return Ok(new BaseResponse<GetCategoryDetail>()
+            {
+                Code = StatusCodes.Status200OK,
+                Data = result,
+                Msg = ""
+            });
         }
 
         /// <summary>
@@ -93,7 +110,12 @@ namespace UniAlumni.WebAPI.Controllers
         {
             var result = await _categorySvc.CreateCategoryAsync(requestBody);
 
-            return Created(string.Empty, result);
+            return Created(string.Empty, new BaseResponse<GetCategoryDetail>()
+            {
+                Code = StatusCodes.Status200OK,
+                Data = result,
+                Msg = "Send Request Successful"
+            });
         }
 
         /// <summary>
@@ -108,9 +130,22 @@ namespace UniAlumni.WebAPI.Controllers
         [ProducesResponseType(typeof(GetCategoryDetail), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateCategoryAsync([FromBody] UpdateCategoryRequestBody requestBody)
         {
-            GetCategoryDetail updateAlumni = await _categorySvc.UpdateCategoryAsync(requestBody);
+            try
+            {
+                GetCategoryDetail updateAlumni = await _categorySvc.UpdateCategoryAsync(requestBody);
 
-            return Ok(updateAlumni);
+                return Ok(new BaseResponse<GetCategoryDetail>()
+                {
+                    Code = StatusCodes.Status200OK,
+                    Data = updateAlumni,
+                    Msg = "Update Successful"
+                });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+            
         }
 
         /// <summary>
@@ -130,10 +165,9 @@ namespace UniAlumni.WebAPI.Controllers
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                return NoContent();
+                return BadRequest(e);
             }
-            return Ok();
+            return NoContent();
         }
     }
 }

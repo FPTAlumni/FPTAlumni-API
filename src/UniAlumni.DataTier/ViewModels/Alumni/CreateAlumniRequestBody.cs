@@ -1,7 +1,7 @@
 ﻿using System;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using UniAlumni.DataTier.Common.Enum;
+using Newtonsoft.Json;
+using UniAlumni.DataTier.Utility;
 
 namespace UniAlumni.DataTier.ViewModels.Alumni
 {
@@ -20,9 +20,12 @@ namespace UniAlumni.DataTier.ViewModels.Alumni
         [MaxLength(50)]
         public string FullName { get; set; }
         
+        [Required]
         [MaxLength(200)]
         public string Address { get; set; }
         
+        [JsonProperty("dob")]
+        [JsonConverter(typeof(DateFormatConverter), "dd/MM/yyyy")]
         public DateTime DoB { get; set; }
         
         
@@ -32,9 +35,10 @@ namespace UniAlumni.DataTier.ViewModels.Alumni
         public string AboutMe { get; set; }
         
         [Required]
-        public int? UniversityId { get; set; }
-        
-        [Required]
         public int? CompanyId { get; set; }
+        
+        public int UniversityMajorId { get; set; }
+        
+        public int? ClassId { get; set; }
     }
 }

@@ -1,11 +1,7 @@
 ﻿namespace UniAlumni.DataTier.ViewModels.Company
 {
-    public class GetCompanyDetail
+    public class GetCompanyDetail : UpdateCompanyRequestBody
     {
-        public int Id { get; set; }
-        public string CompanyName { get; set; }
-        public string Location { get; set; }
-        public string Business { get; set; }
-        public string Description { get; set; }
+      
     }
 }

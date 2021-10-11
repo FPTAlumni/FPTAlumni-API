@@ -1,4 +1,6 @@
-﻿using System;
+﻿
+
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -6,9 +8,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using UniAlumni.Business.Services.UniversityService;
+using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Object;
 using UniAlumni.DataTier.Repositories.AlumniRepo;
+using UniAlumni.DataTier.ViewModels.Token;
 using UniAlumni.DataTier.ViewModels.University;
 
 namespace UniAlumni.Business.Services.AuthenticationService
@@ -27,16 +31,16 @@ namespace UniAlumni.Business.Services.AuthenticationService
             _universityService = universityService;
         }
 
-        public async Task<string> Authenticate(string uid, int universityId)
+        public async Task<TokenResponse> Authenticate(string uid, int universityId)
         {
             var alumni = await LoadAlumniByUid(uid);
             var university = await LoadUniversityById(universityId);
-            if ( alumni != null && university != null)
+            if ( alumni != null && university != null && alumni.Status == (byte?) AlumniEnum.AlumniStatus.Active)
             {
                 var customTokenAsync = CreateCustomToken(uid, alumni.Id, university.Id);
-                return customTokenAsync;
+                return new TokenResponse(customTokenAsync, alumni.Id);
             }
-            return "";
+            return new TokenResponse("",-1);
         }
 
 

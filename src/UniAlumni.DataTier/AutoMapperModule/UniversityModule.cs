@@ -1,9 +1,4 @@
 ﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.ViewModels.University;
 
@@ -15,6 +10,8 @@ namespace UniAlumni.DataTier.AutoMapperModule
         {
             mc.CreateMap<University, BaseUniversityModel>();
             mc.CreateMap<University, UniversityViewModel>().ReverseMap();
+            mc.CreateMap<University, CreateUniversityRequestBody>().ReverseMap();
+            mc.CreateMap<University, UpdateUniversityRequestBody>().ReverseMap();
         }
     }
 }

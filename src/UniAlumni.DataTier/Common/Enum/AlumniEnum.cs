@@ -5,9 +5,9 @@
         public enum AlumniStatus
         {
             /// <summary>
-            /// Status for first login
+            /// Status for reject login
             /// </summary>
-            Unregistered = 0,
+            Reject = 0,
             
             /// <summary>
             /// Status for waiting Admin accept

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
@@ -23,25 +24,27 @@ namespace UniAlumni.Business.Services.CompanyService
             _mapper = mapper;
         }
 
-        public IList<GetCompanyDetail> GetCompanyPage(PagingParam<CompanyEnum.CompanySortCriteria> paginationModel, SearchCompanyModel searchCompanyModel)
+        public IList<GetCompanyDetail> GetCompanyPage(PagingParam<CompanyEnum.CompanySortCriteria> paginationModel,
+            SearchCompanyModel searchCompanyModel)
         {
             IQueryable<Company> queryCompany = _companyRepository.Table;
 
-            if (searchCompanyModel.CompanyName.Length > 0 || 
-                searchCompanyModel.Business.Length > 0 ||
-                searchCompanyModel.Location.Length > 0)
-            {
-                queryCompany = queryCompany.Where(c => c.CompanyName.Contains(searchCompanyModel.CompanyName) &&
-                                                         c.Business.Contains(searchCompanyModel.Business) &&
-                                                                             c.Location.Contains(searchCompanyModel.Location));
-            }
+            if (searchCompanyModel.CompanyName is {Length: > 0})
+                queryCompany = queryCompany.Where(c => c.CompanyName.Contains(searchCompanyModel.CompanyName));
+
+            if (searchCompanyModel.Business is {Length: > 0})
+                queryCompany = queryCompany.Where(c => c.Business.Contains(searchCompanyModel.Business));
+
+            if (searchCompanyModel.Location is {Length: > 0})
+                queryCompany = queryCompany.Where(c => c.Location.Contains(searchCompanyModel.Location));
 
             queryCompany = queryCompany.Where(c => c.Status == (byte?) CompanyEnum.CompanyStatus.Active);
 
             IQueryable<GetCompanyDetail> companyDetails = _mapper.ProjectTo<GetCompanyDetail>(queryCompany);
             // Apply sort
-            companyDetails =
-                companyDetails.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
+            if (paginationModel.SortKey.ToString().Trim().Length > 0)
+                companyDetails =
+                    companyDetails.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
 
             // Apply Paging
             return companyDetails.AsEnumerable().GetWithPaging(paginationModel.Page, paginationModel.PageSize)
@@ -82,6 +85,11 @@ namespace UniAlumni.Business.Services.CompanyService
             Company company = await _companyRepository.GetFirstOrDefaultAsync(alu => alu.Id == id);
             company.Status = (byte?) CompanyEnum.CompanyStatus.Inactive;
             await _companyRepository.SaveChangesAsync();
+        }
+
+        public async Task<int> GetTotal()
+        {
+            return await _companyRepository.GetAll().CountAsync();
         }
     }
 }

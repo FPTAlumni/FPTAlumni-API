@@ -67,7 +67,7 @@ namespace UniAlumni.DataTier.Repositories.AlumniRepo
         }
         
         public async Task ActivateAlumniAsync(ActivateAlumniRequestBody requestBody){
-            Alumnus alumnus = await GetFirstOrDefaultAsync(alu => alu.Uid.Equals(requestBody.Uid));
+            Alumnus alumnus = await GetFirstOrDefaultAsync(alu => alu.Id.Equals(requestBody.Id));
             if (alumnus != null)
             {
                 alumnus.Status = (byte?) requestBody.Status;

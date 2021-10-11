@@ -27,5 +27,31 @@ namespace UniAlumni.Business.Services.UniversityService
         /// <returns>A University Detail.</returns>>
         public Task<UniversityViewModel> GetUniversityById(int id);
 
+        /// <summary>
+        /// Create University.
+        /// </summary>
+        /// <param name="requestBody">Model create University request of University.</param>
+        /// <returns>A University Detail.</returns>>
+        Task<UniversityViewModel> CreateUniversityAsync(CreateUniversityRequestBody requestBody);
+
+        /// <summary>
+        /// Update University.
+        /// </summary>
+        /// <param name="requestBody">Model Update University request of University.</param>
+        /// <returns>A University Detail.</returns>>
+        Task<UniversityViewModel> UpdateUniversityAsync(UpdateUniversityRequestBody requestBody);
+
+        /// <summary>
+        /// Delete University - Change Status to Deactivate
+        /// </summary>
+        /// <param name="id">ID of University</param>
+        Task DeleteUniversityAsync(int id);
+        
+        /// <summary>
+        /// Get total of University
+        /// </summary>
+        /// <returns>Total of University</returns>
+        public Task<int> GetTotal();
+
     }
 }

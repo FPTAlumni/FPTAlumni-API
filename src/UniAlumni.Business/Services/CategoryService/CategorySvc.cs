@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
@@ -27,22 +28,25 @@ namespace UniAlumni.Business.Services.CategoryService
         {
             IQueryable<Category> queryCategory = _categoryRepository.Table;
 
-            if (searchCategoryModel.CategoryName.Length > 0 || searchCategoryModel.Description.Length > 0)
-            {
-                queryCategory = queryCategory.Where(c => c.CategoryName.Contains(searchCategoryModel.CategoryName) &&
-                                                         c.Description.Contains(searchCategoryModel.Description));
-            }
+            if (searchCategoryModel.CategoryName is {Length: > 0})
+                queryCategory = queryCategory.Where(c => c.CategoryName.Contains(searchCategoryModel.CategoryName));
+
+            if (searchCategoryModel.Description is {Length: > 0})
+                queryCategory = queryCategory.Where(c => c.Description.Contains(searchCategoryModel.Description));
+
 
             queryCategory = queryCategory.Where(c => c.Status == (byte?) CategoryEnum.CategoryStatus.Active);
 
-            IQueryable<GetCategoryDetail> categoryDetails = _mapper.ProjectTo<GetCategoryDetail>(queryCategory);
             // Apply sort
-            categoryDetails =
-                categoryDetails.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
+            if (paginationModel.SortKey.ToString().Trim().Length > 0)
+                queryCategory =
+                    queryCategory.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
 
             // Apply Paging
-            return categoryDetails.AsEnumerable().GetWithPaging(paginationModel.Page, paginationModel.PageSize)
-                .ToList();
+            queryCategory = queryCategory.GetWithPaging(paginationModel.Page, paginationModel.PageSize).AsQueryable();
+
+            IQueryable<GetCategoryDetail> categoryDetails = _mapper.ProjectTo<GetCategoryDetail>(queryCategory);
+            return categoryDetails.ToList();
         }
 
         public async Task<GetCategoryDetail> GetCategoryById(int id)
@@ -68,7 +72,7 @@ namespace UniAlumni.Business.Services.CategoryService
         {
             Category category = await _categoryRepository.GetFirstOrDefaultAsync(alu => alu.Id == requestBody.Id);
             category = _mapper.Map(requestBody, category);
-             _categoryRepository.Update(category);
+            _categoryRepository.Update(category);
             await _categoryRepository.SaveChangesAsync();
             GetCategoryDetail categoryDetail = _mapper.Map<GetCategoryDetail>(category);
             return categoryDetail;
@@ -79,6 +83,11 @@ namespace UniAlumni.Business.Services.CategoryService
             Category category = await _categoryRepository.GetFirstOrDefaultAsync(alu => alu.Id == id);
             category.Status = (byte?) CategoryEnum.CategoryStatus.Inactive;
             await _categoryRepository.SaveChangesAsync();
+        }
+
+        public async Task<int> GetTotal()
+        {
+            return await _categoryRepository.GetAll().CountAsync();
         }
     }
 }
