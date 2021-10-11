@@ -31,13 +31,13 @@ namespace UniAlumni.Business.Services.AuthenticationService
             _universityService = universityService;
         }
 
-        public async Task<TokenResponse> Authenticate(string uid, int universityId)
+        public async Task<TokenResponse> Authenticate(string uid)
         {
             var alumni = await LoadAlumniByUid(uid);
-            var university = await LoadUniversityById(universityId);
-            if ( alumni != null && university != null && alumni.Status == (byte?) AlumniEnum.AlumniStatus.Active)
+            // var university = await LoadUniversityById(universityId);
+            if ( alumni != null && (alumni.Status == (byte?) AlumniEnum.AlumniStatus.IsAdmin || alumni.Status == (byte?) AlumniEnum.AlumniStatus.Active))
             {
-                var customTokenAsync = CreateCustomToken(uid, alumni.Id, university.Id);
+                var customTokenAsync = CreateCustomToken(uid, alumni.Id, alumni.Status);
                 return new TokenResponse(customTokenAsync, alumni.Id);
             }
             return new TokenResponse("",-1);
@@ -53,9 +53,8 @@ namespace UniAlumni.Business.Services.AuthenticationService
             return await _universityService.GetUniversityById(id);
         }
 
-        private string CreateCustomToken(string uid, int alumniId, int universityId)
+        private string CreateCustomToken(string uid, int alumniId, byte? status)
         {
-            var uidAdmin = _configuration.GetSection("AppSettings").GetSection("AdminUID").Value;
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration.GetSection("AppSettings").GetSection("Secret").Value);
             Console.WriteLine(_configuration.GetSection("AppSettings").GetSection("Secret").Value);
@@ -65,8 +64,8 @@ namespace UniAlumni.Business.Services.AuthenticationService
                 {
                     new Claim("id", alumniId.ToString()),
                     new Claim("uid", uid),
-                    new Claim("universityId", universityId.ToString()),
-                    new Claim(ClaimTypes.Role, uid.Equals(uidAdmin) ? RolesConstants.ADMIN : RolesConstants.ALUMNI)
+                    // new Claim("universityId", universityId.ToString()),
+                    new Claim(ClaimTypes.Role, status == (byte?) AlumniEnum.AlumniStatus.IsAdmin ? RolesConstants.ADMIN : RolesConstants.ALUMNI)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

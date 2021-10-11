@@ -15,6 +15,7 @@ namespace UniAlumni.DataTier.Models
         {
             Alumni = new HashSet<Alumnus>();
             Groups = new HashSet<Group>();
+            UniversityMajors = new HashSet<UniversityMajor>();
         }
 
         [Key]
@@ -27,5 +28,7 @@ namespace UniAlumni.DataTier.Models
         public virtual ICollection<Alumnus> Alumni { get; set; }
         [InverseProperty(nameof(Group.Class))]
         public virtual ICollection<Group> Groups { get; set; }
+        [InverseProperty(nameof(UniversityMajor.Class))]
+        public virtual ICollection<UniversityMajor> UniversityMajors { get; set; }
     }
 }

@@ -9,6 +9,6 @@ namespace UniAlumni.Business.Services.AuthenticationService
     /// </summary>
     public interface IAuthenticationSvc
     {
-        Task<TokenResponse> Authenticate(string accessToken, int universityId);
+        Task<TokenResponse> Authenticate(string accessToken);
     }
 }

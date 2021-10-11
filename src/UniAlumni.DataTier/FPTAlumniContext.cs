@@ -10,7 +10,7 @@ namespace UniAlumni.DataTier.Models
     public partial class FPTAlumniContext : DbContext
     {
         private readonly IConfiguration _configuration;
-
+        
         public FPTAlumniContext(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -54,7 +54,7 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<AlumniGroup>(entity =>
             {
-                entity.HasKey(e => new {e.AlumniId, e.GroupId})
+                entity.HasKey(e => new { e.AlumniId, e.GroupId })
                     .HasName("PK__AlumniGr__227F8B5CCBD17A38");
 
                 entity.Property(e => e.RegisteredDate).HasDefaultValueSql("(getdate())");
@@ -99,9 +99,15 @@ namespace UniAlumni.DataTier.Models
                     .HasConstraintName("FK_Alumni_UniversityMajor");
             });
 
-            modelBuilder.Entity<Category>(entity => { entity.Property(e => e.Description).IsUnicode(false); });
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.Property(e => e.Description).IsUnicode(false);
+            });
 
-            modelBuilder.Entity<Company>(entity => { entity.Property(e => e.CompanyName).IsUnicode(false); });
+            modelBuilder.Entity<Company>(entity =>
+            {
+                entity.Property(e => e.CompanyName).IsUnicode(false);
+            });
 
             modelBuilder.Entity<Event>(entity =>
             {
@@ -115,7 +121,7 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<EventRegistration>(entity =>
             {
-                entity.HasKey(e => new {e.AlumniId, e.EventId})
+                entity.HasKey(e => new { e.AlumniId, e.EventId })
                     .HasName("PK__EventReg__84A268EBD1435ABC");
 
                 entity.Property(e => e.RegisteredDate).HasDefaultValueSql("(getdate())");
@@ -229,6 +235,11 @@ namespace UniAlumni.DataTier.Models
                     .HasForeignKey(d => d.NominatorId)
                     .HasConstraintName("FK__Referral__Nomina__59FA5E80");
 
+                entity.HasOne(d => d.UniversityMajor)
+                    .WithMany(p => p.Referrals)
+                    .HasForeignKey(d => d.UniversityMajorId)
+                    .HasConstraintName("FK_Referral_UniversityMajor");
+
                 entity.HasOne(d => d.Voucher)
                     .WithMany(p => p.Referrals)
                     .HasForeignKey(d => d.VoucherId)
@@ -237,7 +248,7 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<TagNews>(entity =>
             {
-                entity.HasKey(e => new {e.NewsId, e.TagId})
+                entity.HasKey(e => new { e.NewsId, e.TagId })
                     .HasName("PK__TagNews__431972694EF07ADF");
 
                 entity.HasOne(d => d.News)
@@ -253,10 +264,18 @@ namespace UniAlumni.DataTier.Models
                     .HasConstraintName("FK__TagNews__TagId__6E01572D");
             });
 
-            modelBuilder.Entity<University>(entity => { entity.Property(e => e.Logo).IsUnicode(false); });
+            modelBuilder.Entity<University>(entity =>
+            {
+                entity.Property(e => e.Logo).IsUnicode(false);
+            });
 
             modelBuilder.Entity<UniversityMajor>(entity =>
             {
+                entity.HasOne(d => d.Class)
+                    .WithMany(p => p.UniversityMajors)
+                    .HasForeignKey(d => d.ClassId)
+                    .HasConstraintName("FK_UniversityMajor_Class");
+
                 entity.HasOne(d => d.Major)
                     .WithMany(p => p.UniversityMajors)
                     .HasForeignKey(d => d.MajorId)

@@ -15,13 +15,18 @@ namespace UniAlumni.DataTier.Models
         {
             Alumni = new HashSet<Alumnus>();
             Groups = new HashSet<Group>();
+            Referrals = new HashSet<Referral>();
         }
 
         [Key]
         public int Id { get; set; }
         public int MajorId { get; set; }
         public int UniversityId { get; set; }
+        public int? ClassId { get; set; }
 
+        [ForeignKey(nameof(ClassId))]
+        [InverseProperty("UniversityMajors")]
+        public virtual Class Class { get; set; }
         [ForeignKey(nameof(MajorId))]
         [InverseProperty("UniversityMajors")]
         public virtual Major Major { get; set; }
@@ -32,5 +37,7 @@ namespace UniAlumni.DataTier.Models
         public virtual ICollection<Alumnus> Alumni { get; set; }
         [InverseProperty(nameof(Group.UniversityMajor))]
         public virtual ICollection<Group> Groups { get; set; }
+        [InverseProperty(nameof(Referral.UniversityMajor))]
+        public virtual ICollection<Referral> Referrals { get; set; }
     }
 }
