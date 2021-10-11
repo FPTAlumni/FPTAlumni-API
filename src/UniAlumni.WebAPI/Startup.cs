@@ -2,11 +2,12 @@ using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Converters;
 using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using UniAlumni.Business;
 using UniAlumni.DataTier;
 using UniAlumni.DataTier.AutoMapperModule;
@@ -28,14 +29,25 @@ namespace UniAlumni.WebAPI
         {
             // Add Firebase Services
             AddFireBaseAsync();
-            
+            // Allow CORS
             services.AddCors();
             // register (Authentication - JWT) Module 
             services.RegisterSecurityModule(Configuration);
 
             services.AddControllers().AddNewtonsoftJson(o =>
             {
-                o.SerializerSettings.Converters.Add(new StringEnumConverter());
+                o.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
+                o.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+                o.SerializerSettings.ContractResolver = new DefaultContractResolver()
+                {
+                    NamingStrategy = new SnakeCaseNamingStrategy()
+                };
+                
+                o.SerializerSettings.Converters.Add(new StringEnumConverter()
+                {
+                    AllowIntegerValues = true
+                });
+                
             });
 
             // register (DI) Core Modules

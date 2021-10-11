@@ -1,9 +1,12 @@
-﻿using FirebaseAdmin.Auth;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using UniAlumni.Business.Services.AlumniGroupService;
 using UniAlumni.Business.Services.AlumniService;
 using UniAlumni.Business.Services.AuthenticationService;
 using UniAlumni.Business.Services.CategoryService;
+using UniAlumni.Business.Services.ClassService;
 using UniAlumni.Business.Services.CompanyService;
+using UniAlumni.Business.Services.EventRegistrationService;
+using UniAlumni.Business.Services.EventService;
 using UniAlumni.Business.Services.GroupSrv;
 using UniAlumni.Business.Services.MajorSrv;
 using UniAlumni.Business.Services.NewsSrv;
@@ -30,6 +33,10 @@ namespace UniAlumni.Business.Services
             services.AddScoped<ICompanySvc, CompanySvc>();
             services.AddScoped<INewsService, NewsService>();
             services.AddScoped<IUniversitySvc, UniversitySvc>();
+            services.AddScoped<IClassSvc, ClassSvc>();
+            services.AddScoped<IEventSvc, EventSvc>();
+            services.AddScoped<IAlumniGroupSvc, AlumniGroupSvc>();
+            services.AddScoped<IEventRegistrationSvc, EventRegistrationSvc>();
         }
     }
 }

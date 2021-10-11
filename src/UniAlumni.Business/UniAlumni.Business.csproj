@@ -23,9 +23,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Remove="Services\EventRegistrationService\IEventRegistrationSvc.cs" />
-      <Compile Remove="Services\AlumniGroupService\IAlumniGroupSvc.cs" />
-      <Compile Remove="Services\EventService\IEventSvc.cs" />
+      <Reference Include="UniAlumni.WebAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>..\UniAlumni.WebAPI\bin\Debug\net5.0\UniAlumni.WebAPI.dll</HintPath>
+      </Reference>
     </ItemGroup>
     
 
