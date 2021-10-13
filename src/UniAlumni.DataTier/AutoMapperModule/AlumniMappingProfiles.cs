@@ -18,6 +18,8 @@ namespace UniAlumni.DataTier.AutoMapperModule
                     map=>map.MapFrom(src=>src.Company))
                 .ForMember(des=>des.Major,
                     map=>map.MapFrom(src=>src.UniversityMajor.Major))
+                .ForMember(des=>des.University,
+                    map=>map.MapFrom(src=>src.UniversityMajor.University))
                 .ReverseMap();
             configuration.CreateMap<Alumnus, CreateAlumniRequestBody>().ReverseMap();
             configuration.CreateMap<Alumnus, UpdateAlumniRequestBody>().ReverseMap();

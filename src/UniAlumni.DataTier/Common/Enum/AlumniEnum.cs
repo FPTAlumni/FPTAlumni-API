@@ -23,6 +23,12 @@
             /// Status for block alumni
             /// </summary>
             Deactive = 3,
+            
+            /// <summary>
+            /// Status for admin
+            /// </summary>
+            IsAdmin = 4
+            
         }
         
         

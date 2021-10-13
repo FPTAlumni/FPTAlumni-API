@@ -32,7 +32,7 @@ namespace UniAlumni.WebAPI.Controllers
         /// <param name="tokenRequest">An object contain token and university</param>
         /// <returns>Custom Token</returns>
         /// <response code="200">Returns the custom token</response>
-        /// <response code="202">Returns the UID if alumni is not exist</response>
+        /// <response code="201">Returns the UID if alumni is not exist</response>
         /// <response code="400">Return if the idToken is null</response> 
         /// <response code="401">Return if the idToken is invalid</response> 
         [AllowAnonymous]
@@ -47,7 +47,7 @@ namespace UniAlumni.WebAPI.Controllers
                 FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance
                     .VerifyIdTokenAsync(tokenRequest.Token);
                 string uid = decodedToken.Uid;
-                TokenResponse jwtToken = await _authenticationService.Authenticate(uid, tokenRequest.UniversityId);
+                TokenResponse jwtToken = await _authenticationService.Authenticate(uid);
                 if (jwtToken.CustomToken.Length != 0)
                     return Ok(jwtToken);
                 else

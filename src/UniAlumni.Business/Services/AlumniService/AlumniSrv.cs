@@ -33,7 +33,9 @@ namespace UniAlumni.Business.Services.AlumniService
             SearchAlumniModel searchAlumniModel)
         {
             IQueryable<Alumnus> queryAlumni = _alumniRepository.Table.Include(a => a.UniversityMajor)
-                .ThenInclude(um => um.Major)
+                    .ThenInclude(um => um.Major)
+                .Include(a=>a.UniversityMajor)
+                    .ThenInclude(um=>um.University)
                 .Include(a => a.Company)
                 .Include(a => a.Class);
             if (searchAlumniModel.Email is {Length: > 0})
@@ -64,6 +66,12 @@ namespace UniAlumni.Business.Services.AlumniService
                     queryAlumni = queryAlumni.Where(alu => listAlumniIdInGroup.Contains(alu.Id));
                 }
             }
+            // Apply University Id
+            if (searchAlumniModel.UniversityId != null)
+            {
+                
+            }
+            
 
 
             // Apply Sort

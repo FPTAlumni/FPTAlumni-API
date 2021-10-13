@@ -4,6 +4,7 @@ using UniAlumni.DataTier.Utility;
 using UniAlumni.DataTier.ViewModels.Class;
 using UniAlumni.DataTier.ViewModels.Company;
 using UniAlumni.DataTier.ViewModels.Major;
+using UniAlumni.DataTier.ViewModels.University;
 
 namespace UniAlumni.DataTier.ViewModels.Alumni
 {
@@ -33,6 +34,8 @@ namespace UniAlumni.DataTier.ViewModels.Alumni
         public MajorViewModel Major { get; set; }
         
         public GetClassDetail Class { get; set; }
+        
+        public UniversityViewModel University { get; set; }
     }
     public class AlumniGroupAlumniModel : BaseAlumniModel
     {

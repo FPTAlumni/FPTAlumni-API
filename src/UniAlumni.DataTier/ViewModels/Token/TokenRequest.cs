@@ -6,8 +6,5 @@ namespace UniAlumni.DataTier.ViewModels.Token
     {
         [Required]
         public string Token { get; set; }
-        
-        [Required]
-        public int UniversityId { get; set; }
     }
 }
