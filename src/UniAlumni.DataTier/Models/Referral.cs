@@ -31,14 +31,10 @@ namespace UniAlumni.DataTier.Models
         public byte? Status { get; set; }
         public int? NominatorId { get; set; }
         public int? VoucherId { get; set; }
-        public int? UniversityMajorId { get; set; }
 
         [ForeignKey(nameof(NominatorId))]
         [InverseProperty(nameof(Alumnus.Referrals))]
         public virtual Alumnus Nominator { get; set; }
-        [ForeignKey(nameof(UniversityMajorId))]
-        [InverseProperty("Referrals")]
-        public virtual UniversityMajor UniversityMajor { get; set; }
         [ForeignKey(nameof(VoucherId))]
         [InverseProperty("Referrals")]
         public virtual Voucher Voucher { get; set; }

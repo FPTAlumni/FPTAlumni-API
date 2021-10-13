@@ -10,6 +10,7 @@ using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories.AlumniGroupRepo;
 using UniAlumni.DataTier.Repositories.AlumniRepo;
+using UniAlumni.DataTier.Repositories.ClassMajorRepo;
 using UniAlumni.DataTier.Utility.Paging;
 using UniAlumni.DataTier.ViewModels.Alumni;
 
@@ -19,11 +20,14 @@ namespace UniAlumni.Business.Services.AlumniService
     {
         private readonly IAlumniRepository _alumniRepository;
         private readonly IAlumniGroupRepository _alumniGroupRepository;
+        private readonly IClassMajorRepository _classMajorRepository;
         private readonly IMapper _mapper;
 
         public AlumniSrv(IAlumniRepository alumniRepository, IMapper mapper,
-            IAlumniGroupRepository alumniGroupRepository)
+            IAlumniGroupRepository alumniGroupRepository,
+            IClassMajorRepository classMajorRepository)
         {
+            _classMajorRepository = classMajorRepository;
             _alumniGroupRepository = alumniGroupRepository;
             _alumniRepository = alumniRepository;
             _mapper = mapper;
@@ -32,12 +36,13 @@ namespace UniAlumni.Business.Services.AlumniService
         public IList<GetAlumniDetail> GetAlumniPage(PagingParam<AlumniEnum.AlumniSortCriteria> paginationModel,
             SearchAlumniModel searchAlumniModel)
         {
-            IQueryable<Alumnus> queryAlumni = _alumniRepository.Table.Include(a => a.UniversityMajor)
-                    .ThenInclude(um => um.Major)
-                .Include(a=>a.UniversityMajor)
-                    .ThenInclude(um=>um.University)
+            IQueryable<Alumnus> queryAlumni = _alumniRepository.Table
+                .Include(a => a.ClassMajor)
+                    .ThenInclude(cm => cm.Class)
+                        .ThenInclude(c=>c.University)
                 .Include(a => a.Company)
-                .Include(a => a.Class);
+                .Include(a => a.ClassMajor)
+                    .ThenInclude(cm=> cm.Major);
             if (searchAlumniModel.Email is {Length: > 0})
                 queryAlumni = queryAlumni.Where(alu => alu.Email.Contains(searchAlumniModel.Email));
 
@@ -66,12 +71,6 @@ namespace UniAlumni.Business.Services.AlumniService
                     queryAlumni = queryAlumni.Where(alu => listAlumniIdInGroup.Contains(alu.Id));
                 }
             }
-            // Apply University Id
-            if (searchAlumniModel.UniversityId != null)
-            {
-                
-            }
-            
 
 
             // Apply Sort
@@ -89,10 +88,13 @@ namespace UniAlumni.Business.Services.AlumniService
         public async Task<GetAlumniDetail> GetAlumniProfile(int id)
         {
             Alumnus alumnus = await _alumniRepository.Get(a => a.Id == id)
-                .Include(a => a.Class)
-                .Include(a => a.Company)
-                .Include(a => a.UniversityMajor)
-                .ThenInclude(um => um.Major).FirstOrDefaultAsync();
+                .Include(a => a.ClassMajor)   
+                    .ThenInclude(cm => cm.Class)
+                        .ThenInclude(c=>c.University)
+                    .Include(a => a.Company)
+                    .Include(a => a.ClassMajor)
+                        .ThenInclude(cm=> cm.Major)
+               .FirstOrDefaultAsync();
             GetAlumniDetail alumniDetail = _mapper.Map<GetAlumniDetail>(alumnus);
             return alumniDetail;
         }
@@ -100,6 +102,18 @@ namespace UniAlumni.Business.Services.AlumniService
         public async Task<GetAlumniDetail> CreateAlumniAsync(CreateAlumniRequestBody requestBody)
         {
             Alumnus alumnus = _mapper.Map<Alumnus>(requestBody);
+            ClassMajor classMajor = await _classMajorRepository.Get(cm => cm.ClassId == requestBody.ClassId &&
+                                                                    cm.MajorId == requestBody.MajorId)
+                .FirstOrDefaultAsync();
+            if (classMajor != null)
+            {
+                alumnus.ClassMajorId = classMajor.Id;
+            }
+            else
+            {
+                throw new Exception("No ClassMajor Exist");
+               
+            }
             UserRecord user = await FirebaseAuth.DefaultInstance.GetUserAsync(alumnus.Uid);
             if (user != null)
             {
@@ -108,6 +122,14 @@ namespace UniAlumni.Business.Services.AlumniService
 
             alumnus.Status = (byte?) AlumniEnum.AlumniStatus.Pending;
             alumnus = await _alumniRepository.CreateAlumniAsync(alumnus);
+            alumnus = await _alumniRepository.Get(a => a.Id == alumnus.Id)
+                .Include(a => a.ClassMajor)   
+                .ThenInclude(cm => cm.Class)
+                .ThenInclude(c=>c.University)
+                .Include(a => a.Company)
+                .Include(a => a.ClassMajor)
+                .ThenInclude(cm=> cm.Major)
+                .FirstOrDefaultAsync();
             GetAlumniDetail alumniDetail = _mapper.Map<GetAlumniDetail>(alumnus);
             return alumniDetail;
         }

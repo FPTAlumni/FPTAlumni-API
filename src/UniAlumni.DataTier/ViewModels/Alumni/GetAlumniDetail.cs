@@ -22,12 +22,10 @@ namespace UniAlumni.DataTier.ViewModels.Alumni
         public string Uid { get; set; }
         
         [JsonProperty("dob")]
-        [JsonConverter(typeof(DateFormatConverter), "dd/MM/yyyy")]
         public DateTime DoB { get; set; }
         public string Job { get; set; }
         public string AboutMe { get; set; }
         
-        [JsonConverter(typeof(DateFormatConverter), "dd/MM/yyyy HH:mm")]
         public DateTime? CreatedDate { get; set; }
         public string Status { get; set; }
         public GetCompanyDetail Company { get; set; }

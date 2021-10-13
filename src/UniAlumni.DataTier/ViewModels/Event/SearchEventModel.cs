@@ -17,16 +17,12 @@ namespace UniAlumni.DataTier.ViewModels.Event
         [DefaultValue("")]
         public string Location { get; set; } = "";
 
-        [JsonConverter(typeof(DateFormatConverter), "dd/MM/yyyy")]
         public DateTime? RegistrationStartDate { get; set; } = null;
 
-        [JsonConverter(typeof(DateFormatConverter), "dd/MM/yyyy")]
         public DateTime? RegistrationEndDate { get; set; } = null;
 
-        [JsonConverter(typeof(DateFormatConverter), "dd/MM/yyyy")]
         public DateTime? StartDate { get; set; } = null;
 
-        [JsonConverter(typeof(DateFormatConverter), "dd/MM/yyyy")]
         public DateTime? EndDate { get; set; } = null;
 
         public int? GroupId { get; set; } = null;

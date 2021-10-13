@@ -22,7 +22,7 @@ namespace UniAlumni.DataTier.ViewModels.Alumni
         public string Address { get; set; }
         
         [JsonProperty("dob")]
-        [JsonConverter(typeof(DateFormatConverter), "dd/MM/yyyy")]
+        // [JsonConverter(typeof(DateFormatConverter), "dd/MM/yyyy")]
         public DateTime DoB { get; set; }
         
         

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -32,7 +33,10 @@ namespace UniAlumni.Business.Services.ClassService
             {
                 queryClass = queryClass.Where(c => c.ClassOf.Contains(searchClassModel.ClassOf));
             }
-
+            
+            // Apply Status
+            queryClass = queryClass.Where(c => c.Status == (int) ClassEnum.ClassStatus.Active);
+            
             // Apply sort
             if (paginationModel.SortKey.ToString().Trim().Length > 0)
                 queryClass =
@@ -48,6 +52,7 @@ namespace UniAlumni.Business.Services.ClassService
         public async Task<GetClassDetail> GetClassById(int id)
         {
             Class classes = await _classRepository.GetByIdAsync(id);
+            if (classes.Status == (int) ClassEnum.ClassStatus.Inactive) return null;
             GetClassDetail classDetail = _mapper.Map<GetClassDetail>(classes);
             return classDetail;
         }
@@ -55,7 +60,7 @@ namespace UniAlumni.Business.Services.ClassService
         public async Task<GetClassDetail> CreateClassAsync(CreateClassRequestBody requestBody)
         {
             Class classes = _mapper.Map<Class>(requestBody);
-
+            classes.CreatedDate = DateTime.Now;
             await _classRepository.InsertAsync(classes);
             await _classRepository.SaveChangesAsync();
 
@@ -67,6 +72,7 @@ namespace UniAlumni.Business.Services.ClassService
         {
             Class classes = await _classRepository.GetFirstOrDefaultAsync(alu => alu.Id == requestBody.Id);
             classes = _mapper.Map(requestBody, classes);
+            classes.UpdatedDate = DateTime.Now;
             _classRepository.Update(classes);
             await _classRepository.SaveChangesAsync();
             GetClassDetail classDetail = _mapper.Map<GetClassDetail>(classes);
@@ -75,8 +81,8 @@ namespace UniAlumni.Business.Services.ClassService
 
         public async Task DeleteClassAsync(int id)
         {
-            Class category = await _classRepository.GetFirstOrDefaultAsync(alu => alu.Id == id);
-            _classRepository.Delete(category);
+            Class classes = await _classRepository.GetFirstOrDefaultAsync(alu => alu.Id == id);
+            classes.Status = (int) ClassEnum.ClassStatus.Inactive;
             await _classRepository.SaveChangesAsync();
         }
 

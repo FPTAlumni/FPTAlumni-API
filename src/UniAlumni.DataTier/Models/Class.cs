@@ -27,7 +27,7 @@ namespace UniAlumni.DataTier.Models
         [Column(TypeName = "datetime")]
         public DateTime? UpdatedDate { get; set; }
         [StringLength(10)]
-        public string Status { get; set; }
+        public int Status { get; set; }
 
         [ForeignKey(nameof(UniversityId))]
         [InverseProperty("Classes")]

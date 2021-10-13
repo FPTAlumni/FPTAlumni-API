@@ -27,7 +27,8 @@ namespace UniAlumni.Business.Services.UniversityService
             PagingParam<UniversityEnum.UniversitySortCriteria> paginationModel,
             SearchUniversityModel searchUniversityModel)
         {
-            IQueryable<University> queryUniversity = _universityRepository.Table;
+            IQueryable<University> queryUniversity = _universityRepository.Table
+                .Include(u=>u.Classes);
             if (searchUniversityModel.Name is {Length : > 0})
             {
                 queryUniversity =
@@ -51,7 +52,10 @@ namespace UniAlumni.Business.Services.UniversityService
 
         public async Task<UniversityViewModel> GetUniversityById(int id)
         {
-            University university = await _universityRepository.GetByIdAsync(id);
+            
+            University university = await _universityRepository.Get(u=>u.Id == id)
+                .Include(u=>u.Classes)
+                .FirstOrDefaultAsync();
             UniversityViewModel universityDetail = _mapper.Map<UniversityViewModel>(university);
             return universityDetail;
         }

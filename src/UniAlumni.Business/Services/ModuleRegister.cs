@@ -11,7 +11,10 @@ using UniAlumni.Business.Services.EventService;
 using UniAlumni.Business.Services.GroupSrv;
 using UniAlumni.Business.Services.MajorSrv;
 using UniAlumni.Business.Services.NewsSrv;
+using UniAlumni.Business.Services.RecruitmentSrv;
+using UniAlumni.Business.Services.ReferralSrv;
 using UniAlumni.Business.Services.UniversityService;
+using UniAlumni.Business.Services.VoucherSrv;
 
 namespace UniAlumni.Business.Services
 {

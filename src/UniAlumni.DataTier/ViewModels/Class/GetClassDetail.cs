@@ -2,10 +2,9 @@
 {
     
     
-    public class GetClassDetail
+    public class GetClassDetail : CreateClassRequestBody
     {
         public int Id { get; set; }
-        public string ClassOf { get; set; }
-        public int? StartYear { get; set; }
+   
     }
 }

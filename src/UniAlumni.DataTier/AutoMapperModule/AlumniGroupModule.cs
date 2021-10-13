@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Models;
+using UniAlumni.DataTier.ViewModels.Alumni;
 using UniAlumni.DataTier.ViewModels.AlumniGroup;
 
 namespace UniAlumni.DataTier.AutoMapperModule
@@ -14,7 +15,7 @@ namespace UniAlumni.DataTier.AutoMapperModule
     {
         public static void ConfigAlumniGroupModule(this IMapperConfigurationExpression mc)
         {
-            mc.CreateMap<AlumniGroup, AlumniGroupViewModel>()
+            mc.CreateMap<AlumniGroup, GetAlumniDetail>()
                 .ForMember(des => des.Status, opt => opt.MapFrom(
                     src => ((AlumniGroupEnum.AlumniGroupStatus)src.Status).ToString()));
         }
