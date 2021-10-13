@@ -13,8 +13,8 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
     public interface IRecruitmentService
     {
         ModelsResponse<RecruitmentViewModel> GetRecruitments(PagingParam<RecruitmentEnum.RecruitmentSortCriteria> paginationModel,
-            SearchRecruitmentModel searchRecruitmentModel, int universityId);
-        Task<RecruitmentViewModel> GetRecruitmentById(int id, int universityId);
+            SearchRecruitmentModel searchRecruitmentModel, int userId, bool isAdmin);
+        Task<RecruitmentViewModel> GetRecruitmentById(int id, int userId, bool isAdmin);
         Task<RecruitmentViewModel> CreateRecruitment(RecruitmentCreateRequest request, int userId, bool isAdmin);
         Task<RecruitmentViewModel> UpdateRecruitment(RecruitmentUpdateRequest request, int userId, bool isAdmin);
         Task DeleteRecruitment(int id, int userId, bool isAdmin);

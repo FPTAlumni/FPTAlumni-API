@@ -34,22 +34,22 @@ namespace UniAlumni.DataTier.Models
         public DateTime? UpdatedDate { get; set; }
         public byte? Status { get; set; }
         public int? GroupLeaderId { get; set; }
-        public int? UniversityMajorId { get; set; }
         public int? ParentGroupId { get; set; }
-        public int? ClassId { get; set; }
+        public int? UniversityId { get; set; }
+        public int? MajorId { get; set; }
 
-        [ForeignKey(nameof(ClassId))]
-        [InverseProperty("Groups")]
-        public virtual Class Class { get; set; }
         [ForeignKey(nameof(GroupLeaderId))]
         [InverseProperty(nameof(Alumnus.Groups))]
         public virtual Alumnus GroupLeader { get; set; }
+        [ForeignKey(nameof(MajorId))]
+        [InverseProperty("Groups")]
+        public virtual Major Major { get; set; }
         [ForeignKey(nameof(ParentGroupId))]
         [InverseProperty(nameof(Group.InverseParentGroup))]
         public virtual Group ParentGroup { get; set; }
-        [ForeignKey(nameof(UniversityMajorId))]
+        [ForeignKey(nameof(UniversityId))]
         [InverseProperty("Groups")]
-        public virtual UniversityMajor UniversityMajor { get; set; }
+        public virtual University University { get; set; }
         [InverseProperty(nameof(AlumniGroup.Group))]
         public virtual ICollection<AlumniGroup> AlumniGroups { get; set; }
         [InverseProperty(nameof(Event.Group))]

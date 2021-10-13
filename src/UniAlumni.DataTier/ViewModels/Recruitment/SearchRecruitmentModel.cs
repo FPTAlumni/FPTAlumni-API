@@ -14,10 +14,8 @@ namespace UniAlumni.DataTier.ViewModels.Recruitment
         public int? MajorId { get; set; } = null;
         public int? GroupId { get; set; } = null;
 
-        [DefaultValue(RecruitmentEnum.RecruitmentType.Fulltime)]
-        public RecruitmentEnum.RecruitmentType? Type { get; set; } = RecruitmentEnum.RecruitmentType.Fulltime;
+        public RecruitmentEnum.RecruitmentType? Type { get; set; } = null;
 
-        [DefaultValue(RecruitmentEnum.RecruitmentStatus.Active)]
-        public RecruitmentEnum.RecruitmentStatus? Status { get; set; } = RecruitmentEnum.RecruitmentStatus.Active;
+        public RecruitmentEnum.RecruitmentStatus? Status { get; set; } = null;
     }
 }

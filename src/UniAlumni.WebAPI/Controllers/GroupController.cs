@@ -7,6 +7,7 @@ using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Object;
+using UniAlumni.DataTier.ViewModels.AlumniGroup;
 using UniAlumni.DataTier.ViewModels.Group;
 
 namespace UniAlumni.WebAPI.Controllers
@@ -26,8 +27,8 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public IActionResult GetGroups([FromQuery] SearchGroupModel searchGroupModel, [FromQuery] PagingParam<GroupEnum.GroupSortCriteria> paginationModel)
         {
-            var uniId = int.Parse(User.FindFirst("universityId")?.Value);
-            var groups = _groupService.GetGroups(paginationModel, searchGroupModel, uniId);
+            var userId = int.Parse(User.FindFirst("id")?.Value);
+            var groups = _groupService.GetGroups(paginationModel, searchGroupModel, userId, User.IsInRole(RolesConstants.ADMIN));
             return Ok(groups);
         }
 
@@ -36,7 +37,7 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> GetGroup(int id)
         {
             var uniId = int.Parse(User.FindFirst("universityId")?.Value);
-            var group = await _groupService.GetGroupById(id, uniId);
+            var group = await _groupService.GetGroupById(id, uniId, User.IsInRole(RolesConstants.ADMIN));
             return Ok(new BaseResponse<GroupViewModel>()
             {
                 Code = StatusCodes.Status200OK,
@@ -44,6 +45,30 @@ namespace UniAlumni.WebAPI.Controllers
                 Data = group
             });
         }
+        [HttpGet("{id}/alumni")]
+        [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
+        public IActionResult GetGroupMember(int id, [FromQuery] SearchAlumniGroupModel searchAlumniGroupModel, 
+            [FromQuery] PagingParam<AlumniGroupEnum.AlumniGroupSortCriteria> paginationModel)
+        {
+            var userId = int.Parse(User.FindFirst("id")?.Value);
+            var members = _groupService.GetGroupMember(paginationModel, searchAlumniGroupModel, id, userId, User.IsInRole(RolesConstants.ADMIN));
+            return Ok(members);
+        }
+
+        [HttpPatch("{id}/alumni")]
+        [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
+        public async Task<IActionResult> UpdateGroupMember([FromBody] AlumniGroupUpdateRequest item)
+        {
+            var userId = int.Parse(User.FindFirst("id")?.Value);
+            var member = await _groupService.UpdateGroupMember(item, userId, User.IsInRole(RolesConstants.ADMIN));
+            return Ok(new BaseResponse<AlumniGroupViewModel>()
+            {
+                Code = StatusCodes.Status201Created,
+                Msg = "",
+                Data = member
+            });
+        }
+
 
         [HttpPost]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
@@ -58,9 +83,9 @@ namespace UniAlumni.WebAPI.Controllers
                 Data = groupModel
             });
         }
-        [HttpPut("{id}")]
+        [HttpPut]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        public async Task<IActionResult> UpdateGroup(int id, [FromBody] GroupUpdateRequest item)
+        public async Task<IActionResult> UpdateGroup([FromBody] GroupUpdateRequest item)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
             GroupViewModel groupModel = await _groupService.UpdateGroup(item, userId, User.IsInRole(RolesConstants.ADMIN));

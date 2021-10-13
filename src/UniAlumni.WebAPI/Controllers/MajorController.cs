@@ -32,8 +32,7 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public IActionResult GetMajors([FromQuery] SearchMajorModel searchMajorModel, [FromQuery] PagingParam<MajorEnum.MajorSortCriteria> paginationModel)
         {
-            var uniId = int.Parse(User.FindFirst("universityId")?.Value);
-            var majors = _majorService.GetMajors(paginationModel, searchMajorModel, uniId);
+            var majors = _majorService.GetMajors(paginationModel, searchMajorModel);
             return Ok(majors);
         }
 
@@ -41,8 +40,7 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public async Task<IActionResult> GetMajor(int id)
         {
-            var uniId = int.Parse(User.FindFirst("universityId")?.Value);
-            var major = await _majorService.GetMajorById(id, uniId);
+            var major = await _majorService.GetMajorById(id);
             return Ok(new BaseResponse<MajorViewModel>()
             {
                 Code = StatusCodes.Status200OK,
@@ -58,9 +56,9 @@ namespace UniAlumni.WebAPI.Controllers
             MajorViewModel majorModel = await _majorService.CreateMajor(item);
             return Created(string.Empty, majorModel);
         }
-        [HttpPut("{id}")]
+        [HttpPut]
         [Authorize(Roles = RolesConstants.ADMIN)]
-        public async Task<IActionResult> UpdateMajor(int id, [FromBody] MajorUpdateRequest item)
+        public async Task<IActionResult> UpdateMajor([FromBody] MajorUpdateRequest item)
         {
             MajorViewModel majorModel = await _majorService.UpdateMajor(item);
             return Ok(majorModel);

@@ -49,22 +49,29 @@ namespace UniAlumni.Business.Services.MajorSrv
             }
         }
 
-        public async Task<MajorViewModel> GetMajorById(int id, int universityId)
+        public async Task<MajorViewModel> GetMajorById(int id)
         {
-            var majorModel = await _repository.Get(m => m.Id == id && m.UniversityMajors.Any(um => um.UniversityId == universityId)).ProjectTo<MajorViewModel>(_mapper).FirstOrDefaultAsync();
+            var majorModel = await _repository.Get(m => m.Id == id).ProjectTo<MajorViewModel>(_mapper).FirstOrDefaultAsync();
             return majorModel;
         }
 
-        public ModelsResponse<MajorViewModel> GetMajors(PagingParam<MajorEnum.MajorSortCriteria> paginationModel, SearchMajorModel searchMajorModel, int universityId)
+        public ModelsResponse<MajorViewModel> GetMajors(PagingParam<MajorEnum.MajorSortCriteria> paginationModel, SearchMajorModel searchMajorModel)
         {
-            var queryMajors = _repository.Get(m => m.UniversityMajors.Any(um => um.UniversityId == universityId) &&
-                                        m.Status == (byte?)searchMajorModel.Status);
+            var queryMajors = _repository.GetAll();
 
             if (searchMajorModel.Name.Length > 0)
             {
                 queryMajors = queryMajors.Where(m => m.ShortName.IndexOf(searchMajorModel.Name, StringComparison.OrdinalIgnoreCase) >= 0 ||
                 m.FullName.IndexOf(searchMajorModel.Name, StringComparison.OrdinalIgnoreCase) >= 0 ||
                 m.VietnameseName.IndexOf(searchMajorModel.Name, StringComparison.OrdinalIgnoreCase) >= 0);
+            }
+            if (searchMajorModel.ClassId != null)
+            {
+                queryMajors = queryMajors.Where(m => m.ClassMajors.Any(cm => cm.ClassId == searchMajorModel.ClassId));
+            }
+            if (searchMajorModel.Status != null)
+            {
+                queryMajors = queryMajors.Where(m => m.Status == (byte?)searchMajorModel.Status);
             }
 
             var majorViewModels = queryMajors.ProjectTo<MajorViewModel>(_mapper);

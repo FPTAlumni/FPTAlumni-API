@@ -8,7 +8,9 @@ using UniAlumni.Business.Services.GroupSrv;
 using UniAlumni.Business.Services.MajorSrv;
 using UniAlumni.Business.Services.NewsSrv;
 using UniAlumni.Business.Services.RecruitmentSrv;
+using UniAlumni.Business.Services.ReferralSrv;
 using UniAlumni.Business.Services.UniversityService;
+using UniAlumni.Business.Services.VoucherSrv;
 
 namespace UniAlumni.Business.Services
 {
@@ -26,12 +28,14 @@ namespace UniAlumni.Business.Services
 
             services.AddScoped<IGroupService, GroupService>();
             services.AddScoped<IMajorService, MajorService>();
-            
+
             services.AddScoped<ICategorySvc, CategorySvc>();
             services.AddScoped<ICompanySvc, CompanySvc>();
             services.AddScoped<INewsService, NewsService>();
             services.AddScoped<IUniversitySvc, UniversitySvc>();
             services.AddScoped<IRecruitmentService, RecruitmentService>();
+            services.AddScoped<IVoucherService, VoucherService>();
+            services.AddScoped<IReferralService, ReferralService>();
         }
     }
 }

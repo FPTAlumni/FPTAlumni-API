@@ -18,7 +18,9 @@ namespace UniAlumni.DataTier.AutoMapperModule
                 .ForMember(des => des.Type, opt => opt.MapFrom(
                     src => ((RecruitmentEnum.RecruitmentType)src.Type).ToString()))
                 .ForMember(des => des.Major, opt => opt.MapFrom(
-                    src => src.Group.UniversityMajor.Major));
+                    src => src.Group.Major))
+                .ForMember(des => des.Status, opt => opt.MapFrom(
+                        src => ((RecruitmentEnum.RecruitmentStatus)src.Status).ToString()));
             mc.CreateMap<RecruitmentCreateRequest, Recruitment>();
             mc.CreateMap<RecruitmentUpdateRequest, Recruitment>();
         }

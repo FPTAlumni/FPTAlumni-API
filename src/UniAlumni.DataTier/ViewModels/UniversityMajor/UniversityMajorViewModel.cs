@@ -12,7 +12,7 @@ namespace UniAlumni.DataTier.ViewModels.UniversityMajor
     {
         public int Id { get; set; }
     }
-    public class UniMajorModelGroup : BaseMajorModel
+    public class UniMajorModelGroup : BaseUniversityMajorModel
     {
         public BaseUniversityModel University;
         public BaseMajorModel Major;

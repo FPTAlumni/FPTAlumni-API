@@ -13,8 +13,8 @@ namespace UniAlumni.Business.Services.MajorSrv
     public interface IMajorService
     {
         ModelsResponse<MajorViewModel> GetMajors(PagingParam<MajorEnum.MajorSortCriteria> paginationModel,
-            SearchMajorModel searchMajorModel, int universityId);
-        Task<MajorViewModel> GetMajorById(int id, int universityId);
+            SearchMajorModel searchMajorModel);
+        Task<MajorViewModel> GetMajorById(int id);
         Task<MajorViewModel> CreateMajor(MajorCreateRequest request);
         Task<MajorViewModel> UpdateMajor(MajorUpdateRequest request);
         Task DeleteMajor(int id);

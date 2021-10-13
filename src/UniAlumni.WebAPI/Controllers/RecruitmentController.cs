@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using UniAlumni.Business.Services.RecruitmentSrv;
 using UniAlumni.DataTier.Common;
@@ -29,8 +26,8 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public IActionResult GetRecruitments([FromQuery] SearchRecruitmentModel searchNewsModel, [FromQuery] PagingParam<RecruitmentEnum.RecruitmentSortCriteria> paginationModel)
         {
-            var uniId = int.Parse(User.FindFirst("universityId")?.Value);
-            var recruitments = _recruitmetService.GetRecruitments(paginationModel, searchNewsModel, uniId);
+            var userId = int.Parse(User.FindFirst("id")?.Value);
+            var recruitments = _recruitmetService.GetRecruitments(paginationModel, searchNewsModel, userId, User.IsInRole(RolesConstants.ADMIN));
             return Ok(recruitments);
         }
 
@@ -38,19 +35,19 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public async Task<IActionResult> GetRecruitmentById(int id)
         {
-            var uniId = int.Parse(User.FindFirst("universityId")?.Value);
-            var recruitments = await _recruitmetService.GetRecruitmentById(id, uniId);
+            var userId = int.Parse(User.FindFirst("id")?.Value);
+            var recruitment = await _recruitmetService.GetRecruitmentById(id, userId, User.IsInRole(RolesConstants.ADMIN));
             return Ok(new BaseResponse<RecruitmentViewModel>()
             {
                 Code = StatusCodes.Status200OK,
                 Msg = "",
-                Data = recruitments
+                Data = recruitment
             });
         }
 
         [HttpPost]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        public async Task<IActionResult> PostGroup([FromBody] RecruitmentCreateRequest item)
+        public async Task<IActionResult> PostRecruitment([FromBody] RecruitmentCreateRequest item)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
             var recruitmentModel = await _recruitmetService.CreateRecruitment(item, userId, User.IsInRole(RolesConstants.ADMIN));
@@ -61,9 +58,9 @@ namespace UniAlumni.WebAPI.Controllers
                 Data = recruitmentModel
             });
         }
-        [HttpPut("{id}")]
+        [HttpPut]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        public async Task<IActionResult> UpdateGroup(int id, [FromBody] RecruitmentUpdateRequest item)
+        public async Task<IActionResult> UpdateRecruitment([FromBody] RecruitmentUpdateRequest item)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
             RecruitmentViewModel recruitmentModel = await _recruitmetService.UpdateRecruitment(item, userId, User.IsInRole(RolesConstants.ADMIN));
@@ -76,7 +73,7 @@ namespace UniAlumni.WebAPI.Controllers
         }
         [HttpDelete("{id}")]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        public async Task<IActionResult> DeleteGroup([FromRoute] int id)
+        public async Task<IActionResult> DeleteRecruitment([FromRoute] int id)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
             await _recruitmetService.DeleteRecruitment(id, userId, User.IsInRole(RolesConstants.ADMIN));

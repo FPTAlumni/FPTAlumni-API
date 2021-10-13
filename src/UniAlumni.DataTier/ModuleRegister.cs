@@ -10,9 +10,11 @@ using UniAlumni.DataTier.Repositories.GroupRepo;
 using UniAlumni.DataTier.Repositories.MajorRepo;
 using UniAlumni.DataTier.Repositories.NewsRepo;
 using UniAlumni.DataTier.Repositories.RecruitmentRepo;
+using UniAlumni.DataTier.Repositories.ReferralRepo;
 using UniAlumni.DataTier.Repositories.TagNewsRepo;
 using UniAlumni.DataTier.Repositories.TagRepo;
 using UniAlumni.DataTier.Repositories.UniversityRepo;
+using UniAlumni.DataTier.Repositories.VoucherRepo;
 
 namespace UniAlumni.DataTier
 {
@@ -52,6 +54,10 @@ namespace UniAlumni.DataTier
             services.AddScoped<IAlumniGroupRepository, AlumniGroupRepository>();
 
             services.AddScoped<IRecruitmentRepository, RecruitmentRepository>();
+
+            services.AddScoped<IVoucherRepository, VoucherRepository>();
+
+            services.AddScoped<IReferralRepository, ReferralRepository>();
 
             return services;
         }

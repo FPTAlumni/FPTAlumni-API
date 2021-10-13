@@ -11,7 +11,17 @@ namespace UniAlumni.DataTier.Common.Enum
         public enum AlumniGroupStatus
         {
             Inactive,
-            Active
+            Active,
+            Pending,
+            Banned
+        }
+        public enum AlumniGroupSortCriteria
+        {
+
+            RegisteredDate,
+
+
+            Status
         }
     }
 }

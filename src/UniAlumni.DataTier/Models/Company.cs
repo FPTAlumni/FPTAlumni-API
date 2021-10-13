@@ -34,6 +34,10 @@ namespace UniAlumni.DataTier.Models
         public byte? Status { get; set; }
         [Column(TypeName = "text")]
         public string Image { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? CreatedDate { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? UpdatedDate { get; set; }
 
         [InverseProperty(nameof(Alumnus.Company))]
         public virtual ICollection<Alumnus> Alumni { get; set; }

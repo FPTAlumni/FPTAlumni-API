@@ -22,4 +22,8 @@ namespace UniAlumni.DataTier.ViewModels.Alumni
         public int? UniversityId { get; set; }
         public int? CompanyId { get; set; }
     }
+    public class AlumniGroupAlumniModel : BaseAlumniModel
+    {
+        public string Email { get; set; }
+    }
 }

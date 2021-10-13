@@ -29,5 +29,6 @@ namespace UniAlumni.DataTier.ViewModels.Recruitment
         public BaseGroupModel GroupOrigin { get; set; }
         public BaseMajorModel Major { get; set; }
         public string Type { get; set; }
+        public string Status { get; set; }
     }
 }
