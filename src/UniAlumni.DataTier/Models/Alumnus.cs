@@ -49,19 +49,15 @@ namespace UniAlumni.DataTier.Models
         [Column(TypeName = "datetime")]
         public DateTime? UpdatedDate { get; set; }
         public byte? Status { get; set; }
-        public int UniversityMajorId { get; set; }
         public int? CompanyId { get; set; }
-        public int? ClassId { get; set; }
+        public int? ClassMajorId { get; set; }
 
-        [ForeignKey(nameof(ClassId))]
+        [ForeignKey(nameof(ClassMajorId))]
         [InverseProperty("Alumni")]
-        public virtual Class Class { get; set; }
+        public virtual ClassMajor ClassMajor { get; set; }
         [ForeignKey(nameof(CompanyId))]
         [InverseProperty("Alumni")]
         public virtual Company Company { get; set; }
-        [ForeignKey(nameof(UniversityMajorId))]
-        [InverseProperty("Alumni")]
-        public virtual UniversityMajor UniversityMajor { get; set; }
         [InverseProperty(nameof(AlumniGroup.Alumni))]
         public virtual ICollection<AlumniGroup> AlumniGroups { get; set; }
         [InverseProperty(nameof(EventRegistration.Alumni))]

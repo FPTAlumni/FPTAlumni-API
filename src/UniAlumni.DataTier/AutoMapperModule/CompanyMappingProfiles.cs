@@ -12,7 +12,8 @@ namespace UniAlumni.DataTier.AutoMapperModule
             configuration.CreateMap<Company, GetCompanyDetail>().ReverseMap();
             configuration.CreateMap<Company, CreateCompanyRequestBody>().ReverseMap();
             configuration.CreateMap<Company, UpdateCompanyRequestBody>().ReverseMap();
-
+            configuration.CreateMap<Company, BaseCompanyModel>();
+            configuration.CreateMap<Company, RecruitmentCompanyModel>();
             return configuration;
         }
     }

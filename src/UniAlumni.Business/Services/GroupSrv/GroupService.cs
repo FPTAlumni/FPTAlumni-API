@@ -9,8 +9,12 @@ using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
+using UniAlumni.DataTier.Repositories.AlumniGroupRepo;
+using UniAlumni.DataTier.Repositories.AlumniRepo;
 using UniAlumni.DataTier.Repositories.GroupRepo;
 using UniAlumni.DataTier.Utility.Paging;
+using UniAlumni.DataTier.ViewModels.Alumni;
+using UniAlumni.DataTier.ViewModels.AlumniGroup;
 using UniAlumni.DataTier.ViewModels.Group;
 
 namespace UniAlumni.Business.Services.GroupSrv
@@ -19,30 +23,39 @@ namespace UniAlumni.Business.Services.GroupSrv
     {
         private readonly IGroupRepository _repository;
         private readonly IConfigurationProvider _mapper;
+        private readonly IAlumniGroupRepository _alumniGroupRepository;
+        private readonly IAlumniRepository _alumniRepository;
 
-        public GroupService(IGroupRepository repository, IMapper mapper)
+        public GroupService(IGroupRepository repository, IMapper mapper, IAlumniGroupRepository alumniGroupRepository, IAlumniRepository alumniRepository)
         {
             _mapper = mapper.ConfigurationProvider;
             _repository = repository;
+            _alumniGroupRepository = alumniGroupRepository;
+            _alumniRepository = alumniRepository;
         }
         public async Task<GroupViewModel> CreateGroup(GroupCreateRequest request, int userId, bool isAdmin)
         {
             var mapper = _mapper.CreateMapper();
             var group = mapper.Map<Group>(request);
-            if (isAdmin)
+            if (group.ParentGroupId == null)
             {
-                group.Status = (int)GroupEnum.GroupStatus.Active;
-                 _repository.Insert(group);
-                await _repository.SaveChangesAsync();
-                return await _repository.Get(g => g.Id == group.Id).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
+                if (isAdmin)
+                {
+                    group.Status = (byte)GroupEnum.GroupStatus.Active;
+                    _repository.Insert(group);
+                    await _repository.SaveChangesAsync();
+                    return await _repository.Get(g => g.Id == group.Id).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
+                }
             }
-            else if (group.ParentGroupId != null)
+            else
             {
                 var parrentGroup = _repository.GetById(group.ParentGroupId);
-                if (parrentGroup != null)
-                    if (userId == parrentGroup.GroupLeaderId)
+                if (parrentGroup != null && parrentGroup.ParentGroupId == null)
+                    if (userId == parrentGroup.GroupLeaderId || isAdmin)
                     {
-                        group.Status = (int)GroupEnum.GroupStatus.Active;
+                        group.Status = (byte)GroupEnum.GroupStatus.Active;
+                        group.UniversityId = parrentGroup.UniversityId;
+                        group.MajorId = parrentGroup.MajorId;
                         _repository.Insert(group);
                         await _repository.SaveChangesAsync();
                         return await _repository.Get(g => g.Id == group.Id).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
@@ -66,15 +79,92 @@ namespace UniAlumni.Business.Services.GroupSrv
             }
         }
 
-        public ModelsResponse<GroupViewModel> GetGroups(PagingParam<GroupEnum.GroupSortCriteria> paginationModel,
-            SearchGroupModel searchGroupModel, int universityId)
+        public ModelsResponse<AlumniGroupViewModel> GetGroupMember(PagingParam<AlumniGroupEnum.AlumniGroupSortCriteria> paginationModel,
+            SearchAlumniGroupModel searchAlumniGroupModel, int groupId, int userId, bool isAdmin)
         {
-            var queryGroups = _repository.Get(g => g.UniversityMajor.UniversityId == universityId &&
-                                    g.Status == (byte?)searchGroupModel.Status);
-            if (searchGroupModel.GroupName.Length > 0)             
-                queryGroups = queryGroups.Where(group => group.GroupName.IndexOf(searchGroupModel.GroupName, StringComparison.OrdinalIgnoreCase) >= 0);            
+            var userGroupIds = _alumniGroupRepository.Get(ag => ag.AlumniId == userId).Select(ag => ag.GroupId);
+            var groupLeaderId = _repository.Get(g => g.Id == groupId).Select(g => g.GroupLeaderId).FirstOrDefault();
+
+            IQueryable<AlumniGroup> alumniGroupQuery = null;
+            if (!isAdmin && groupLeaderId != userId && userGroupIds.Contains(groupId))
+            {
+                alumniGroupQuery = _alumniGroupRepository.Get(ag => ag.GroupId == groupId && ag.Status == (byte)AlumniGroupEnum.AlumniGroupStatus.Active);
+            }
+            else if (isAdmin || groupLeaderId == userId)
+            {
+                alumniGroupQuery = _alumniGroupRepository.Get(ag => ag.GroupId == groupId);
+                if (searchAlumniGroupModel.Status != null)
+                    alumniGroupQuery = alumniGroupQuery.Where(ag => ag.Status == (byte?)searchAlumniGroupModel.Status);
+            }
+            if (searchAlumniGroupModel.FullName.Length > 0)
+                alumniGroupQuery = alumniGroupQuery.Where(ag => ag.Alumni.FullName.IndexOf(searchAlumniGroupModel.FullName, StringComparison.OrdinalIgnoreCase) >= 0);
+            if (searchAlumniGroupModel.Email.Length > 0)
+                alumniGroupQuery = alumniGroupQuery.Where(ag => ag.Alumni.Email.Contains(searchAlumniGroupModel.Email));
+            if (searchAlumniGroupModel.RegisteredFromDate != null)
+                alumniGroupQuery = alumniGroupQuery.Where(ag => ag.RegisteredDate >= searchAlumniGroupModel.RegisteredFromDate);
+            if (searchAlumniGroupModel.RegisteredToDate != null)
+                alumniGroupQuery = alumniGroupQuery.Where(ag => ag.RegisteredDate <= searchAlumniGroupModel.RegisteredToDate);
+
+
+            var viewModels = alumniGroupQuery.ProjectTo<AlumniGroupViewModel>(_mapper);
+
+            viewModels = viewModels.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
+
+            // Apply Paging
+            var data = viewModels.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
+
+            return new ModelsResponse<AlumniGroupViewModel>()
+            {
+                Code = StatusCodes.Status200OK,
+                Msg = "",
+                Data = data,
+                Metadata = new PagingMetadata()
+                {
+                    Page = paginationModel.Page,
+                    Size = paginationModel.PageSize,
+                    Total = data.Count
+                }
+            };
+        }
+        public async Task<AlumniGroupViewModel> UpdateGroupMember(AlumniGroupUpdateRequest request, int userId, bool isAdmin)
+        {
+            var group = _repository.GetFirstOrDefault(g => g.Id == request.GroupId);
+            if (isAdmin || group.GroupLeaderId == userId)
+            {
+                var alumniGroup = _alumniGroupRepository.Get(ag => ag.AlumniId == request.AlumniId && ag.GroupId == request.GroupId).FirstOrDefault();
+                if (alumniGroup != null)
+                {
+                    alumniGroup.Status = request.Status;
+                    _alumniGroupRepository.Update(alumniGroup);
+                    await _alumniGroupRepository.SaveChangesAsync();
+                    return await _alumniGroupRepository.Get(ag => ag.AlumniId == request.AlumniId && ag.GroupId == request.GroupId)
+                        .ProjectTo<AlumniGroupViewModel>(_mapper).FirstOrDefaultAsync();
+                }
+            }
+            return null;
+        }
+
+        public ModelsResponse<GroupViewModel> GetGroups(PagingParam<GroupEnum.GroupSortCriteria> paginationModel,
+            SearchGroupModel searchGroupModel, int userId, bool isAdmin)
+        {
+            var queryGroups = _repository.GetAll();
+            if (!isAdmin)
+            {
+                var alumniUniversityId = _alumniRepository.Get(a => a.Id == userId).Select(a => a.ClassMajor.Class.UniversityId).FirstOrDefault();
+                queryGroups = queryGroups.Where(g => g.UniversityId == alumniUniversityId && g.Status == (byte)GroupEnum.GroupStatus.Active);
+            }
+            else if (searchGroupModel.Status != null)
+            {
+                queryGroups = queryGroups.Where(g => g.Status == (byte)searchGroupModel.Status);
+            }
+            if (searchGroupModel.AlumniId != null)
+                queryGroups = queryGroups.Where(g => g.AlumniGroups.Any(ag => ag.AlumniId == searchGroupModel.AlumniId));
+            if (searchGroupModel.GroupLeaderId != null)
+                queryGroups = queryGroups.Where(g => g.GroupLeaderId == searchGroupModel.GroupLeaderId);
+            if (searchGroupModel.GroupName.Length > 0)
+                queryGroups = queryGroups.Where(group => group.GroupName.IndexOf(searchGroupModel.GroupName, StringComparison.OrdinalIgnoreCase) >= 0);
             if (searchGroupModel.MajorId != null)
-                queryGroups = queryGroups.Where(g => g.UniversityMajor.MajorId == searchGroupModel.MajorId);
+                queryGroups = queryGroups.Where(g => g.MajorId == searchGroupModel.MajorId);
             if (searchGroupModel.ParentGroupId != null)
                 queryGroups = queryGroups.Where(g => g.ParentGroupId == searchGroupModel.ParentGroupId);
 
@@ -96,18 +186,22 @@ namespace UniAlumni.Business.Services.GroupSrv
                     Total = data.Count
                 }
             };
-                
+
         }
 
-        public async Task<GroupViewModel> GetGroupById(int id, int universityId)
+        public async Task<GroupViewModel> GetGroupById(int id, int universityId , bool isAdmin)
         {
-            var groupModel = await _repository.Get(g => g.Id == id && g.UniversityMajor.UniversityId == universityId).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
-            return groupModel;
+            var groups = _repository.Get(g => g.Id == id && g.UniversityId == universityId);
+            if (!isAdmin)
+            {
+                groups = groups.Where(g => g.Status == (byte)GroupEnum.GroupStatus.Active);
+            }
+            return await groups.ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
         }
- 
-        public async Task<GroupViewModel> UpdateGroup(int id, GroupUpdateRequest request, int userId, bool isAdmin)
+
+        public async Task<GroupViewModel> UpdateGroup(GroupUpdateRequest request, int userId, bool isAdmin)
         {
-            var group = await _repository.GetFirstOrDefaultAsync(p => p.Id == id);
+            var group = await _repository.GetFirstOrDefaultAsync(p => p.Id == request.Id);
             if (group != null)
             {
                 if (userId == group.GroupLeaderId || isAdmin)
@@ -117,7 +211,7 @@ namespace UniAlumni.Business.Services.GroupSrv
                     group.UpdatedDate = DateTime.Now;
                     _repository.Update(group);
                     await _repository.SaveChangesAsync();
-                    return await _repository.Get(g => g.Id == id).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
+                    return await _repository.Get(g => g.Id == request.Id).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
                 }
             }
             return null;

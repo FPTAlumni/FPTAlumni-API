@@ -11,6 +11,7 @@ using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
+using UniAlumni.DataTier.Repositories.AlumniGroupRepo;
 using UniAlumni.DataTier.Repositories.NewsRepo;
 using UniAlumni.DataTier.Repositories.TagNewsRepo;
 using UniAlumni.DataTier.Repositories.TagRepo;
@@ -26,16 +27,19 @@ namespace UniAlumni.Business.Services.NewsSrv
         private readonly ITagNewsRepository _tagNewsRepository;
         private readonly ITagRepository _tagRepository;
         private readonly IConfigurationProvider _mapper;
+        private readonly IAlumniGroupRepository _alumniGroupRepository;
 
-        public NewsService(INewsRepository newsRepository, ITagNewsRepository tagNewsRepository, ITagRepository tagRepository, IMapper mapper)
+        public NewsService(INewsRepository newsRepository, ITagNewsRepository tagNewsRepository, ITagRepository tagRepository, IMapper mapper,
+            IAlumniGroupRepository alumniGroupRepository)
         {
             _mapper = mapper.ConfigurationProvider;
             _newsRepository = newsRepository;
             _tagNewsRepository = tagNewsRepository;
             _tagRepository = tagRepository;
+            _alumniGroupRepository = alumniGroupRepository;
         }
 
-        public async Task<NewsDetailModel> CreateNews(NewsCreateRequest request, int userId, bool isAdmin)
+        public async Task<NewsDetailModel> CreateNews(NewsCreateRequest request)
         {
             var mapper = _mapper.CreateMapper();
             var news = mapper.Map<News>(request);
@@ -68,7 +72,7 @@ namespace UniAlumni.Business.Services.NewsSrv
             return await _newsRepository.Get(p => p.Id == news.Id).ProjectTo<NewsDetailModel>(_mapper).FirstOrDefaultAsync();
         }
 
-        public async Task DeleteNews(int id, int userId, bool isAdmin)
+        public async Task DeleteNews(int id)
         {
             var news = await _newsRepository.GetFirstOrDefaultAsync(p => p.Id == id);
             if (news != null)
@@ -80,16 +84,24 @@ namespace UniAlumni.Business.Services.NewsSrv
             }
         }
 
-        public ModelsResponse<NewsViewModel> GetNews(PagingParam<NewsEnum.NewsSortCriteria> paginationModel, SearchNewsModel searchNewsModel, int universityId)
+        public ModelsResponse<NewsViewModel> GetNews(PagingParam<NewsEnum.NewsSortCriteria> paginationModel, SearchNewsModel searchNewsModel, int userId, bool isAdmin)
         {
-            var queryNews = _newsRepository.Get(p => p.Group.UniversityMajor.UniversityId == universityId &&
-                                        p.Status == (byte?)searchNewsModel.Status);
+            var queryNews = _newsRepository.GetAll();
+            if (!isAdmin)
+            {
+                var alumniGroupIds = _alumniGroupRepository.Get(ag => ag.AlumniId == userId).Select(ag => ag.GroupId);
+                queryNews = queryNews.Where(n => alumniGroupIds.Contains((int)n.GroupId) && n.Status == (byte)NewsEnum.NewsStatus.Active);
+            }
+            else if (searchNewsModel.Status != null)
+            {
+                queryNews = queryNews.Where(n => n.Status == (byte?)searchNewsModel.Status);
+            }
             if (searchNewsModel.GroupId != null)
-                queryNews = queryNews.Where(p => p.GroupId == searchNewsModel.GroupId);
+                queryNews = queryNews.Where(n => n.GroupId == searchNewsModel.GroupId);
             if (searchNewsModel.CategoryId != null)
-                queryNews = queryNews.Where(p => p.CategoryId == searchNewsModel.CategoryId);
+                queryNews = queryNews.Where(n => n.CategoryId == searchNewsModel.CategoryId);
             if (searchNewsModel.TagId != null)
-                queryNews = queryNews.Where(p => p.TagNews.Any(tn => tn.TagId == searchNewsModel.TagId));
+                queryNews = queryNews.Where(n => n.TagNews.Any(tn => tn.TagId == searchNewsModel.TagId));
 
             var newsViewModels = queryNews.ProjectTo<NewsViewModel>(_mapper);
             newsViewModels = newsViewModels.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
@@ -110,47 +122,21 @@ namespace UniAlumni.Business.Services.NewsSrv
             };
         }
 
-        public ModelsResponse<NewsViewModel> GetNewsByGroupId(PagingParam<NewsEnum.NewsSortCriteria> paginationModel, UserSearchNewsModel searchNewsModel, 
-                                                       int universityId, int groupId)
+        public async Task<NewsDetailModel> GetNewsById(int id, int userId, bool isAdmin)
         {
-            var queryNews = _newsRepository.Get(p => p.Group.UniversityMajor.UniversityId == universityId &&
-                                        p.GroupId == groupId &&
-                                        p.Status == (byte?) NewsEnum.NewsStatus.Active);
-            
-            if (searchNewsModel.CategoryId != null)
-                queryNews = queryNews.Where(p => p.CategoryId == searchNewsModel.CategoryId);
-            if (searchNewsModel.TagId != null)
-                queryNews = queryNews.Where(p => p.TagNews.Any(tn => tn.TagId == searchNewsModel.TagId));
-
-            var newsViewModels = queryNews.ProjectTo<NewsViewModel>(_mapper);
-            newsViewModels = newsViewModels.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
-
-            var data = newsViewModels.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
-
-            return new ModelsResponse<NewsViewModel>()
+            var newsQuery = _newsRepository.Get(n => n.Id == id);
+            if (!isAdmin)
             {
-                Code = StatusCodes.Status200OK,
-                Msg = "",
-                Data = data,
-                Metadata = new PagingMetadata()
-                {
-                    Page = paginationModel.Page,
-                    Size = paginationModel.PageSize,
-                    Total = data.Count
-                }
-            };
+                var alumniGroupIds = _alumniGroupRepository.Get(ag => ag.AlumniId == userId).Select(ag => ag.GroupId);
+                newsQuery = newsQuery.Where(n => alumniGroupIds.Contains((int)n.GroupId));
+                return await newsQuery.ProjectTo<NewsDetailModel>(_mapper).FirstOrDefaultAsync();
+            }
+            return await newsQuery.ProjectTo<NewsDetailModel>(_mapper).FirstOrDefaultAsync();
         }
 
-        public async Task<NewsDetailModel> GetNewsById(int id, int universityId)
+        public async Task<NewsDetailModel> UpdateNews(NewsUpdateRequest request)
         {
-            var newsDetail = await _newsRepository.Get(p => p.Id == id && p.Group.UniversityMajor.UniversityId==universityId)
-                .ProjectTo<NewsDetailModel>(_mapper).FirstOrDefaultAsync();
-            return newsDetail;
-        }
-
-        public async Task<NewsDetailModel> UpdateNews(int id, NewsUpdateRequest request, int userId, bool isAdmin)
-        {
-            var news = await _newsRepository.Get(n => n.Id == id)
+            var news = await _newsRepository.Get(n => n.Id == request.Id)
                 .Include(n => n.TagNews)
                 .ThenInclude(tn => tn.Tag)
                 .FirstOrDefaultAsync();
@@ -158,7 +144,7 @@ namespace UniAlumni.Business.Services.NewsSrv
             news = mapper.Map(request, news);
             news.UpdatedDate = DateTime.Now;
             var tagNames = request.TagNames.Distinct();
-            var newsTagNews = _tagNewsRepository.Get(p => p.NewsId == id);
+            var newsTagNews = _tagNewsRepository.Get(p => p.NewsId == request.Id);
             var removingTagNews = newsTagNews.Where(tn => tagNames.All(r => r != tn.Tag.Tagname));
             _tagNewsRepository.TagNews.RemoveRange(removingTagNews);
 

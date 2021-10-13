@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FirebaseAdmin.Auth;
+using Microsoft.Extensions.DependencyInjection;
 using UniAlumni.Business.Services.AlumniGroupService;
 using UniAlumni.Business.Services.AlumniService;
 using UniAlumni.Business.Services.AuthenticationService;
@@ -33,6 +34,9 @@ namespace UniAlumni.Business.Services
             services.AddScoped<ICompanySvc, CompanySvc>();
             services.AddScoped<INewsService, NewsService>();
             services.AddScoped<IUniversitySvc, UniversitySvc>();
+            services.AddScoped<IRecruitmentService, RecruitmentService>();
+            services.AddScoped<IVoucherService, VoucherService>();
+            services.AddScoped<IReferralService, ReferralService>();
             services.AddScoped<IClassSvc, ClassSvc>();
             services.AddScoped<IEventSvc, EventSvc>();
             services.AddScoped<IAlumniGroupSvc, AlumniGroupSvc>();

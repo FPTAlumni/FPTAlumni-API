@@ -16,6 +16,6 @@ namespace UniAlumni.DataTier.ViewModels.News
         public int? TagId { get; set; } = null;
 
         [DefaultValue(NewsEnum.NewsStatus.Active)]
-        public NewsEnum.NewsStatus? Status { get; set; } = NewsEnum.NewsStatus.Active;
+        public NewsEnum.NewsStatus? Status { get; set; } = null;
     }
 }

@@ -13,7 +13,8 @@ namespace UniAlumni.DataTier.Models
     {
         public University()
         {
-            UniversityMajors = new HashSet<UniversityMajor>();
+            Classes = new HashSet<Class>();
+            Groups = new HashSet<Group>();
         }
 
         [Key]
@@ -24,8 +25,15 @@ namespace UniAlumni.DataTier.Models
         public string Address { get; set; }
         [StringLength(50)]
         public string Logo { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? CreatedDate { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? UpdatedDate { get; set; }
+        public byte? Status { get; set; }
 
-        [InverseProperty(nameof(UniversityMajor.University))]
-        public virtual ICollection<UniversityMajor> UniversityMajors { get; set; }
+        [InverseProperty(nameof(Class.University))]
+        public virtual ICollection<Class> Classes { get; set; }
+        [InverseProperty(nameof(Group.University))]
+        public virtual ICollection<Group> Groups { get; set; }
     }
 }

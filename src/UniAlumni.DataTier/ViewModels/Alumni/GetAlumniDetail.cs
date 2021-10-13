@@ -34,4 +34,8 @@ namespace UniAlumni.DataTier.ViewModels.Alumni
         
         public GetClassDetail Class { get; set; }
     }
+    public class AlumniGroupAlumniModel : BaseAlumniModel
+    {
+        public string Email { get; set; }
+    }
 }

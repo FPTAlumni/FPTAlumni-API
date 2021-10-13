@@ -13,11 +13,12 @@ namespace UniAlumni.DataTier.ViewModels.Group
         [DefaultValue("")]
         public string GroupName { get; set; } = "";
 
+        public int? AlumniId { get; set; } = null;
+        public int? GroupLeaderId { get; set; } = null;
         public int? ParentGroupId { get; set; } = null;
-
         public int? MajorId { get; set; } = null;
 
         [DefaultValue(GroupEnum.GroupStatus.Active)]
-        public GroupEnum.GroupStatus? Status { get; set; } = GroupEnum.GroupStatus.Active;
+        public GroupEnum.GroupStatus? Status { get; set; } = null;
     }
 }
