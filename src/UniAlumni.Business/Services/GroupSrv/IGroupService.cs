@@ -15,7 +15,7 @@ namespace UniAlumni.Business.Services.GroupSrv
         Task<GroupViewModel> GetGroupById(int id, int universityId, bool isAdmin);
         ModelsResponse<AlumniGroupViewModel> GetGroupMember(PagingParam<AlumniGroupEnum.AlumniGroupSortCriteria> paginationModel,
             SearchAlumniGroupModel searchAlumniGroupModel, int groupId, int userId, bool isAdmin);
-        Task<AlumniGroupViewModel> UpdateGroupMember(AlumniGroupUpdateRequest request, int userId, bool isAdmin);
+        Task<AlumniGroupViewModel> UpdateGroupMember(AlumniGroupUpdateRequest request, int groupId, int userId, bool isAdmin);
         Task<GroupViewModel> CreateGroup(GroupCreateRequest request, int userId, bool isAdmin);
         Task<GroupViewModel> UpdateGroup(GroupUpdateRequest request, int userId, bool isAdmin);
         Task DeleteGroup(int id, int userId, bool isAdmin);

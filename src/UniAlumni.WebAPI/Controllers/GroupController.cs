@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using UniAlumni.Business.Services.GroupSrv;
 using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Object;
 using UniAlumni.DataTier.ViewModels.AlumniGroup;
@@ -57,10 +58,21 @@ namespace UniAlumni.WebAPI.Controllers
 
         [HttpPatch("{id}/alumni")]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        public async Task<IActionResult> UpdateGroupMember([FromBody] AlumniGroupUpdateRequest item)
+        public async Task<IActionResult> UpdateGroupMember([FromRoute]int id, [FromBody] AlumniGroupUpdateRequest item)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            var member = await _groupService.UpdateGroupMember(item, userId, User.IsInRole(RolesConstants.ADMIN));
+            AlumniGroupViewModel member;
+            try
+            {
+                member = await _groupService.UpdateGroupMember(item, id, userId, User.IsInRole(RolesConstants.ADMIN));
+            }catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<AlumniGroupViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<AlumniGroupViewModel>()
             {
                 Code = StatusCodes.Status201Created,
@@ -75,7 +87,19 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> PostGroup([FromBody] GroupCreateRequest item)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            GroupViewModel groupModel = await _groupService.CreateGroup(item, userId, User.IsInRole(RolesConstants.ADMIN));
+            GroupViewModel groupModel;
+            try
+            {
+                groupModel = await _groupService.CreateGroup(item, userId, User.IsInRole(RolesConstants.ADMIN));
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<GroupViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<GroupViewModel>()
             {
                 Code = StatusCodes.Status201Created,
@@ -88,7 +112,19 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> UpdateGroup([FromBody] GroupUpdateRequest item)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            GroupViewModel groupModel = await _groupService.UpdateGroup(item, userId, User.IsInRole(RolesConstants.ADMIN));
+            GroupViewModel groupModel;
+            try
+            {
+                groupModel = await _groupService.UpdateGroup(item, userId, User.IsInRole(RolesConstants.ADMIN));
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<GroupViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<GroupViewModel>()
             {
                 Code = StatusCodes.Status200OK,
@@ -101,7 +137,18 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> DeleteGroup([FromRoute] int id)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            await _groupService.DeleteGroup(id, userId, User.IsInRole(RolesConstants.ADMIN));
+            try
+            {
+                await _groupService.DeleteGroup(id, userId, User.IsInRole(RolesConstants.ADMIN));
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<GroupViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<GroupViewModel>()
             {
                 Code = StatusCodes.Status204NoContent,

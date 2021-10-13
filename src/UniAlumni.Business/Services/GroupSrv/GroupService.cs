@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories.AlumniGroupRepo;
@@ -47,22 +48,30 @@ namespace UniAlumni.Business.Services.GroupSrv
                     await _repository.SaveChangesAsync();
                     return await _repository.Get(g => g.Id == group.Id).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
                 }
+                else
+                    throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content");
             }
             else
             {
                 var parrentGroup = _repository.GetById(group.ParentGroupId);
-                if (parrentGroup != null && parrentGroup.ParentGroupId == null)
-                    if (userId == parrentGroup.GroupLeaderId || isAdmin)
-                    {
-                        group.Status = (byte)GroupEnum.GroupStatus.Active;
-                        group.UniversityId = parrentGroup.UniversityId;
-                        group.MajorId = parrentGroup.MajorId;
-                        _repository.Insert(group);
-                        await _repository.SaveChangesAsync();
-                        return await _repository.Get(g => g.Id == group.Id).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
-                    }
+                if (parrentGroup == null)
+                    throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching parent group");
+                if (parrentGroup.ParentGroupId != null)
+                    throw new MyHttpException(StatusCodes.Status400BadRequest, "A sub-group cannot have its sub-group");
+
+                if (userId == parrentGroup.GroupLeaderId || isAdmin)
+                {
+                    group.Status = (byte)GroupEnum.GroupStatus.Active;
+                    group.UniversityId = parrentGroup.UniversityId;
+                    group.MajorId = parrentGroup.MajorId;
+                    _repository.Insert(group);
+                    await _repository.SaveChangesAsync();
+                    return await _repository.Get(g => g.Id == group.Id).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
+                }
+                else
+                    throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content");
+
             }
-            return null;
         }
 
         public async Task DeleteGroup(int id, int userId, bool isAdmin)
@@ -77,6 +86,12 @@ namespace UniAlumni.Business.Services.GroupSrv
                     _repository.Update(group);
                     await _repository.SaveChangesAsync();
                 }
+                else
+                    throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content");
+            }
+            else
+            {
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching group member");
             }
         }
 
@@ -127,22 +142,29 @@ namespace UniAlumni.Business.Services.GroupSrv
                 }
             };
         }
-        public async Task<AlumniGroupViewModel> UpdateGroupMember(AlumniGroupUpdateRequest request, int userId, bool isAdmin)
+        public async Task<AlumniGroupViewModel> UpdateGroupMember(AlumniGroupUpdateRequest request, int groupId, int userId, bool isAdmin)
         {
-            var group = _repository.GetFirstOrDefault(g => g.Id == request.GroupId);
+            var group = _repository.GetFirstOrDefault(g => g.Id == groupId);
+            if (group == null)
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching group");
             if (isAdmin || group.GroupLeaderId == userId)
             {
-                var alumniGroup = _alumniGroupRepository.Get(ag => ag.AlumniId == request.AlumniId && ag.GroupId == request.GroupId).FirstOrDefault();
+                var alumniGroup = _alumniGroupRepository.Get(ag => ag.AlumniId == request.AlumniId && ag.GroupId == groupId).FirstOrDefault();
                 if (alumniGroup != null)
                 {
                     alumniGroup.Status = request.Status;
                     _alumniGroupRepository.Update(alumniGroup);
                     await _alumniGroupRepository.SaveChangesAsync();
-                    return await _alumniGroupRepository.Get(ag => ag.AlumniId == request.AlumniId && ag.GroupId == request.GroupId)
+                    return await _alumniGroupRepository.Get(ag => ag.AlumniId == request.AlumniId && ag.GroupId == groupId)
                         .ProjectTo<AlumniGroupViewModel>(_mapper).FirstOrDefaultAsync();
                 }
+                else
+                {
+                    throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching group member");
+                }
             }
-            return null;
+            else
+                throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content");
         }
 
         public ModelsResponse<GroupViewModel> GetGroups(PagingParam<GroupEnum.GroupSortCriteria> paginationModel,
@@ -190,7 +212,7 @@ namespace UniAlumni.Business.Services.GroupSrv
 
         }
 
-        public async Task<GroupViewModel> GetGroupById(int id, int universityId , bool isAdmin)
+        public async Task<GroupViewModel> GetGroupById(int id, int universityId, bool isAdmin)
         {
             var groups = _repository.Get(g => g.Id == id && g.UniversityId == universityId);
             if (!isAdmin)
@@ -214,8 +236,13 @@ namespace UniAlumni.Business.Services.GroupSrv
                     await _repository.SaveChangesAsync();
                     return await _repository.Get(g => g.Id == request.Id).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
                 }
+                else
+                    throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content");
             }
-            return null;
+            else
+            {
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching group member");
+            }
         }
     }
 }
