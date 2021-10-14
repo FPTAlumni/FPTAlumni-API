@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories.MajorRepo;
@@ -39,25 +40,41 @@ namespace UniAlumni.Business.Services.MajorSrv
         public async Task DeleteMajor(int id)
         {
             var major = await _repository.GetFirstOrDefaultAsync(p => p.Id == id);
-            if (major != null)
+            if (major == null)
             {
-                    major.Status = (int)MajorEnum.MajorStatus.Inactive;
-                    major.UpdatedDate = DateTime.Now;
-                    _repository.Update(major);
-                    await _repository.SaveChangesAsync();
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching major");
             }
+            major.Status = (int)MajorEnum.MajorStatus.Inactive;
+            major.UpdatedDate = DateTime.Now;
+            _repository.Update(major);
+            await _repository.SaveChangesAsync();
         }
 
-        public async Task<MajorViewModel> GetMajorById(int id)
+        public async Task<MajorViewModel> GetMajorById(int id, bool isAdmin)
         {
-            var majorModel = await _repository.Get(m => m.Id == id).ProjectTo<MajorViewModel>(_mapper).FirstOrDefaultAsync();
+            var majorQuery = _repository.Get(m => m.Id == id);
+            if (!isAdmin)
+            {
+                majorQuery = majorQuery.Where(m => m.Status == (byte?)MajorEnum.MajorStatus.Active);
+            }
+            var majorModel = await majorQuery.ProjectTo<MajorViewModel>(_mapper).FirstOrDefaultAsync();
+            if (majorModel == null)
+                throw new MyHttpException(StatusCodes.Status404NotFound, "Cannot find matching major");
             return majorModel;
         }
 
-        public ModelsResponse<MajorViewModel> GetMajors(PagingParam<MajorEnum.MajorSortCriteria> paginationModel, SearchMajorModel searchMajorModel)
+        public ModelsResponse<MajorViewModel> GetMajors(PagingParam<MajorEnum.MajorSortCriteria> paginationModel, SearchMajorModel searchMajorModel, bool isAdmin)
         {
             var queryMajors = _repository.GetAll();
 
+            if (!isAdmin)
+            {
+                queryMajors = queryMajors.Where(m => m.Status == (byte?)MajorEnum.MajorStatus.Active);
+            }
+            else if (searchMajorModel.Status != null)
+            {
+                queryMajors = queryMajors.Where(m => m.Status == (byte?)searchMajorModel.Status);
+            }
             if (searchMajorModel.Name.Length > 0)
             {
                 queryMajors = queryMajors.Where(m => m.ShortName.IndexOf(searchMajorModel.Name, StringComparison.OrdinalIgnoreCase) >= 0 ||
@@ -68,10 +85,6 @@ namespace UniAlumni.Business.Services.MajorSrv
             {
                 queryMajors = queryMajors.Where(m => m.ClassMajors.Any(cm => cm.ClassId == searchMajorModel.ClassId));
             }
-            if (searchMajorModel.Status != null)
-            {
-                queryMajors = queryMajors.Where(m => m.Status == (byte?)searchMajorModel.Status);
-            }
 
             var majorViewModels = queryMajors.ProjectTo<MajorViewModel>(_mapper);
             majorViewModels = majorViewModels.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
@@ -81,7 +94,7 @@ namespace UniAlumni.Business.Services.MajorSrv
             return new ModelsResponse<MajorViewModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Retrieved successfully",
                 Data = data,
                 Metadata = new PagingMetadata()
                 {
@@ -95,16 +108,16 @@ namespace UniAlumni.Business.Services.MajorSrv
         public async Task<MajorViewModel> UpdateMajor(MajorUpdateRequest request)
         {
             var major = await _repository.GetFirstOrDefaultAsync(p => p.Id == request.Id);
-            if (major != null)
+            if (major == null)
             {
-                    var mapper = _mapper.CreateMapper();
-                    major = mapper.Map(request, major);
-                    major.UpdatedDate = DateTime.Now;
-                    _repository.Update(major);
-                    await _repository.SaveChangesAsync();
-                    return mapper.Map<MajorViewModel>(major);
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching major");
             }
-            return null;
+            var mapper = _mapper.CreateMapper();
+            major = mapper.Map(request, major);
+            major.UpdatedDate = DateTime.Now;
+            _repository.Update(major);
+            await _repository.SaveChangesAsync();
+            return mapper.Map<MajorViewModel>(major);
         }
     }
 }

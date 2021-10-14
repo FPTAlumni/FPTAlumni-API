@@ -37,12 +37,24 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public async Task<IActionResult> GetGroup(int id)
         {
-            var uniId = int.Parse(User.FindFirst("universityId")?.Value);
-            var group = await _groupService.GetGroupById(id, uniId, User.IsInRole(RolesConstants.ADMIN));
+            GroupViewModel group;
+            try
+            {
+                var userId = int.Parse(User.FindFirst("id")?.Value);
+                group = await _groupService.GetGroupById(id, userId, User.IsInRole(RolesConstants.ADMIN));
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<GroupViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<GroupViewModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Retrieved successfully",
                 Data = group
             });
         }
@@ -76,7 +88,7 @@ namespace UniAlumni.WebAPI.Controllers
             return Ok(new BaseResponse<AlumniGroupViewModel>()
             {
                 Code = StatusCodes.Status201Created,
-                Msg = "",
+                Msg = "Updated successfully",
                 Data = member
             });
         }
@@ -103,7 +115,7 @@ namespace UniAlumni.WebAPI.Controllers
             return Ok(new BaseResponse<GroupViewModel>()
             {
                 Code = StatusCodes.Status201Created,
-                Msg = "",
+                Msg = "Created successfully",
                 Data = groupModel
             });
         }
@@ -128,7 +140,7 @@ namespace UniAlumni.WebAPI.Controllers
             return Ok(new BaseResponse<GroupViewModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Updated successfully",
                 Data = groupModel
             });
         }
@@ -152,7 +164,7 @@ namespace UniAlumni.WebAPI.Controllers
             return Ok(new BaseResponse<GroupViewModel>()
             {
                 Code = StatusCodes.Status204NoContent,
-                Msg = "",
+                Msg = "Deleted successfully",
             });
         }
     }

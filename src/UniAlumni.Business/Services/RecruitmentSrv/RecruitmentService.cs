@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories.AlumniGroupRepo;
@@ -40,58 +41,58 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
         public async Task<RecruitmentViewModel> CreateRecruitment(RecruitmentCreateRequest request, int userId, bool isAdmin)
         {
             Group group = _groupRepositorty.GetById(request.GroupOriginId);
-            if (group != null)
+            if (group == null)
             {
-                var mapper = _mapper.CreateMapper();
-                var recruitment = mapper.Map<Recruitment>(request);
-                if (isAdmin || userId == group.GroupLeaderId)
-                {
-                    recruitment.Status = (byte?)RecruitmentEnum.RecruitmentStatus.Active;
-                }
-                else
-                {
-                    recruitment.AlumniId = userId;
-                    recruitment.CompanyId = _alumniRepository.GetById(userId).CompanyId;
-                    recruitment.Status = (byte?)RecruitmentEnum.RecruitmentStatus.Pending;
-                }
-                _repository.Insert(recruitment);
-                await _repository.SaveChangesAsync();
-                var viewModel = await _repository.Get(r => r.Id == recruitment.Id).ProjectTo<RecruitmentViewModel>(_mapper).FirstOrDefaultAsync();
-                return viewModel;
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching group");
             }
-            return null;
+            var mapper = _mapper.CreateMapper();
+            var recruitment = mapper.Map<Recruitment>(request);
+            if (isAdmin || userId == group.GroupLeaderId)
+            {
+                recruitment.Status = (byte?)RecruitmentEnum.RecruitmentStatus.Active;
+            }
+            else
+            {
+                recruitment.AlumniId = userId;
+                recruitment.CompanyId = _alumniRepository.GetById(userId).CompanyId;
+                recruitment.Status = (byte?)RecruitmentEnum.RecruitmentStatus.Pending;
+            }
+            _repository.Insert(recruitment);
+            await _repository.SaveChangesAsync();
+            var viewModel = await _repository.Get(r => r.Id == recruitment.Id).ProjectTo<RecruitmentViewModel>(_mapper).FirstOrDefaultAsync();
+            return viewModel;
         }
 
         public async Task DeleteRecruitment(int id, int userId, bool isAdmin)
         {
             var recruitment = await _repository.GetFirstOrDefaultAsync(r => r.Id == id);
-            if (recruitment != null)
+            if (recruitment == null)
             {
-                Group group = _groupRepositorty.GetById(recruitment.GroupOriginId);
-                if (group != null)
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching recruitment");
+            }
+            Group group = _groupRepositorty.GetById(recruitment.GroupOriginId);
+            if (group != null)
+            {
+                if (isAdmin || userId == group.GroupLeaderId || userId == recruitment.AlumniId)
                 {
-                    if (isAdmin || userId == group.GroupLeaderId || userId == recruitment.AlumniId)
-                    {
-                        recruitment.Status = (byte?)RecruitmentEnum.RecruitmentStatus.Inactive;
-                        recruitment.UpdatedDate = DateTime.Now;
-                        _repository.Update(recruitment);
-                        await _repository.SaveChangesAsync();
-                    }
+                    recruitment.Status = (byte?)RecruitmentEnum.RecruitmentStatus.Inactive;
+                    recruitment.UpdatedDate = DateTime.Now;
+                    _repository.Update(recruitment);
+                    await _repository.SaveChangesAsync();
                 }
             }
         }
 
         public async Task<RecruitmentViewModel> GetRecruitmentById(int id, int userId, bool isAdmin)
         {
-            //var recruitmentDetail = await _repository.Get(p => p.Id == id)
-            //    .ProjectTo<RecruitmentViewModel>(_mapper).FirstOrDefaultAsync();
             var recruitmentQuery = _repository.Get(r => r.Id == id);
             if (!isAdmin)
             {
                 var alumniGroupIds = _alumniGroupRepository.Get(ag => ag.AlumniId == userId).Select(ag => ag.GroupId);
-                recruitmentQuery = recruitmentQuery.Where(r => alumniGroupIds.Contains((int)r.GroupId));
-                return await recruitmentQuery.ProjectTo<RecruitmentViewModel>(_mapper).FirstOrDefaultAsync();
+                recruitmentQuery = recruitmentQuery.Where(r => alumniGroupIds.Contains((int)r.GroupId) && r.Status == (byte)RecruitmentEnum.RecruitmentStatus.Active);
             }
+            if (recruitmentQuery == null || !recruitmentQuery.Any() )
+                throw new MyHttpException(StatusCodes.Status404NotFound, "Cannot find matching recruitment");
             return await recruitmentQuery.ProjectTo<RecruitmentViewModel>(_mapper).FirstOrDefaultAsync();
         }
 
@@ -99,7 +100,7 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
             SearchRecruitmentModel searchRecruitmentModel, int userId, bool isAdmin)
         {
             var queryRecruitments = _repository.GetAll();
-            
+
             if (!isAdmin)
             {
                 var alumniGroupIds = _alumniGroupRepository.Get(ag => ag.AlumniId == userId).Select(ag => ag.GroupId);
@@ -115,7 +116,7 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
                 queryRecruitments = queryRecruitments.Where(r => r.CompanyId == searchRecruitmentModel.CompanyId);
             if (searchRecruitmentModel.GroupId != null)
                 queryRecruitments = queryRecruitments.Where(r => r.GroupId == searchRecruitmentModel.GroupId);
-            
+
             if (searchRecruitmentModel.Type != null)
                 queryRecruitments = queryRecruitments.Where(r => r.Type == (byte?)searchRecruitmentModel.Type);
             var recruitmentViewModels = queryRecruitments.ProjectTo<RecruitmentViewModel>(_mapper);
@@ -126,7 +127,7 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
             return new ModelsResponse<RecruitmentViewModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Retrieved successfully",
                 Data = data,
                 Metadata = new PagingMetadata()
                 {

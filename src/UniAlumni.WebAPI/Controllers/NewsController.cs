@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UniAlumni.Business.Services.NewsSrv;
 using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Object;
 using UniAlumni.DataTier.ViewModels.News;
@@ -43,11 +44,23 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> GetNewsById(int id)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            var news = await _newsService.GetNewsById(id, userId, User.IsInRole(RolesConstants.ADMIN));
+            NewsDetailModel news;
+            try
+            {
+                news = await _newsService.GetNewsById(id, userId, User.IsInRole(RolesConstants.ADMIN));
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<NewsDetailModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<NewsDetailModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Retrieved successfully",
                 Data = news
             });
         }
@@ -58,11 +71,23 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> PostNews([FromBody] NewsCreateRequest item)
         {
             //var userId = int.Parse(User.FindFirst("id")?.Value);
-            var newsDetail = await _newsService.CreateNews(item);
+            NewsDetailModel newsDetail;
+            try
+            {
+                newsDetail = await _newsService.CreateNews(item);
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<NewsDetailModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<NewsDetailModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Created successfully",
                 Data = newsDetail
             }); ;
         }
@@ -72,11 +97,23 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN)]
         public async Task<IActionResult> UpdateNews([FromBody] NewsUpdateRequest item)
         {
-            var newsDetail = await _newsService.UpdateNews(item);
+            NewsDetailModel newsDetail;
+            try
+            {
+                newsDetail = await _newsService.UpdateNews(item);
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<NewsDetailModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<NewsDetailModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Updated successfully",
                 Data = newsDetail
             });
         }
@@ -86,12 +123,22 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN)]
         public async Task<IActionResult> DeleteNews([FromRoute] int id)
         {
-            //var userId = int.Parse(User.FindFirst("id")?.Value);
-            await _newsService.DeleteNews(id);
+            try
+            {
+                await _newsService.DeleteNews(id);
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<NewsDetailModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<NewsDetailModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Updated successfully",
             });
         }
     }

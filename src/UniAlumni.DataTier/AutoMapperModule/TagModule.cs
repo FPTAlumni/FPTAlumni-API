@@ -14,6 +14,7 @@ namespace UniAlumni.DataTier.AutoMapperModule
         public static void ConfigTagModule(this IMapperConfigurationExpression mc)
         {
             mc.CreateMap<TagCreateRequest, Tag>().ReverseMap();
+            mc.CreateMap<Tag, TagViewModel>();
         }
     }
 }

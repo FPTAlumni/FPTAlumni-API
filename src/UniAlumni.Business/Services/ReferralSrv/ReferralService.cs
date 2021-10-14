@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories.ReferralRepo;
@@ -63,9 +64,11 @@ namespace UniAlumni.Business.Services.ReferralSrv
         {
             var referralModel = await _repository.Get(r => r.Id == id)
                 .ProjectTo<ReferralViewModel>(_mapper).FirstOrDefaultAsync();
-            if (userId == referralModel.Nominator.Id || isAdmin)
-                return referralModel;
-            else return null;
+            if (referralModel == null)
+                throw new MyHttpException(StatusCodes.Status404NotFound, "Cannot find matching referral");
+            if (userId != referralModel.Nominator.Id && !isAdmin)
+                throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content");
+            return referralModel;
         }
 
         public ModelsResponse<ReferralViewModel> GetReferrals(PagingParam<ReferralEnum.ReferralSortCriteria> paginationModel,
@@ -97,7 +100,7 @@ namespace UniAlumni.Business.Services.ReferralSrv
             return new ModelsResponse<ReferralViewModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Retrieved successfully",
                 Data = data,
                 Metadata = new PagingMetadata()
                 {
@@ -112,16 +115,17 @@ namespace UniAlumni.Business.Services.ReferralSrv
         {
             var referral = await _repository.GetFirstOrDefaultAsync(r => r.Id == request.Id);
 
-            if (referral != null)
+            if (referral == null)
             {
-                var mapper = _mapper.CreateMapper();
-                referral = mapper.Map(request, referral);
-                referral.UpdatedDate = DateTime.Now;
-                _repository.Update(referral);
-                await _repository.SaveChangesAsync();
-                return await _repository.Get(r => r.Id == referral.Id).ProjectTo<ReferralViewModel>(_mapper).FirstOrDefaultAsync();
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching referral");
             }
-            return null;
+            var mapper = _mapper.CreateMapper();
+            referral = mapper.Map(request, referral);
+            referral.UpdatedDate = DateTime.Now;
+            _repository.Update(referral);
+            await _repository.SaveChangesAsync();
+            return await _repository.Get(r => r.Id == referral.Id).ProjectTo<ReferralViewModel>(_mapper).FirstOrDefaultAsync();
+
         }
     }
 }

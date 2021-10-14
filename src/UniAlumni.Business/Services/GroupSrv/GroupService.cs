@@ -131,7 +131,7 @@ namespace UniAlumni.Business.Services.GroupSrv
             return new ModelsResponse<AlumniGroupViewModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Retrieved successfully",
                 Data = data,
                 Metadata = new PagingMetadata()
                 {
@@ -199,7 +199,7 @@ namespace UniAlumni.Business.Services.GroupSrv
             return new ModelsResponse<GroupViewModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Retrieved successfully",
                 Data = data,
                 Metadata = new PagingMetadata()
                 {
@@ -211,14 +211,21 @@ namespace UniAlumni.Business.Services.GroupSrv
 
         }
 
-        public async Task<GroupViewModel> GetGroupById(int id, int universityId, bool isAdmin)
+        public async Task<GroupViewModel> GetGroupById(int id, int userId, bool isAdmin)
         {
-            var groups = _repository.Get(g => g.Id == id && g.UniversityId == universityId);
+            var groups = _repository.Get(g => g.Id == id);
+
             if (!isAdmin)
             {
-                groups = groups.Where(g => g.Status == (byte)GroupEnum.GroupStatus.Active);
+                var alumniUniversityId = _alumniRepository.Get(a => a.Id == userId).Select(a => a.ClassMajor.Class.UniversityId).FirstOrDefault();
+                groups = groups.Where(g => g.UniversityId == alumniUniversityId && g.Status == (byte)GroupEnum.GroupStatus.Active);
             }
-            return await groups.ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
+            if (groups == null ||!groups.Any())
+                throw new MyHttpException(StatusCodes.Status404NotFound, "Cannot find matching group");
+            if (isAdmin)
+                return await groups.ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
+            else
+                return await groups.ProjectTo<GroupDetailModel>(_mapper).FirstOrDefaultAsync();
         }
 
         public async Task<GroupViewModel> UpdateGroup(GroupUpdateRequest request, int userId, bool isAdmin)
