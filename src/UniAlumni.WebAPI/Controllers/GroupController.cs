@@ -29,9 +29,47 @@ namespace UniAlumni.WebAPI.Controllers
         public IActionResult GetGroups([FromQuery] SearchGroupModel searchGroupModel, [FromQuery] PagingParam<GroupEnum.GroupSortCriteria> paginationModel)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            var groups = _groupService.GetGroups(paginationModel, searchGroupModel, userId, User.IsInRole(RolesConstants.ADMIN));
-            return Ok(groups);
+            try
+            {
+                if (searchGroupModel.AlumniId == null)
+                {
+                    if (User.IsInRole(RolesConstants.ADMIN))
+                    {
+                        var groups = _groupService.GetGroups<GroupViewModel>(paginationModel, searchGroupModel, userId, User.IsInRole(RolesConstants.ADMIN));
+                        return Ok(groups);
+                    }
+                    else
+                    {
+                        var groups = _groupService.GetGroups<GroupDetailModel>(paginationModel, searchGroupModel, userId, User.IsInRole(RolesConstants.ADMIN));
+                        return Ok(groups);
+                    }
+
+                }
+                else
+                {
+                    if (User.IsInRole(RolesConstants.ADMIN))
+                    {
+                        var groups = _groupService.GetGroupsByAlumniId<GroupViewModel>(paginationModel, searchGroupModel, userId, User.IsInRole(RolesConstants.ADMIN));
+                        return Ok(groups);
+                    }
+                    else
+                    {
+                        var groups = _groupService.GetGroupsByAlumniId<GroupDetailModel>(paginationModel, searchGroupModel, userId, User.IsInRole(RolesConstants.ADMIN));
+                        return Ok(groups);
+                    }
+
+                }
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<GroupViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
         }
+
 
         [HttpGet("{id}")]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
@@ -60,7 +98,7 @@ namespace UniAlumni.WebAPI.Controllers
         }
         [HttpGet("{id}/alumni")]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        public IActionResult GetGroupMember(int id, [FromQuery] SearchAlumniGroupModel searchAlumniGroupModel, 
+        public IActionResult GetGroupMember(int id, [FromQuery] SearchAlumniGroupModel searchAlumniGroupModel,
             [FromQuery] PagingParam<AlumniGroupEnum.AlumniGroupSortCriteria> paginationModel)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
@@ -70,14 +108,15 @@ namespace UniAlumni.WebAPI.Controllers
 
         [HttpPatch("{id}/alumni")]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        public async Task<IActionResult> UpdateGroupMember([FromRoute]int id, [FromBody] AlumniGroupUpdateRequest item)
+        public async Task<IActionResult> UpdateGroupMember([FromRoute] int id, [FromBody] AlumniGroupUpdateRequest item)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
             AlumniGroupViewModel member;
             try
             {
                 member = await _groupService.UpdateGroupMember(item, id, userId, User.IsInRole(RolesConstants.ADMIN));
-            }catch (MyHttpException e)
+            }
+            catch (MyHttpException e)
             {
                 return Ok(new BaseResponse<AlumniGroupViewModel>
                 {

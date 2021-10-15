@@ -166,8 +166,8 @@ namespace UniAlumni.Business.Services.GroupSrv
                 throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content");
         }
 
-        public ModelsResponse<GroupViewModel> GetGroups(PagingParam<GroupEnum.GroupSortCriteria> paginationModel,
-            SearchGroupModel searchGroupModel, int userId, bool isAdmin)
+        public ModelsResponse<T> GetGroups<T>(PagingParam<GroupEnum.GroupSortCriteria> paginationModel,
+            SearchGroupModel searchGroupModel, int userId, bool isAdmin) where T:class
         {
             var queryGroups = _repository.GetAll();
             if (!isAdmin)
@@ -179,8 +179,7 @@ namespace UniAlumni.Business.Services.GroupSrv
             {
                 queryGroups = queryGroups.Where(g => g.Status == (byte)searchGroupModel.Status);
             }
-            if (searchGroupModel.AlumniId != null)
-                queryGroups = queryGroups.Where(g => g.AlumniGroups.Any(ag => ag.AlumniId == searchGroupModel.AlumniId));
+            
             if (searchGroupModel.GroupLeaderId != null)
                 queryGroups = queryGroups.Where(g => g.GroupLeaderId == searchGroupModel.GroupLeaderId);
             if (searchGroupModel.GroupName.Length > 0)
@@ -188,15 +187,74 @@ namespace UniAlumni.Business.Services.GroupSrv
             if (searchGroupModel.MajorId != null)
                 queryGroups = queryGroups.Where(g => g.MajorId == searchGroupModel.MajorId);
             if (searchGroupModel.ParentGroupId != null)
-                queryGroups = queryGroups.Where(g => g.ParentGroupId == searchGroupModel.ParentGroupId);
+            {
+                if (searchGroupModel.ParentGroupId == -1)
+                {
+                    queryGroups = queryGroups.Where(g => !g.ParentGroupId.HasValue);
+                }
+                else
+                    queryGroups = queryGroups.Where(g => g.ParentGroupId == searchGroupModel.ParentGroupId);
+            }
 
-            var groupViewModels = queryGroups.ProjectTo<GroupViewModel>(_mapper);
-            groupViewModels = groupViewModels.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
+            var groupViewModels = queryGroups.ProjectTo<T>(_mapper);
+            groupViewModels = groupViewModels.GetWithSorting<T>(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
 
             // Apply Paging
             var data = groupViewModels.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
 
-            return new ModelsResponse<GroupViewModel>()
+            return new ModelsResponse<T>()
+            {
+                Code = StatusCodes.Status200OK,
+                Msg = "Retrieved successfully",
+                Data = data,
+                Metadata = new PagingMetadata()
+                {
+                    Page = paginationModel.Page,
+                    Size = paginationModel.PageSize,
+                    Total = data.Count
+                }
+            };
+
+        }
+        public ModelsResponse<AlumniGroupGroupDetailModel<T>> GetGroupsByAlumniId<T>(PagingParam<GroupEnum.GroupSortCriteria> paginationModel,
+            SearchGroupModel searchGroupModel, int userId, bool isAdmin) where T: class
+        {
+            var query = _alumniGroupRepository.Get(ag => ag.AlumniId == searchGroupModel.AlumniId);
+            if (!isAdmin && userId != searchGroupModel.AlumniId)
+            {
+                throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content");
+            }
+            if (!isAdmin)
+            {
+                query = query.Where(ag => ag.Group.Status == (byte)GroupEnum.GroupStatus.Active);
+            }
+            else if (searchGroupModel.Status != null)
+            {
+                query = query.Where(ag => ag.Group.Status == (byte)searchGroupModel.Status);
+            }
+            if (searchGroupModel.GroupLeaderId != null)
+                query = query.Where(ag => ag.Group.GroupLeaderId == searchGroupModel.GroupLeaderId);
+            if (searchGroupModel.GroupName.Length > 0)
+                query = query.Where(ag => ag.Group.GroupName.IndexOf(searchGroupModel.GroupName, StringComparison.OrdinalIgnoreCase) >= 0);
+            if (searchGroupModel.MajorId != null)
+                query = query.Where(g => g.Group.MajorId == searchGroupModel.MajorId);
+            if (searchGroupModel.ParentGroupId != null)
+            {
+                if (searchGroupModel.ParentGroupId == -1)
+                {
+                    query = query.Where(ag => !ag.Group.ParentGroupId.HasValue);
+                }
+                else
+                    query = query.Where(ag => ag.Group.ParentGroupId == searchGroupModel.ParentGroupId);
+            }
+
+            var viewModels = query.ProjectTo<AlumniGroupGroupDetailModel<T>>(_mapper);
+            //viewModels = viewModels.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
+
+            // Apply Paging
+            var data = viewModels.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
+
+            return new ModelsResponse<AlumniGroupGroupDetailModel<T>>()
             {
                 Code = StatusCodes.Status200OK,
                 Msg = "Retrieved successfully",
@@ -220,7 +278,7 @@ namespace UniAlumni.Business.Services.GroupSrv
                 var alumniUniversityId = _alumniRepository.Get(a => a.Id == userId).Select(a => a.ClassMajor.Class.UniversityId).FirstOrDefault();
                 groups = groups.Where(g => g.UniversityId == alumniUniversityId && g.Status == (byte)GroupEnum.GroupStatus.Active);
             }
-            if (groups == null ||!groups.Any())
+            if (groups == null || !groups.Any())
                 throw new MyHttpException(StatusCodes.Status404NotFound, "Cannot find matching group");
             if (isAdmin)
                 return await groups.ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();

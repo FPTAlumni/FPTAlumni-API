@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UniAlumni.DataTier.ViewModels.Alumni;
+using UniAlumni.DataTier.ViewModels.Group;
 
 namespace UniAlumni.DataTier.ViewModels.AlumniGroup
 {
@@ -13,5 +14,11 @@ namespace UniAlumni.DataTier.ViewModels.AlumniGroup
         public int? GroupId { get; set; }
         public DateTime? RegisteredDate { get; set; }
         public string Status { get; set; }
+    }
+    public class AlumniGroupGroupDetailModel<T>
+    {
+        public DateTime? RegisteredDate { get; set; }
+        public string Status { get; set; }
+        public T Group { get; set; }
     }
 }

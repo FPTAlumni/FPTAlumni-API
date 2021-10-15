@@ -86,7 +86,7 @@ namespace UniAlumni.Business.Services.NewsSrv
             await _newsRepository.SaveChangesAsync();
         }
 
-        public ModelsResponse<NewsViewModel> GetNews(PagingParam<NewsEnum.NewsSortCriteria> paginationModel, SearchNewsModel searchNewsModel, int userId, bool isAdmin)
+        public ModelsResponse<NewsDetailModel> GetNews(PagingParam<NewsEnum.NewsSortCriteria> paginationModel, SearchNewsModel searchNewsModel, int userId, bool isAdmin)
         {
             var queryNews = _newsRepository.GetAll();
             if (!isAdmin)
@@ -105,12 +105,12 @@ namespace UniAlumni.Business.Services.NewsSrv
             if (searchNewsModel.TagId != null)
                 queryNews = queryNews.Where(n => n.TagNews.Any(tn => tn.TagId == searchNewsModel.TagId));
 
-            var newsViewModels = queryNews.ProjectTo<NewsViewModel>(_mapper);
+            var newsViewModels = queryNews.ProjectTo<NewsDetailModel>(_mapper);
             newsViewModels = newsViewModels.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
 
             var data = newsViewModels.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
 
-            return new ModelsResponse<NewsViewModel>()
+            return new ModelsResponse<NewsDetailModel>()
             {
                 Code = StatusCodes.Status200OK,
                 Msg = "Retrieved successfully",

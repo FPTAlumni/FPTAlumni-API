@@ -8,7 +8,7 @@ namespace UniAlumni.DataTier.AutoMapperModule
 {
     public static class GroupModule
     {
-        public static void ConfigGroupModule (this IMapperConfigurationExpression mc)
+        public static void ConfigGroupModule(this IMapperConfigurationExpression mc)
         {
             mc.CreateMap<Group, GroupViewModel>()
                 .ForMember(des => des.NumberOfMembers, opt => opt.MapFrom(
