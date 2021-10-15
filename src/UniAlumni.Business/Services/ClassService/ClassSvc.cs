@@ -27,7 +27,8 @@ namespace UniAlumni.Business.Services.ClassService
         public IList<GetClassDetail> GetClassPage(PagingParam<ClassEnum.ClassSortCriteria> paginationModel,
             SearchClassModel searchClassModel)
         {
-            IQueryable<Class> queryClass = _classRepository.Table;
+            IQueryable<Class> queryClass = _classRepository.Table
+                .Include(c=>c.University);
 
             if (searchClassModel.ClassOf is {Length: > 0})
             {
@@ -51,7 +52,9 @@ namespace UniAlumni.Business.Services.ClassService
 
         public async Task<GetClassDetail> GetClassById(int id)
         {
-            Class classes = await _classRepository.GetByIdAsync(id);
+            Class classes = await _classRepository.Get(c=>c.Id==id)
+                .Include(c=>c.University)
+                .FirstOrDefaultAsync();
             if (classes.Status == (int) ClassEnum.ClassStatus.Inactive) return null;
             GetClassDetail classDetail = _mapper.Map<GetClassDetail>(classes);
             return classDetail;
@@ -61,6 +64,7 @@ namespace UniAlumni.Business.Services.ClassService
         {
             Class classes = _mapper.Map<Class>(requestBody);
             classes.CreatedDate = DateTime.Now;
+            classes.Status = (int) ClassEnum.ClassStatus.Active;
             await _classRepository.InsertAsync(classes);
             await _classRepository.SaveChangesAsync();
 

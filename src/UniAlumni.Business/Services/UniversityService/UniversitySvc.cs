@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -35,6 +36,8 @@ namespace UniAlumni.Business.Services.UniversityService
                     queryUniversity.Where(university => university.Name.Contains(searchUniversityModel.Name));
             }
 
+            //Apply Status
+            queryUniversity = queryUniversity.Where(u => u.Status == (byte?) UniversityEnum.UniversityStatus.Active);
             // Apply Sort
             if (paginationModel.SortKey.ToString().Trim().Length > 0)
                 queryUniversity =
@@ -56,6 +59,7 @@ namespace UniAlumni.Business.Services.UniversityService
             University university = await _universityRepository.Get(u=>u.Id == id)
                 .Include(u=>u.Classes)
                 .FirstOrDefaultAsync();
+            if(university.Status == (byte?) UniversityEnum.UniversityStatus.Inactive) return null;
             UniversityViewModel universityDetail = _mapper.Map<UniversityViewModel>(university);
             return universityDetail;
         }
@@ -63,7 +67,8 @@ namespace UniAlumni.Business.Services.UniversityService
         public async Task<UniversityViewModel> CreateUniversityAsync(CreateUniversityRequestBody requestBody)
         {
             University university = _mapper.Map<University>(requestBody);
-
+            university.CreatedDate = DateTime.Now;
+            university.Status = (byte?) UniversityEnum.UniversityStatus.Active;
             await _universityRepository.InsertAsync(university);
             await _universityRepository.SaveChangesAsync();
 
@@ -75,6 +80,7 @@ namespace UniAlumni.Business.Services.UniversityService
         {
             University university = await _universityRepository.GetFirstOrDefaultAsync(alu => alu.Id == requestBody.Id);
             university = _mapper.Map(requestBody, university);
+            university.UpdatedDate = DateTime.Now;
             _universityRepository.Update(university);
             await _universityRepository.SaveChangesAsync();
             UniversityViewModel universityDetail = _mapper.Map<UniversityViewModel>(university);
@@ -84,7 +90,7 @@ namespace UniAlumni.Business.Services.UniversityService
         public async Task DeleteUniversityAsync(int id)
         {
             University university = await _universityRepository.GetFirstOrDefaultAsync(alu => alu.Id == id);
-            _universityRepository.Delete(university);
+            university.Status = (byte?) UniversityEnum.UniversityStatus.Inactive;
             await _universityRepository.SaveChangesAsync();
         }
 

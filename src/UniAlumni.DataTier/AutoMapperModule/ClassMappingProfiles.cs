@@ -8,7 +8,10 @@ namespace UniAlumni.DataTier.AutoMapperModule
     {
         public static IMapperConfigurationExpression ConfigClassModule(this IMapperConfigurationExpression configuration)
         {
-            configuration.CreateMap<Class, GetClassDetail>().ReverseMap();
+            configuration.CreateMap<Class, GetClassDetail>()
+                .ForMember(des=>des.UniversityName,
+                    map=>map.MapFrom(src=>src.University.Name))
+                .ReverseMap();
             configuration.CreateMap<Class, CreateClassRequestBody>().ReverseMap();
             configuration.CreateMap<Class, UpdateClassRequestBody>().ReverseMap();
 
