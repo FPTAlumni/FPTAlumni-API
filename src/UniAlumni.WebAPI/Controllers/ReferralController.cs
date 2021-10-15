@@ -8,13 +8,15 @@ using System.Threading.Tasks;
 using UniAlumni.Business.Services.ReferralSrv;
 using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Object;
 using UniAlumni.DataTier.ViewModels.Referral;
 
 namespace UniAlumni.WebAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class ReferralController : ControllerBase
     {
@@ -38,11 +40,23 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> GetReferralById(int id)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            var referral = await _referralService.GetReferralById(id, userId, User.IsInRole(RolesConstants.ADMIN));
+            ReferralViewModel referral;
+            try
+            {
+                referral = await _referralService.GetReferralById(id, userId, User.IsInRole(RolesConstants.ADMIN));
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<ReferralViewModel>()
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message,
+                });
+            }
             return Ok(new BaseResponse<ReferralViewModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Retrieved successfully",
                 Data = referral
             });
         }
@@ -51,11 +65,23 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public async Task<IActionResult> PostReferral([FromBody] ReferralCreateRequest item)
         {
-            var referralModel = await _referralService.CreateReferral(item);
+            ReferralViewModel referralModel;
+            try
+            {
+                referralModel = await _referralService.CreateReferral(item);
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<ReferralViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<ReferralViewModel>()
             {
                 Code = StatusCodes.Status201Created,
-                Msg = "",
+                Msg = "Created successfully",
                 Data = referralModel
             });
         }
@@ -63,12 +89,23 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN)]
         public async Task<IActionResult> UpdateReferral([FromBody] ReferralUpdateRequest item)
         {
-            var userId = int.Parse(User.FindFirst("id")?.Value);
-            var recruitmentModel = await _referralService.UpdateReferral(item);
+            ReferralViewModel recruitmentModel;
+            try
+            {
+                recruitmentModel = await _referralService.UpdateReferral(item);
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<ReferralViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<ReferralViewModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Updated successfully",
                 Data = recruitmentModel
             });
         }
@@ -77,11 +114,22 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> DeleteReferral([FromRoute] int id)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            await _referralService.DeleteReferral(id, userId, User.IsInRole(RolesConstants.ADMIN));
+            try
+            {
+                await _referralService.DeleteReferral(id, userId, User.IsInRole(RolesConstants.ADMIN));
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<ReferralViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<ReferralViewModel>()
             {
                 Code = StatusCodes.Status204NoContent,
-                Msg = "",
+                Msg = "Deleted successfully",
             });
         }
     }

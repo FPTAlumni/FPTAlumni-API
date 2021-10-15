@@ -13,8 +13,8 @@ namespace UniAlumni.Business.Services.VoucherSrv
     public interface IVoucherService
     {
         ModelsResponse<VoucherViewModel> GetVouchers(PagingParam<VoucherEnum.VoucherSortCriteria> paginationModel,
-            SearchVoucherModel searchVoucherModel);
-        Task<VoucherViewModel> GetVoucherById(int id);
+            SearchVoucherModel searchVoucherModel, bool isAdmin);
+        Task<VoucherViewModel> GetVoucherById(int id, bool isAdmin);
         Task DeleteVoucher(int id);
         Task<VoucherViewModel> UpdateVoucher(VoucherUpdateRequest request);
         Task<VoucherViewModel> CreateVoucher(VoucherCreateRequest request);

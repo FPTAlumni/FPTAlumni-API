@@ -26,6 +26,6 @@ namespace UniAlumni.DataTier.ViewModels.News
     }
     public class NewsDetailModel : NewsViewModel
     {
-        public ICollection<TagCreateRequest> Tags { get; set; }
+        public ICollection<TagViewModel> Tags { get; set; }
     }
 }

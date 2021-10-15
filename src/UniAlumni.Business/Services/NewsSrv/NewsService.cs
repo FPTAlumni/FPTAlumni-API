@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories.AlumniGroupRepo;
@@ -51,7 +52,7 @@ namespace UniAlumni.Business.Services.NewsSrv
                 var tag = await _tagRepository.GetFirstOrDefaultAsync(t => t.Tagname.Equals(tagName));
                 if (tag == null)
                 {
-                    tag = new Tag() { Tagname = tagName, Status= (byte)TagEnum.TagStatus.Active };
+                    tag = new Tag() { Tagname = tagName, Status = (byte)TagEnum.TagStatus.Active };
                     tagNews.Tag = tag;
                     news.TagNews.Add(tagNews);
                 }
@@ -65,7 +66,7 @@ namespace UniAlumni.Business.Services.NewsSrv
                         news.TagNews.Add(tagNews);
                     }
                 }
-                
+
             }
             _newsRepository.Insert(news);
             await _newsRepository.SaveChangesAsync();
@@ -75,16 +76,17 @@ namespace UniAlumni.Business.Services.NewsSrv
         public async Task DeleteNews(int id)
         {
             var news = await _newsRepository.GetFirstOrDefaultAsync(p => p.Id == id);
-            if (news != null)
+            if (news == null)
             {
-                news.Status = (int)NewsEnum.NewsStatus.Inactive;
-                news.UpdatedDate = DateTime.Now;
-                _newsRepository.Update(news);
-                await _newsRepository.SaveChangesAsync();
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching news");
             }
+            news.Status = (int)NewsEnum.NewsStatus.Inactive;
+            news.UpdatedDate = DateTime.Now;
+            _newsRepository.Update(news);
+            await _newsRepository.SaveChangesAsync();
         }
 
-        public ModelsResponse<NewsViewModel> GetNews(PagingParam<NewsEnum.NewsSortCriteria> paginationModel, SearchNewsModel searchNewsModel, int userId, bool isAdmin)
+        public ModelsResponse<NewsDetailModel> GetNews(PagingParam<NewsEnum.NewsSortCriteria> paginationModel, SearchNewsModel searchNewsModel, int userId, bool isAdmin)
         {
             var queryNews = _newsRepository.GetAll();
             if (!isAdmin)
@@ -103,15 +105,15 @@ namespace UniAlumni.Business.Services.NewsSrv
             if (searchNewsModel.TagId != null)
                 queryNews = queryNews.Where(n => n.TagNews.Any(tn => tn.TagId == searchNewsModel.TagId));
 
-            var newsViewModels = queryNews.ProjectTo<NewsViewModel>(_mapper);
+            var newsViewModels = queryNews.ProjectTo<NewsDetailModel>(_mapper);
             newsViewModels = newsViewModels.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
 
             var data = newsViewModels.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
 
-            return new ModelsResponse<NewsViewModel>()
+            return new ModelsResponse<NewsDetailModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Retrieved successfully",
                 Data = data,
                 Metadata = new PagingMetadata()
                 {
@@ -128,9 +130,10 @@ namespace UniAlumni.Business.Services.NewsSrv
             if (!isAdmin)
             {
                 var alumniGroupIds = _alumniGroupRepository.Get(ag => ag.AlumniId == userId).Select(ag => ag.GroupId);
-                newsQuery = newsQuery.Where(n => alumniGroupIds.Contains((int)n.GroupId));
-                return await newsQuery.ProjectTo<NewsDetailModel>(_mapper).FirstOrDefaultAsync();
+                newsQuery = newsQuery.Where(n => alumniGroupIds.Contains((int)n.GroupId) && n.Status == (byte)NewsEnum.NewsStatus.Active);
             }
+            if (newsQuery == null || !newsQuery.Any())
+                throw new MyHttpException(StatusCodes.Status404NotFound, "Cannot find matching news");
             return await newsQuery.ProjectTo<NewsDetailModel>(_mapper).FirstOrDefaultAsync();
         }
 
@@ -140,6 +143,10 @@ namespace UniAlumni.Business.Services.NewsSrv
                 .Include(n => n.TagNews)
                 .ThenInclude(tn => tn.Tag)
                 .FirstOrDefaultAsync();
+            if (news == null)
+            {
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching news");
+            }
             var mapper = _mapper.CreateMapper();
             news = mapper.Map(request, news);
             news.UpdatedDate = DateTime.Now;
@@ -168,9 +175,8 @@ namespace UniAlumni.Business.Services.NewsSrv
                         if (news.TagNews.All(tn => tn.TagId != tagNews.TagId))
                             news.TagNews.Add(tagNews);
                     }
-                }                
+                }
             }
-            
             _newsRepository.Update(news);
             await _newsRepository.SaveChangesAsync();
             return await _newsRepository.Get(p => p.Id == news.Id).ProjectTo<NewsDetailModel>(_mapper).FirstOrDefaultAsync();

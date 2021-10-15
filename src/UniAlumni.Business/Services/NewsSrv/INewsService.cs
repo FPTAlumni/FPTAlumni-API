@@ -8,7 +8,7 @@ namespace UniAlumni.Business.Services.NewsSrv
 {
     public interface INewsService
     {
-        ModelsResponse<NewsViewModel> GetNews(PagingParam<NewsEnum.NewsSortCriteria> paginationModel, SearchNewsModel searchNewsModel, int userId, bool isAdmin);
+        ModelsResponse<NewsDetailModel> GetNews(PagingParam<NewsEnum.NewsSortCriteria> paginationModel, SearchNewsModel searchNewsModel, int userId, bool isAdmin);
         Task<NewsDetailModel> GetNewsById(int id, int userId, bool isAdmin);
         Task<NewsDetailModel> CreateNews(NewsCreateRequest request);
         Task<NewsDetailModel> UpdateNews(NewsUpdateRequest request);

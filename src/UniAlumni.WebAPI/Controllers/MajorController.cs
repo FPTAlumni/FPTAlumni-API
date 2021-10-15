@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UniAlumni.Business.Services.MajorSrv;
 using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Object;
@@ -29,22 +30,34 @@ namespace UniAlumni.WebAPI.Controllers
         }
         
         [HttpGet]
-        [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
+        [AllowAnonymous]
         public IActionResult GetMajors([FromQuery] SearchMajorModel searchMajorModel, [FromQuery] PagingParam<MajorEnum.MajorSortCriteria> paginationModel)
         {
-            var majors = _majorService.GetMajors(paginationModel, searchMajorModel);
+            var majors = _majorService.GetMajors(paginationModel, searchMajorModel, User.IsInRole(RolesConstants.ADMIN));
             return Ok(majors);
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
+        [AllowAnonymous]
         public async Task<IActionResult> GetMajor(int id)
         {
-            var major = await _majorService.GetMajorById(id);
+            MajorViewModel major;
+            try
+            {
+                major = await _majorService.GetMajorById(id, User.IsInRole(RolesConstants.ADMIN));
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<MajorViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<MajorViewModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Retrieved successfully",
                 Data = major
             });
         }
@@ -53,22 +66,71 @@ namespace UniAlumni.WebAPI.Controllers
         [Authorize(Roles = RolesConstants.ADMIN)]
         public async Task<IActionResult> PostMajor([FromBody] MajorCreateRequest item)
         {
-            MajorViewModel majorModel = await _majorService.CreateMajor(item);
-            return Created(string.Empty, majorModel);
+            MajorViewModel majorModel;
+            try 
+            {
+                majorModel = await _majorService.CreateMajor(item);
+            } 
+            catch(MyHttpException e)
+            {
+                return Ok(new BaseResponse<MajorViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
+            return Ok(new BaseResponse<MajorViewModel>()
+            {
+                Code = StatusCodes.Status201Created,
+                Msg = "Created successfully",
+                Data = majorModel
+            });
         }
         [HttpPut]
         [Authorize(Roles = RolesConstants.ADMIN)]
         public async Task<IActionResult> UpdateMajor([FromBody] MajorUpdateRequest item)
         {
-            MajorViewModel majorModel = await _majorService.UpdateMajor(item);
-            return Ok(majorModel);
+            MajorViewModel majorModel;
+            try
+            {
+                majorModel = await _majorService.UpdateMajor(item);
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<MajorViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
+            return Ok(new BaseResponse<MajorViewModel>()
+            {
+                Code = StatusCodes.Status201Created,
+                Msg = "Created successfully",
+                Data = majorModel
+            });
         }
         [HttpDelete("{id}")]
         [Authorize(Roles = RolesConstants.ADMIN)]
         public async Task<IActionResult> DeleteMajor([FromRoute] int id)
         {
-            await _majorService.DeleteMajor(id);
-            return NoContent();
+            try
+            {
+                await _majorService.DeleteMajor(id);
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<MajorViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
+            return Ok(new BaseResponse<MajorViewModel>()
+            {
+                Code = StatusCodes.Status204NoContent,
+                Msg = "Deleted successfully",
+            });
         }
     }
 }

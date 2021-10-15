@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using UniAlumni.Business.Services.RecruitmentSrv;
 using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Object;
 using UniAlumni.DataTier.ViewModels.Recruitment;
@@ -36,11 +37,23 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> GetRecruitmentById(int id)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            var recruitment = await _recruitmetService.GetRecruitmentById(id, userId, User.IsInRole(RolesConstants.ADMIN));
+            RecruitmentViewModel recruitment;
+            try
+            {
+                recruitment = await _recruitmetService.GetRecruitmentById(id, userId, User.IsInRole(RolesConstants.ADMIN));
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<RecruitmentViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<RecruitmentViewModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Retrieved successfully",
                 Data = recruitment
             });
         }
@@ -50,11 +63,23 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> PostRecruitment([FromBody] RecruitmentCreateRequest item)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            var recruitmentModel = await _recruitmetService.CreateRecruitment(item, userId, User.IsInRole(RolesConstants.ADMIN));
+            RecruitmentViewModel recruitmentModel;
+            try
+            {
+                recruitmentModel = await _recruitmetService.CreateRecruitment(item, userId, User.IsInRole(RolesConstants.ADMIN));
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<RecruitmentViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<RecruitmentViewModel>()
             {
                 Code = StatusCodes.Status201Created,
-                Msg = "",
+                Msg = "Created successfully",
                 Data = recruitmentModel
             });
         }
@@ -63,11 +88,23 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> UpdateRecruitment([FromBody] RecruitmentUpdateRequest item)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            RecruitmentViewModel recruitmentModel = await _recruitmetService.UpdateRecruitment(item, userId, User.IsInRole(RolesConstants.ADMIN));
+            RecruitmentViewModel recruitmentModel;
+            try
+            {
+                recruitmentModel = await _recruitmetService.UpdateRecruitment(item, userId, User.IsInRole(RolesConstants.ADMIN));
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<RecruitmentViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<RecruitmentViewModel>()
             {
                 Code = StatusCodes.Status200OK,
-                Msg = "",
+                Msg = "Updated successfully",
                 Data = recruitmentModel
             });
         }
@@ -76,11 +113,22 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> DeleteRecruitment([FromRoute] int id)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            await _recruitmetService.DeleteRecruitment(id, userId, User.IsInRole(RolesConstants.ADMIN));
+            try
+            {
+                await _recruitmetService.DeleteRecruitment(id, userId, User.IsInRole(RolesConstants.ADMIN));
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<RecruitmentViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
             return Ok(new BaseResponse<RecruitmentViewModel>()
             {
                 Code = StatusCodes.Status204NoContent,
-                Msg = "",
+                Msg = "Deleted successfully",
             });
         }
     }

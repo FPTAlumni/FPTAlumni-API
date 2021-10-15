@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using UniAlumni.DataTier.ViewModels.Alumni;
 using UniAlumni.DataTier.ViewModels.Major;
+using UniAlumni.DataTier.ViewModels.News;
+using UniAlumni.DataTier.ViewModels.Recruitment;
 using UniAlumni.DataTier.ViewModels.University;
 using UniAlumni.DataTier.ViewModels.UniversityMajor;
 
@@ -25,5 +27,10 @@ namespace UniAlumni.DataTier.ViewModels.Group
         public BaseMajorModel Major { get; set; }
         public BaseGroupModel ParentGroup { get; set; }
         public int? NumberOfMembers { get; set; }
+    }
+    public class GroupDetailModel : GroupViewModel
+    {
+        public ICollection<RecruitmentViewModel> Recruitments;
+        public ICollection<NewsViewModel> News;
     }
 }
