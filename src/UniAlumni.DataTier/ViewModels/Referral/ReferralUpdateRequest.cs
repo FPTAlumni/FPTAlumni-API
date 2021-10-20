@@ -10,5 +10,6 @@ namespace UniAlumni.DataTier.ViewModels.Referral
     {
         public int Id { get; set; }
         public byte? Status { get; set; }
+
     }
 }

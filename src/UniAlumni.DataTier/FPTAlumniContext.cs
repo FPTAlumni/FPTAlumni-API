@@ -100,8 +100,6 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<Class>(entity =>
             {
-                entity.Property(e => e.Status).IsFixedLength(true);
-
                 entity.HasOne(d => d.University)
                     .WithMany(p => p.Classes)
                     .HasForeignKey(d => d.UniversityId)
@@ -110,8 +108,6 @@ namespace UniAlumni.DataTier.Models
 
             modelBuilder.Entity<ClassMajor>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
-
                 entity.HasOne(d => d.Class)
                     .WithMany(p => p.ClassMajors)
                     .HasForeignKey(d => d.ClassId)
@@ -244,6 +240,8 @@ namespace UniAlumni.DataTier.Models
             modelBuilder.Entity<Referral>(entity =>
             {
                 entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.ParentPhone).IsUnicode(false);
 
                 entity.Property(e => e.Phone).IsUnicode(false);
 

@@ -13,5 +13,8 @@ namespace UniAlumni.DataTier.ViewModels.Referral
         public string Address { get; set; }
         public int? NominatorId { get; set; }
         public int? VoucherId { get; set; }
+        public string ParentName { get; set; }
+        public string ParentPhone { get; set; }
+        public string HighSchoolName { get; set; }
     }
 }

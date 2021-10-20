@@ -175,9 +175,12 @@ namespace UniAlumni.Business.Services.GroupSrv
                 var alumniUniversityId = _alumniRepository.Get(a => a.Id == userId).Select(a => a.ClassMajor.Class.UniversityId).FirstOrDefault();
                 queryGroups = queryGroups.Where(g => g.UniversityId == alumniUniversityId && g.Status == (byte)GroupEnum.GroupStatus.Active);
             }
-            else if (searchGroupModel.Status != null)
+            else 
             {
-                queryGroups = queryGroups.Where(g => g.Status == (byte)searchGroupModel.Status);
+                if (searchGroupModel.Status != null)
+                    queryGroups = queryGroups.Where(g => g.Status == (byte)searchGroupModel.Status);
+                if (searchGroupModel.UniversityId != null)
+                    queryGroups = queryGroups.Where(g => g.UniversityId == searchGroupModel.UniversityId);
             }
             
             if (searchGroupModel.GroupLeaderId != null)

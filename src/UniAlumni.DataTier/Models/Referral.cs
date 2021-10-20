@@ -31,6 +31,12 @@ namespace UniAlumni.DataTier.Models
         public byte? Status { get; set; }
         public int? NominatorId { get; set; }
         public int? VoucherId { get; set; }
+        [StringLength(50)]
+        public string ParentName { get; set; }
+        [StringLength(15)]
+        public string ParentPhone { get; set; }
+        [StringLength(50)]
+        public string HighSchoolName { get; set; }
 
         [ForeignKey(nameof(NominatorId))]
         [InverseProperty(nameof(Alumnus.Referrals))]

@@ -17,6 +17,10 @@ namespace UniAlumni.DataTier.ViewModels.Group
         public int Id { get; set; }
         public string GroupName { get; set; }
     }
+    public class NewsBaseGroupModel : BaseGroupModel
+    {
+        public string Banner { get; set; }
+    }
     public class GroupViewModel : BaseGroupModel
     {
         public string Banner { get; set; }

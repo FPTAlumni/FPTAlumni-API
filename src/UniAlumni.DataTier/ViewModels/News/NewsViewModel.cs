@@ -20,7 +20,7 @@ namespace UniAlumni.DataTier.ViewModels.News
         public DateTime? CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public byte? Status { get; set; }
-        public BaseGroupModel Group { get; set; }
+        public NewsBaseGroupModel Group { get; set; }
         public BaseCategoryModel Category { get; set; }
         
     }
