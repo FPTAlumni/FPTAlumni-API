@@ -31,8 +31,8 @@ namespace UniAlumni.WebAPI.Controllers
         public IActionResult GetReferrals([FromQuery] SearchReferralModel searchReferralModel, [FromQuery] PagingParam<ReferralEnum.ReferralSortCriteria> paginationModel)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            var recruitments = _referralService.GetReferrals(paginationModel, searchReferralModel, userId, User.IsInRole(RolesConstants.ADMIN));
-            return Ok(recruitments);
+            var referrals = _referralService.GetReferrals(paginationModel, searchReferralModel, userId, User.IsInRole(RolesConstants.ADMIN));
+            return Ok(referrals);
         }
 
         [HttpGet("{id}")]

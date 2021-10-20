@@ -17,6 +17,7 @@ namespace UniAlumni.DataTier.AutoMapperModule
             mc.CreateMap<GroupCreateRequest, Group>();
             mc.CreateMap<GroupUpdateRequest, Group>();
             mc.CreateMap<Group, BaseGroupModel>();
+            mc.CreateMap<Group, NewsBaseGroupModel>();
             mc.CreateMap<Group, GroupDetailModel>()
                 .ForMember(des => des.NumberOfMembers, opt => opt.MapFrom(
                     src => src.AlumniGroups.Where(ag => ag.Status == (int)AlumniGroupEnum.AlumniGroupStatus.Active)

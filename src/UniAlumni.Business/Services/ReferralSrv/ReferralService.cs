@@ -77,7 +77,7 @@ namespace UniAlumni.Business.Services.ReferralSrv
             var referralQuery = _repository.GetAll();
             if (!isAdmin)
             {
-                referralQuery.Where(r => r.NominatorId == userId);
+                referralQuery = referralQuery.Where(r => r.NominatorId == userId);
             }
             else
             {
