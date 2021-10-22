@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories.AlumniRepo;
+using UniAlumni.DataTier.Repositories.EventRegistrationRepo;
 using UniAlumni.DataTier.Repositories.EventRepo;
 using UniAlumni.DataTier.Utility.Paging;
 using UniAlumni.DataTier.ViewModels.Event;
@@ -17,20 +20,28 @@ namespace UniAlumni.Business.Services.EventService
     public class EventSvc : IEventSvc
     {
         private readonly IEventRepository _eventRepository;
+        private readonly IEventRegistrationRepository _eventRegistrationRepository;
         private readonly IAlumniRepository _alumniRepository;
         private readonly IMapper _mapper;
 
-        public EventSvc(IEventRepository eventRepository, IMapper mapper, IAlumniRepository alumniRepository)
+        public EventSvc(IEventRepository eventRepository, 
+            IMapper mapper, 
+            IAlumniRepository alumniRepository,
+            IEventRegistrationRepository eventRegistrationRepository)
         {
+            _eventRegistrationRepository = eventRegistrationRepository;
             _alumniRepository = alumniRepository;
             _eventRepository = eventRepository;
             _mapper = mapper;
         }
 
         public async Task<IList<GetEventDetail>> GetEventPage(PagingParam<EventEnum.EventSortCriteria> paginationModel,
-            SearchEventModel searchEventModel)
+            SearchEventModel searchEventModel, int? alumniId)
         {
-            IQueryable<Event> queryEvent = _eventRepository.Table;
+            
+            
+            IQueryable<Event> queryEvent = _eventRepository.Table.
+                    Include(e=>e.Group);
 
             if (searchEventModel.EventName != null)
                queryEvent = queryEvent.Where(e=> e.EventName.Contains(searchEventModel.EventName));
@@ -47,7 +58,6 @@ namespace UniAlumni.Business.Services.EventService
             if (searchEventModel.RegistrationEndDate != null)
                 queryEvent = queryEvent.Where(e=> e.RegistrationEndDate == searchEventModel.RegistrationEndDate);
             
-
             if (searchEventModel.StartDate != null)
                 queryEvent = queryEvent.Where(c => c.StartDate == searchEventModel.StartDate);
             if (searchEventModel.EndDate != null)
@@ -57,6 +67,9 @@ namespace UniAlumni.Business.Services.EventService
                 queryEvent = queryEvent.Where(c => c.Status == (byte?) searchEventModel.Status);
             if(searchEventModel.GroupId != null)
                 queryEvent = queryEvent.Where(c => c.GroupId == searchEventModel.GroupId);
+            
+            // Apply Status 
+            queryEvent = queryEvent.Where(c => c.Status != (byte?) EventEnum.EventStatus.Delete);
 
             if (searchEventModel.AlumniId != null)
             {
@@ -76,12 +89,30 @@ namespace UniAlumni.Business.Services.EventService
             queryEvent = queryEvent.GetWithPaging(paginationModel.Page, paginationModel.PageSize).AsQueryable();
 
             IQueryable<GetEventDetail> eventDetail = _mapper.ProjectTo<GetEventDetail>(queryEvent);
-            return eventDetail.ToList();
+            List<int> idEventJoined = null;
+            if (alumniId != null)
+            {
+                IQueryable<EventRegistration> eventRegistrations =
+                    _eventRegistrationRepository.Get(er => er.AlumniId == alumniId && 
+                                                           er.Status == (byte?) EventRegistrationEnum.EventRegistrationStatus.Joined);
+                idEventJoined = eventRegistrations.Select(er => er.EventId).ToList();
+            }
+
+            List<GetEventDetail> eventDetailList = eventDetail.ToList();
+            if (alumniId != null && idEventJoined != null)
+            {
+                foreach (var eventD in eventDetailList)
+                {
+                    eventD.InEvent = idEventJoined.Contains(eventD.Id);
+                }
+            }
+            return eventDetailList;
         }
 
         public async Task<GetEventDetail> GetEventById(int id)
         {
             Event eventt = await _eventRepository.GetByIdAsync(id);
+            if (eventt == null) return null;
             GetEventDetail eventtDetail = _mapper.Map<GetEventDetail>(eventt);
             return eventtDetail;
         }
@@ -90,6 +121,7 @@ namespace UniAlumni.Business.Services.EventService
         {
             Event eventt = _mapper.Map<Event>(requestBody);
             eventt.CreatedDate = DateTime.Now;
+            eventt.Status = (byte?) EventEnum.EventStatus.NotStart;
             await _eventRepository.InsertAsync(eventt);
             await _eventRepository.SaveChangesAsync();
 
@@ -100,6 +132,7 @@ namespace UniAlumni.Business.Services.EventService
         public async Task<GetEventDetail> UpdateEventAsync(UpdateEventRequestBody requestBody)
         {
             Event eventt = await _eventRepository.GetFirstOrDefaultAsync(evt => evt.Id == requestBody.Id);
+            if (eventt == null) throw new MyHttpException(StatusCodes.Status404NotFound, "Event not found");
             eventt = _mapper.Map(requestBody, eventt);
             eventt.UpdatedDate = DateTime.Now;
             _eventRepository.Update(eventt);
@@ -111,6 +144,8 @@ namespace UniAlumni.Business.Services.EventService
         public async Task DeleteEventAsync(int id)
         {
             Event eventt = await _eventRepository.GetFirstOrDefaultAsync(evt => evt.Id == id);
+            if (eventt == null) throw new MyHttpException(StatusCodes.Status404NotFound, "Event not found");
+
             eventt.Status = (byte?) EventEnum.EventStatus.Delete;
             await _eventRepository.SaveChangesAsync();
         }

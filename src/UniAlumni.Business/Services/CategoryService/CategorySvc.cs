@@ -2,8 +2,10 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories.CategoryRepo;
@@ -52,6 +54,11 @@ namespace UniAlumni.Business.Services.CategoryService
         public async Task<GetCategoryDetail> GetCategoryById(int id)
         {
             Category category = await _categoryRepository.GetByIdAsync(id);
+            if (category == null)
+            {
+                throw new MyHttpException(StatusCodes.Status404NotFound, "Category does not exist");
+            }
+            if (category.Status == (byte?) CategoryEnum.CategoryStatus.Inactive) return null;
             GetCategoryDetail categoryDetail = _mapper.Map<GetCategoryDetail>(category);
             return categoryDetail;
         }
@@ -71,6 +78,10 @@ namespace UniAlumni.Business.Services.CategoryService
         public async Task<GetCategoryDetail> UpdateCategoryAsync(UpdateCategoryRequestBody requestBody)
         {
             Category category = await _categoryRepository.GetFirstOrDefaultAsync(alu => alu.Id == requestBody.Id);
+            if (category == null)
+            {
+                throw new MyHttpException(StatusCodes.Status404NotFound, "Category does not exist");
+            }
             category = _mapper.Map(requestBody, category);
             _categoryRepository.Update(category);
             await _categoryRepository.SaveChangesAsync();
@@ -81,6 +92,10 @@ namespace UniAlumni.Business.Services.CategoryService
         public async Task DeleteCategoryAsync(int id)
         {
             Category category = await _categoryRepository.GetFirstOrDefaultAsync(alu => alu.Id == id);
+            if (category == null)
+            {
+                throw new MyHttpException(StatusCodes.Status404NotFound, "Category does not exist");
+            }
             category.Status = (byte?) CategoryEnum.CategoryStatus.Inactive;
             await _categoryRepository.SaveChangesAsync();
         }

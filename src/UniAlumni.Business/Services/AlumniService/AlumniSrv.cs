@@ -4,13 +4,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using FirebaseAdmin.Auth;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories.AlumniGroupRepo;
 using UniAlumni.DataTier.Repositories.AlumniRepo;
 using UniAlumni.DataTier.Repositories.ClassMajorRepo;
+using UniAlumni.DataTier.Repositories.EventRegistrationRepo;
+using UniAlumni.DataTier.Repositories.EventRepo;
 using UniAlumni.DataTier.Utility.Paging;
 using UniAlumni.DataTier.ViewModels.Alumni;
 
@@ -21,12 +25,18 @@ namespace UniAlumni.Business.Services.AlumniService
         private readonly IAlumniRepository _alumniRepository;
         private readonly IAlumniGroupRepository _alumniGroupRepository;
         private readonly IClassMajorRepository _classMajorRepository;
+        private readonly IEventRegistrationRepository _eventRegistrationRepository;
+        private readonly IEventRepository _eventRepository;
         private readonly IMapper _mapper;
 
         public AlumniSrv(IAlumniRepository alumniRepository, IMapper mapper,
             IAlumniGroupRepository alumniGroupRepository,
-            IClassMajorRepository classMajorRepository)
+            IClassMajorRepository classMajorRepository,
+            IEventRegistrationRepository eventRegistrationRepository,
+            IEventRepository eventRepository)
         {
+            _eventRepository = eventRepository;
+            _eventRegistrationRepository = eventRegistrationRepository;
             _classMajorRepository = classMajorRepository;
             _alumniGroupRepository = alumniGroupRepository;
             _alumniRepository = alumniRepository;
@@ -71,7 +81,20 @@ namespace UniAlumni.Business.Services.AlumniService
                     queryAlumni = queryAlumni.Where(alu => listAlumniIdInGroup.Contains(alu.Id));
                 }
             }
-
+            
+            // Apply EventId
+            if (searchAlumniModel.EventId != null)
+            {
+                Event eventt = _eventRepository.Get(e => e.Id == searchAlumniModel.EventId).FirstOrDefault();
+                if (eventt == null) throw new MyHttpException(StatusCodes.Status404NotFound, "Event not found");
+                if (eventt.Status != (byte?) EventEnum.EventStatus.Delete)
+                {
+                    queryAlumni = _eventRegistrationRepository
+                        .Get(er => er.EventId == searchAlumniModel.EventId && er.Status == (byte?) EventRegistrationEnum.EventRegistrationStatus.Joined)
+                        .Include(er=>er.Alumni)
+                        .Select(er=>er.Alumni);
+                }
+            }
 
             // Apply Sort
             if (paginationModel.SortKey.ToString().Trim().Length > 0)
@@ -111,7 +134,7 @@ namespace UniAlumni.Business.Services.AlumniService
             }
             else
             {
-                throw new Exception("No ClassMajor Exist");
+                throw new MyHttpException(StatusCodes.Status404NotFound,"No ClassMajor Exist");
                
             }
             UserRecord user = await FirebaseAuth.DefaultInstance.GetUserAsync(alumnus.Uid);
@@ -120,8 +143,15 @@ namespace UniAlumni.Business.Services.AlumniService
                 alumnus.Email = user.Email;
             }
 
-            alumnus.Status = (byte?) AlumniEnum.AlumniStatus.Pending;
-            alumnus = await _alumniRepository.CreateAlumniAsync(alumnus);
+            try
+            {
+                alumnus.Status = (byte?) AlumniEnum.AlumniStatus.Pending;
+                alumnus = await _alumniRepository.CreateAlumniAsync(alumnus);
+            }
+            catch (Exception e)
+            {
+                throw new MyHttpException(StatusCodes.Status404NotFound, e.Message);
+            }
             alumnus = await _alumniRepository.Get(a => a.Id == alumnus.Id)
                 .Include(a => a.ClassMajor)   
                 .ThenInclude(cm => cm.Class)
@@ -137,6 +167,21 @@ namespace UniAlumni.Business.Services.AlumniService
         public async Task<GetAlumniDetail> UpdateAlumniAsync(UpdateAlumniRequestBody requestBody)
         {
             Alumnus alumnus = await _alumniRepository.GetFirstOrDefaultAsync(alu => alu.Id == requestBody.Id);
+            if (alumnus == null)
+            {
+                throw new MyHttpException(StatusCodes.Status404NotFound, "Alumni is not exist");
+            }
+            ClassMajor classMajor = await _classMajorRepository.Get(cm => cm.ClassId == requestBody.ClassId &&
+                                                                          cm.MajorId == requestBody.MajorId)
+                .FirstOrDefaultAsync();
+            if (classMajor != null)
+            {
+                alumnus.ClassMajorId = classMajor.Id;
+            }
+            else
+            {
+                throw new MyHttpException(StatusCodes.Status404NotFound,"No ClassMajor Exist");
+            }
             alumnus = _mapper.Map(requestBody, alumnus);
             alumnus.UpdatedDate = DateTime.Now;
             Alumnus updateAlumni = await _alumniRepository.UpdateAlumniAsync(alumnus);
@@ -146,12 +191,26 @@ namespace UniAlumni.Business.Services.AlumniService
 
         public async Task ActivateAlumniAsync(ActivateAlumniRequestBody requestBody)
         {
-            await _alumniRepository.ActivateAlumniAsync(requestBody);
+            try
+            {
+                await _alumniRepository.ActivateAlumniAsync(requestBody);
+            }
+            catch (Exception e)
+            {
+                throw new MyHttpException(StatusCodes.Status404NotFound, e.Message);
+            }
         }
 
         public async Task DeleteAlumniAsync(int id)
         {
-            await _alumniRepository.DeleteAlumniAsync(id);
+            try
+            {
+                await _alumniRepository.DeleteAlumniAsync(id);
+            }
+            catch (Exception e)
+            {
+                throw new MyHttpException(StatusCodes.Status404NotFound, e.Message);
+            }
         }
 
         public async Task<int> GetTotal()

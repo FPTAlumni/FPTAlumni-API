@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories.ClassRepo;
@@ -55,6 +57,10 @@ namespace UniAlumni.Business.Services.ClassService
             Class classes = await _classRepository.Get(c=>c.Id==id)
                 .Include(c=>c.University)
                 .FirstOrDefaultAsync();
+            if (classes == null)
+            {
+                throw new MyHttpException(StatusCodes.Status404NotFound, "Class not found");
+            }
             if (classes.Status == (int) ClassEnum.ClassStatus.Inactive) return null;
             GetClassDetail classDetail = _mapper.Map<GetClassDetail>(classes);
             return classDetail;
@@ -75,6 +81,10 @@ namespace UniAlumni.Business.Services.ClassService
         public async Task<GetClassDetail> UpdateClassAsync(UpdateClassRequestBody requestBody)
         {
             Class classes = await _classRepository.GetFirstOrDefaultAsync(alu => alu.Id == requestBody.Id);
+            if (classes == null)
+            {
+                throw new MyHttpException(StatusCodes.Status404NotFound, "Class not found");
+            }
             classes = _mapper.Map(requestBody, classes);
             classes.UpdatedDate = DateTime.Now;
             _classRepository.Update(classes);
@@ -86,6 +96,10 @@ namespace UniAlumni.Business.Services.ClassService
         public async Task DeleteClassAsync(int id)
         {
             Class classes = await _classRepository.GetFirstOrDefaultAsync(alu => alu.Id == id);
+            if (classes == null)
+            {
+                throw new MyHttpException(StatusCodes.Status404NotFound, "Class not found");
+            }
             classes.Status = (int) ClassEnum.ClassStatus.Inactive;
             await _classRepository.SaveChangesAsync();
         }

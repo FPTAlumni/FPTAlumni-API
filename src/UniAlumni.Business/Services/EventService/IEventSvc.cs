@@ -16,9 +16,10 @@ namespace UniAlumni.Business.Services.EventService
         /// </summary>
         /// <param name="paginationModel">An object contains paging criteria</param>
         /// <param name="searchEventModel">An object contains search and filter criteria</param>
+        /// <param name="alumniId">ID of alumni login</param>
         /// <returns>List of Event.</returns>
         Task<IList<GetEventDetail>> GetEventPage(PagingParam<EventEnum.EventSortCriteria> paginationModel,
-            SearchEventModel searchEventModel);
+            SearchEventModel searchEventModel, int? alumniId);
         
         /// <summary>
         /// Get detail information of a Event.

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories.UniversityRepo;
@@ -59,6 +61,8 @@ namespace UniAlumni.Business.Services.UniversityService
             University university = await _universityRepository.Get(u=>u.Id == id)
                 .Include(u=>u.Classes)
                 .FirstOrDefaultAsync();
+            if (university == null) throw new MyHttpException(StatusCodes.Status404NotFound, "Event not found");
+
             if(university.Status == (byte?) UniversityEnum.UniversityStatus.Inactive) return null;
             UniversityViewModel universityDetail = _mapper.Map<UniversityViewModel>(university);
             return universityDetail;
@@ -79,6 +83,8 @@ namespace UniAlumni.Business.Services.UniversityService
         public async Task<UniversityViewModel> UpdateUniversityAsync(UpdateUniversityRequestBody requestBody)
         {
             University university = await _universityRepository.GetFirstOrDefaultAsync(alu => alu.Id == requestBody.Id);
+            if (university == null) throw new MyHttpException(StatusCodes.Status404NotFound, "Event not found");
+
             university = _mapper.Map(requestBody, university);
             university.UpdatedDate = DateTime.Now;
             _universityRepository.Update(university);
@@ -90,6 +96,8 @@ namespace UniAlumni.Business.Services.UniversityService
         public async Task DeleteUniversityAsync(int id)
         {
             University university = await _universityRepository.GetFirstOrDefaultAsync(alu => alu.Id == id);
+            if (university == null) throw new MyHttpException(StatusCodes.Status404NotFound, "Event not found");
+
             university.Status = (byte?) UniversityEnum.UniversityStatus.Inactive;
             await _universityRepository.SaveChangesAsync();
         }

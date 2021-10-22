@@ -36,6 +36,7 @@ namespace UniAlumni.WebAPI
 
             services.AddControllers().AddNewtonsoftJson(o =>
             {
+                o.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                 o.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
                 o.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
                 o.SerializerSettings.ContractResolver = new DefaultContractResolver()

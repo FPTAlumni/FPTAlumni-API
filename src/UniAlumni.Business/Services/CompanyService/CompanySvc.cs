@@ -2,8 +2,10 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories.CompanyRepo;
@@ -37,7 +39,7 @@ namespace UniAlumni.Business.Services.CompanyService
 
             if (searchCompanyModel.Location is {Length: > 0})
                 queryCompany = queryCompany.Where(c => c.Location.Contains(searchCompanyModel.Location));
-
+            // Apply Status
             queryCompany = queryCompany.Where(c => c.Status == (byte?) CompanyEnum.CompanyStatus.Active);
 
             IQueryable<GetCompanyDetail> companyDetails = _mapper.ProjectTo<GetCompanyDetail>(queryCompany);
@@ -54,6 +56,10 @@ namespace UniAlumni.Business.Services.CompanyService
         public async Task<GetCompanyDetail> GetCompanyById(int id)
         {
             Company company = await _companyRepository.GetByIdAsync(id);
+            if (company == null || company.Status == (byte?) CompanyEnum.CompanyStatus.Inactive)
+            {
+                throw new MyHttpException(StatusCodes.Status404NotFound, "Company not exist");
+            }
             GetCompanyDetail companyDetail = _mapper.Map<GetCompanyDetail>(company);
             return companyDetail;
         }
@@ -73,6 +79,10 @@ namespace UniAlumni.Business.Services.CompanyService
         public async Task<GetCompanyDetail> UpdateCompanyAsync(UpdateCompanyRequestBody requestBody)
         {
             Company company = await _companyRepository.GetFirstOrDefaultAsync(alu => alu.Id == requestBody.Id);
+            if (company == null || company.Status == (byte?) CompanyEnum.CompanyStatus.Inactive)
+            {
+                throw new MyHttpException(StatusCodes.Status404NotFound, "Company not exist");
+            }
             company = _mapper.Map(requestBody, company);
             _companyRepository.Update(company);
             await _companyRepository.SaveChangesAsync();
@@ -83,6 +93,10 @@ namespace UniAlumni.Business.Services.CompanyService
         public async Task DeleteCompanyAsync(int id)
         {
             Company company = await _companyRepository.GetFirstOrDefaultAsync(alu => alu.Id == id);
+            if (company == null || company.Status == (byte?) CompanyEnum.CompanyStatus.Inactive)
+            {
+                throw new MyHttpException(StatusCodes.Status404NotFound, "Company not exist");
+            }
             company.Status = (byte?) CompanyEnum.CompanyStatus.Inactive;
             await _companyRepository.SaveChangesAsync();
         }

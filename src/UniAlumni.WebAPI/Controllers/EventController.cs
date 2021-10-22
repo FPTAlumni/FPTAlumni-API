@@ -45,7 +45,14 @@ namespace UniAlumni.WebAPI.Controllers
         public async Task<IActionResult> GetAllEvent([FromQuery] SearchEventModel searchEventModel,
             [FromQuery] PagingParam<EventEnum.EventSortCriteria> paginationModel)
         {
-            IList<GetEventDetail> result = await _eventSvc.GetEventPage(paginationModel, searchEventModel);
+            int? alumniId = null;
+            
+            if (User.IsInRole(RolesConstants.ALUMNI))
+            {
+            var value = User.FindFirst("id")?.Value;
+            if (value != null) alumniId = int.Parse(value);
+            }
+            IList<GetEventDetail> result = await _eventSvc.GetEventPage(paginationModel, searchEventModel, alumniId);
             int total = await _eventSvc.GetTotal();
             if (result == null || !result.Any())
             {

@@ -57,14 +57,12 @@ namespace UniAlumni.Business.Services.AuthenticationService
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration.GetSection("AppSettings").GetSection("Secret").Value);
-            Console.WriteLine(_configuration.GetSection("AppSettings").GetSection("Secret").Value);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[] 
                 {
                     new Claim("id", alumniId.ToString()),
                     new Claim("uid", uid),
-                    // new Claim("universityId", universityId.ToString()),
                     new Claim(ClaimTypes.Role, status == (byte?) AlumniEnum.AlumniStatus.IsAdmin ? RolesConstants.ADMIN : RolesConstants.ALUMNI)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
