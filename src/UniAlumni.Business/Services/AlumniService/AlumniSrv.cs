@@ -85,14 +85,13 @@ namespace UniAlumni.Business.Services.AlumniService
             // Apply EventId
             if (searchAlumniModel.EventId != null)
             {
-                Event eventt = _eventRepository.Get(e => e.Id == searchAlumniModel.EventId).FirstOrDefault();
-                if (eventt == null) throw new MyHttpException(StatusCodes.Status404NotFound, "Event not found");
+                Event eventt = _eventRepository.Get(e => e.Id == searchAlumniModel.EventId && e.Status != (byte?) EventEnum.EventStatus.Delete).FirstOrDefault();
+                if (eventt == null) throw new MyHttpException(StatusCodes.Status404NotFound, "Event not found or Event has been delete");
                 if (eventt.Status != (byte?) EventEnum.EventStatus.Delete)
                 {
-                    queryAlumni = _eventRegistrationRepository
-                        .Get(er => er.EventId == searchAlumniModel.EventId && er.Status == (byte?) EventRegistrationEnum.EventRegistrationStatus.Joined)
-                        .Include(er=>er.Alumni)
-                        .Select(er=>er.Alumni);
+                    List<int> listRegisted = _eventRegistrationRepository
+                        .Get(er => er.EventId == eventt.Id).Select(er => er.AlumniId).ToList();
+                    queryAlumni = queryAlumni.Where(a => listRegisted.Contains(a.Id));
                 }
             }
 
