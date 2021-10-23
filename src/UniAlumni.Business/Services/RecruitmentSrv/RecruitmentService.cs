@@ -24,7 +24,7 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
     public class RecruitmentService : IRecruitmentService
     {
         private readonly IRecruitmentRepository _repository;
-        private readonly IMapper _mapper;
+        private readonly IConfigurationProvider _mapper;
         private readonly IGroupRepository _groupRepositorty;
         private readonly IAlumniRepository _alumniRepository;
         private readonly IAlumniGroupRepository _alumniGroupRepository;
@@ -32,7 +32,7 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
         public RecruitmentService(IRecruitmentRepository repository, IMapper mapper, IGroupRepository groupRepositorty, IAlumniRepository alumniRepository,
             IAlumniGroupRepository alumniGroupRepository)
         {
-            _mapper = mapper;
+            _mapper = mapper.ConfigurationProvider;
             _repository = repository;
             _groupRepositorty = groupRepositorty;
             _alumniRepository = alumniRepository;
@@ -45,8 +45,8 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
             {
                 throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching group");
             }
-
-            var recruitment = _mapper.Map<Recruitment>(request);
+            var mapper = _mapper.CreateMapper();
+            var recruitment = mapper.Map<Recruitment>(request);
             if (isAdmin || userId == group.GroupLeaderId)
             {
                 recruitment.Status = (byte?)RecruitmentEnum.RecruitmentStatus.Active;
@@ -59,7 +59,7 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
             }
             _repository.Insert(recruitment);
             await _repository.SaveChangesAsync();
-            var viewModel = await _repository.Get(r => r.Id == recruitment.Id).ProjectTo<RecruitmentViewModel>(_mapper.ConfigurationProvider).FirstOrDefaultAsync();
+            var viewModel = await _repository.Get(r => r.Id == recruitment.Id).ProjectTo<RecruitmentViewModel>(_mapper).FirstOrDefaultAsync();
             return viewModel;
         }
 
@@ -93,7 +93,7 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
             }
             if (recruitmentQuery == null || !recruitmentQuery.Any() )
                 throw new MyHttpException(StatusCodes.Status404NotFound, "Cannot find matching recruitment");
-            return await _mapper.ProjectTo<RecruitmentViewModel>(recruitmentQuery).FirstOrDefaultAsync();
+            return await recruitmentQuery.ProjectTo<RecruitmentViewModel>(_mapper).FirstOrDefaultAsync();
         }
 
         public ModelsResponse<RecruitmentViewModel> GetRecruitments(PagingParam<RecruitmentEnum.RecruitmentSortCriteria> paginationModel,
@@ -121,24 +121,21 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
 
             if (searchRecruitmentModel.Type != null)
                 queryRecruitments = queryRecruitments.Where(r => r.Type == (byte?)searchRecruitmentModel.Type);
+            var recruitmentViewModels = queryRecruitments.ProjectTo<RecruitmentViewModel>(_mapper);
+            recruitmentViewModels = recruitmentViewModels.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
 
-            if (paginationModel.SortKey.ToString().Trim().Length > 0)
-                queryRecruitments = queryRecruitments.GetWithSorting(paginationModel.SortKey.ToString(), paginationModel.SortOrder);
-            // Apply Paging
-            queryRecruitments = queryRecruitments.GetWithPaging(paginationModel.Page, paginationModel.PageSize).AsQueryable();
+            var data = recruitmentViewModels.GetWithPaging(paginationModel.Page, paginationModel.PageSize).ToList();
 
-            IQueryable<RecruitmentViewModel> viewModels = _mapper.ProjectTo<RecruitmentViewModel>(queryRecruitments);
-            var data = viewModels.ToList();
             return new ModelsResponse<RecruitmentViewModel>()
             {
                 Code = StatusCodes.Status200OK,
                 Msg = "Retrieved successfully",
-                Data = data.ToList(),
+                Data = data,
                 Metadata = new PagingMetadata()
                 {
                     Page = paginationModel.Page,
                     Size = paginationModel.PageSize,
-                    Total = data.ToList().Count
+                    Total = data.Count
                 }
             };
         }
@@ -146,6 +143,7 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
         public async Task<RecruitmentViewModel> UpdateRecruitment(RecruitmentUpdateRequest request, int userId, bool isAdmin)
         {
             var recruitment = await _repository.GetFirstOrDefaultAsync(r => r.Id == request.Id);
+            var mapper = _mapper.CreateMapper();
             if (recruitment != null)
             {
                 Group group = _groupRepositorty.GetById(recruitment.GroupOriginId);
@@ -153,11 +151,11 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
                 {
                     if (isAdmin || userId == group.GroupLeaderId)
                     {
-                        recruitment = _mapper.Map(request, recruitment);
+                        recruitment = mapper.Map(request, recruitment);
                         recruitment.UpdatedDate = DateTime.Now;
                         _repository.Update(recruitment);
                         await _repository.SaveChangesAsync();
-                        var viewModel = await _repository.Get(r => r.Id == recruitment.Id).ProjectTo<RecruitmentViewModel>(_mapper.ConfigurationProvider).FirstOrDefaultAsync();
+                        var viewModel = await _repository.Get(r => r.Id == recruitment.Id).ProjectTo<RecruitmentViewModel>(_mapper).FirstOrDefaultAsync();
                         return viewModel;
                     }
                 }
