@@ -22,12 +22,6 @@ namespace UniAlumni.DataTier.AutoMapperModule
             mc.CreateMap<AlumniGroup, AlumniGroupViewModel>()
                 .ForMember(des => des.Status, opt => opt.MapFrom(
                     src => ((AlumniGroupEnum.AlumniGroupStatus)src.Status).ToString()));
-            mc.CreateMap<AlumniGroup, AlumniGroupGroupDetailModel<GroupViewModel>>()
-                .ForMember(des => des.Status, opt => opt.MapFrom(
-                    src => ((AlumniGroupEnum.AlumniGroupStatus)src.Status).ToString()));
-            mc.CreateMap<AlumniGroup, AlumniGroupGroupDetailModel<GroupDetailModel>>()
-                .ForMember(des => des.Status, opt => opt.MapFrom(
-                    src => ((AlumniGroupEnum.AlumniGroupStatus)src.Status).ToString()));
         }
     }
 }

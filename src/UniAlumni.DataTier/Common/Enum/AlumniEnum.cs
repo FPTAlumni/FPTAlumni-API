@@ -1,4 +1,6 @@
-﻿namespace UniAlumni.DataTier.Common.Enum
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace UniAlumni.DataTier.Common.Enum
 {
     public class AlumniEnum
     {
@@ -23,10 +25,11 @@
             /// Status for block alumni
             /// </summary>
             Deactive = 3,
-            
+
             /// <summary>
             /// Status for admin
             /// </summary>
+            [Display(Name = "Is-admin")]
             IsAdmin = 4
             
         }

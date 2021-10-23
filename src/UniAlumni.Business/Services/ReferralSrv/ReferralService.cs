@@ -32,7 +32,7 @@ namespace UniAlumni.Business.Services.ReferralSrv
         {
             var mapper = _mapper.CreateMapper();
             var referral = mapper.Map<Referral>(request);
-            referral.Status = (byte)ReferralEnum.ReferralStatus.Active;
+            referral.Status = (byte)ReferralEnum.ReferralStatus.Pending;
             var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             var random = new Random();
             var voucherCode = new string(

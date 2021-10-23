@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UniAlumni.DataTier.ViewModels.Alumni;
+using UniAlumni.DataTier.ViewModels.Event;
 using UniAlumni.DataTier.ViewModels.Major;
 using UniAlumni.DataTier.ViewModels.News;
 using UniAlumni.DataTier.ViewModels.Recruitment;
@@ -16,6 +17,10 @@ namespace UniAlumni.DataTier.ViewModels.Group
     { 
         public int Id { get; set; }
         public string GroupName { get; set; }
+    }
+    public class RecruitmentBaseGroupModel : BaseGroupModel
+    {
+        public BaseGroupModel ParentGroup { get; set; }
     }
     public class NewsBaseGroupModel : BaseGroupModel
     {
@@ -32,9 +37,14 @@ namespace UniAlumni.DataTier.ViewModels.Group
         public BaseGroupModel ParentGroup { get; set; }
         public int? NumberOfMembers { get; set; }
     }
+    public class GroupRequestViewModel : GroupViewModel
+    {
+        public int? RequestStatus { get; set; }
+    }
     public class GroupDetailModel : GroupViewModel
     {
         public ICollection<RecruitmentViewModel> Recruitments;
         public ICollection<NewsViewModel> News;
+        public ICollection<GetEventDetail> Events;
     }
 }

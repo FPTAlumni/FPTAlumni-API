@@ -11,8 +11,10 @@ namespace UniAlumni.DataTier.Common.Enum
         public enum ReferralStatus
         {
             Inactive,
-            Active,
-            Paid
+            Verified,
+            Paid,
+            Pending,
+            Rejected
         }
         public enum ReferralSortCriteria
         {
