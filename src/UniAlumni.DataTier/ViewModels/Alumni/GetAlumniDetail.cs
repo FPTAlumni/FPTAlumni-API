@@ -13,6 +13,7 @@ namespace UniAlumni.DataTier.ViewModels.Alumni
         public int Id { get; set; }
         public string FullName { get; set; }
     }
+   
     public class GetAlumniDetail: BaseAlumniModel
     {
         
@@ -38,5 +39,6 @@ namespace UniAlumni.DataTier.ViewModels.Alumni
     public class AlumniGroupAlumniModel : BaseAlumniModel
     {
         public string Email { get; set; }
+        public BaseCompanyModel Company { get; set; }
     }
 }

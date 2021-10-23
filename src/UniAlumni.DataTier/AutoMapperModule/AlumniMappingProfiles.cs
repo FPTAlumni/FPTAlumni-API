@@ -28,7 +28,7 @@ namespace UniAlumni.DataTier.AutoMapperModule
             configuration.CreateMap<Alumnus, ActivateAlumniRequestBody>().ReverseMap();
             configuration.CreateMap<Alumnus, BaseAlumniModel>();
             configuration.CreateMap<Alumnus, AlumniGroupAlumniModel>();
-               
+
             return configuration;
         }
     }

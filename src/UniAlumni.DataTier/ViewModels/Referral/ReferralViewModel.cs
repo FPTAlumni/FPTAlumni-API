@@ -19,7 +19,8 @@ namespace UniAlumni.DataTier.ViewModels.Referral
         public string Address { get; set; }
         public string VoucherCode { get; set; }
         public DateTime? CreatedDate { get; set; }
-        public string Status { get; set; }
+        public byte? Status { get; set; }
+        public string StringStatus { get; set; }
         public BaseAlumniModel Nominator { get; set; }
         public BaseVoucherModel Voucher { get; set; }
         public BaseMajorModel Major { get; set; }

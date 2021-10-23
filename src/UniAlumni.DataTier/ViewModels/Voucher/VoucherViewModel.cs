@@ -17,6 +17,7 @@ namespace UniAlumni.DataTier.ViewModels.Voucher
     public class VoucherViewModel : BaseVoucherModel
     {
         public DateTime? CreatedDate { get; set; }
-        public string Status { get; set; }
+        public byte? Status { get; set; }
+        public string StringStatus { get; set; }
     }
 }

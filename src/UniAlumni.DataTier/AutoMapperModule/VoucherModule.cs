@@ -15,7 +15,7 @@ namespace UniAlumni.DataTier.AutoMapperModule
         public static void ConfigVoucherModule(this IMapperConfigurationExpression mc)
         {
             mc.CreateMap<Voucher, VoucherViewModel>()
-                .ForMember(des => des.Status, opt => opt.MapFrom(
+                .ForMember(des => des.StringStatus, opt => opt.MapFrom(
                     src => ((VoucherEnum.VoucherStatus)src.Status).ToString()));
             mc.CreateMap<VoucherCreateRequest, Voucher>();
             mc.CreateMap<VoucherUpdateRequest, Voucher>();

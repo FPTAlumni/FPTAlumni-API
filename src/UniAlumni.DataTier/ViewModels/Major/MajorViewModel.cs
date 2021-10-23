@@ -18,6 +18,7 @@ namespace UniAlumni.DataTier.ViewModels.Major
         public string ShortName { get; set; }        
         public string VietnameseName { get; set; }
         public DateTime? CreatedDate { get; set; }
-        public byte? Status { get; set; }        
+        public byte? Status { get; set; }     
+        public string StringStatus { get; set; }
     }
 }

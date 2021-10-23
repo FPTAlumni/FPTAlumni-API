@@ -29,6 +29,6 @@ namespace UniAlumni.DataTier.ViewModels.Recruitment
         public string StringType { get; set; }
         public int? Type { get; set; }
         public string StringStatus { get; set; }
-        public int? Status { get; set; }
+        public byte? Status { get; set; }
     }
 }

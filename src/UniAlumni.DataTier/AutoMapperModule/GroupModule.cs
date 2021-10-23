@@ -13,7 +13,9 @@ namespace UniAlumni.DataTier.AutoMapperModule
             mc.CreateMap<Group, GroupViewModel>()
                 .ForMember(des => des.NumberOfMembers, opt => opt.MapFrom(
                     src => src.AlumniGroups.Where(ag => ag.Status == (int)AlumniGroupEnum.AlumniGroupStatus.Active)
-                    .Count()));
+                    .Count()))
+                .ForMember(des => des.StringStatus, opt => opt.MapFrom(
+                        src => ((GroupEnum.GroupStatus)src.Status).ToString()));
             mc.CreateMap<GroupCreateRequest, Group>();
             mc.CreateMap<GroupUpdateRequest, Group>();
             mc.CreateMap<Group, BaseGroupModel>();
@@ -22,6 +24,8 @@ namespace UniAlumni.DataTier.AutoMapperModule
                 .ForMember(des => des.NumberOfMembers, opt => opt.MapFrom(
                     src => src.AlumniGroups.Where(ag => ag.Status == (int)AlumniGroupEnum.AlumniGroupStatus.Active)
                     .Count()))
+                .ForMember(des => des.StringStatus, opt => opt.MapFrom(
+                        src => ((GroupEnum.GroupStatus)src.Status).ToString()))
                 .ForMember(des => des.Recruitments, opt => opt.MapFrom(
                     src => src.RecruitmentGroupOrigins.Concat(src.RecruitmentGroups)));
             mc.CreateMap<Group, RecruitmentBaseGroupModel>();
@@ -29,6 +33,8 @@ namespace UniAlumni.DataTier.AutoMapperModule
                 .ForMember(des => des.NumberOfMembers, opt => opt.MapFrom(
                     src => src.AlumniGroups.Where(ag => ag.Status == (int)AlumniGroupEnum.AlumniGroupStatus.Active)
                     .Count()))
+                .ForMember(des => des.StringStatus, opt => opt.MapFrom(
+                        src => ((GroupEnum.GroupStatus)src.Status).ToString()))
                 .ForMember(des => des.RequestStatus, opt => opt.Ignore());
         }
     }

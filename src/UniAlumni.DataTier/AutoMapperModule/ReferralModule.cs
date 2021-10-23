@@ -15,7 +15,7 @@ namespace UniAlumni.DataTier.AutoMapperModule
         public static void ConfigReferralModule(this IMapperConfigurationExpression mc)
         {
             mc.CreateMap<Referral, ReferralViewModel>()
-                .ForMember(des => des.Status, opt => opt.MapFrom(
+                .ForMember(des => des.StringStatus, opt => opt.MapFrom(
                     src => ((ReferralEnum.ReferralStatus)src.Status).ToString()))
                 .ForMember(des => des.Major, opt => opt.MapFrom(
                     src => src.Nominator.ClassMajor.Major))

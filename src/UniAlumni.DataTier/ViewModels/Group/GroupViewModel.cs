@@ -31,6 +31,7 @@ namespace UniAlumni.DataTier.ViewModels.Group
         public string Banner { get; set; }
         public DateTime? CreatedDate { get; set; }
         public byte? Status { get; set; }
+        public string StringStatus { get; set; }
         public BaseAlumniModel GroupLeader { get; set; }
         public BaseUniversityModel University { get; set; }
         public BaseMajorModel Major { get; set; }
