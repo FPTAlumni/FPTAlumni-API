@@ -25,10 +25,10 @@ namespace UniAlumni.WebAPI.Controllers
 
         [HttpGet]
         [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
-        public IActionResult GetRecruitments([FromQuery] SearchRecruitmentModel searchNewsModel, [FromQuery] PagingParam<RecruitmentEnum.RecruitmentSortCriteria> paginationModel)
+        public IActionResult GetRecruitments([FromQuery] SearchRecruitmentModel searchRecruitmentModel, [FromQuery] PagingParam<RecruitmentEnum.RecruitmentSortCriteria> paginationModel)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
-            var recruitments = _recruitmetService.GetRecruitments(paginationModel, searchNewsModel, userId, User.IsInRole(RolesConstants.ADMIN));
+            var recruitments = _recruitmetService.GetRecruitments(paginationModel, searchRecruitmentModel, userId, User.IsInRole(RolesConstants.ADMIN));
             return Ok(recruitments);
         }
 

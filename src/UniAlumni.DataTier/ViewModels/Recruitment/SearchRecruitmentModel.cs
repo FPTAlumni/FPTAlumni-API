@@ -10,6 +10,7 @@ namespace UniAlumni.DataTier.ViewModels.Recruitment
 {
     public class SearchRecruitmentModel
     {
+        public int? AlumniId { get; set; } = null;
         public int? CompanyId { get; set; } = null;
         public int? MajorId { get; set; } = null;
         public int? GroupId { get; set; } = null;

@@ -31,34 +31,8 @@ namespace UniAlumni.WebAPI.Controllers
             var userId = int.Parse(User.FindFirst("id")?.Value);
             try
             {
-                if (searchGroupModel.AlumniId == null)
-                {
-                    if (User.IsInRole(RolesConstants.ADMIN))
-                    {
-                        var groups = _groupService.GetGroups<GroupViewModel>(paginationModel, searchGroupModel, userId, User.IsInRole(RolesConstants.ADMIN));
-                        return Ok(groups);
-                    }
-                    else
-                    {
-                        var groups = _groupService.GetGroups<GroupDetailModel>(paginationModel, searchGroupModel, userId, User.IsInRole(RolesConstants.ADMIN));
-                        return Ok(groups);
-                    }
-
-                }
-                else
-                {
-                    if (User.IsInRole(RolesConstants.ADMIN))
-                    {
-                        var groups = _groupService.GetGroupsByAlumniId<GroupViewModel>(paginationModel, searchGroupModel, userId, User.IsInRole(RolesConstants.ADMIN));
-                        return Ok(groups);
-                    }
-                    else
-                    {
-                        var groups = _groupService.GetGroupsByAlumniId<GroupDetailModel>(paginationModel, searchGroupModel, userId, User.IsInRole(RolesConstants.ADMIN));
-                        return Ok(groups);
-                    }
-
-                }
+                var groups = _groupService.GetGroups(paginationModel, searchGroupModel, userId, User.IsInRole(RolesConstants.ADMIN));
+                return Ok(groups);
             }
             catch (MyHttpException e)
             {

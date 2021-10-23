@@ -76,7 +76,7 @@ namespace UniAlumni.Business.Services.VoucherSrv
         {
             var mapper = _mapper.CreateMapper();
             var voucher = mapper.Map<Voucher>(request);
-            voucher.Status = (byte)ReferralEnum.ReferralStatus.Active;
+            voucher.Status = (byte)ReferralEnum.ReferralStatus.Pending;
 
             _repository.Insert(voucher);
             await _repository.SaveChangesAsync();
