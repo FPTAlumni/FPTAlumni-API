@@ -25,9 +25,7 @@ namespace UniAlumni.DataTier.AutoMapperModule
                     src => src.AlumniGroups.Where(ag => ag.Status == (int)AlumniGroupEnum.AlumniGroupStatus.Active)
                     .Count()))
                 .ForMember(des => des.StringStatus, opt => opt.MapFrom(
-                        src => ((GroupEnum.GroupStatus)src.Status).ToString()))
-                .ForMember(des => des.Recruitments, opt => opt.MapFrom(
-                    src => src.RecruitmentGroupOrigins.Concat(src.RecruitmentGroups)));
+                        src => ((GroupEnum.GroupStatus)src.Status).ToString()));
             mc.CreateMap<Group, RecruitmentBaseGroupModel>();
             mc.CreateMap<Group, GroupRequestViewModel>()
                 .ForMember(des => des.NumberOfMembers, opt => opt.MapFrom(

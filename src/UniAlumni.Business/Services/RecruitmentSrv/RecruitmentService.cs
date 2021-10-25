@@ -40,14 +40,11 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
         }
         public async Task<RecruitmentViewModel> CreateRecruitment(RecruitmentCreateRequest request, int userId, bool isAdmin)
         {
-            Group group = _groupRepositorty.GetById(request.GroupOriginId);
-            if (group == null)
-            {
-                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching group");
-            }
             var mapper = _mapper.CreateMapper();
             var recruitment = mapper.Map<Recruitment>(request);
-            if (isAdmin || userId == group.GroupLeaderId)
+            if (_groupRepositorty.GetAll().All(g => g.Id != request.GroupId) || _groupRepositorty.GetAll().All(g => g.Id != request.GroupOriginId))
+                throw new MyHttpException(StatusCodes.Status400NotFound, "Cannot find matching group");
+            if (isAdmin)
             {
                 recruitment.Status = (byte?)RecruitmentEnum.RecruitmentStatus.Active;
             }
@@ -91,7 +88,7 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
                 var alumniGroupIds = _alumniGroupRepository.Get(ag => ag.AlumniId == userId).Select(ag => ag.GroupId);
                 recruitmentQuery = recruitmentQuery.Where(r => alumniGroupIds.Contains((int)r.GroupId) && r.Status == (byte)RecruitmentEnum.RecruitmentStatus.Active);
             }
-            if (recruitmentQuery == null || !recruitmentQuery.Any() )
+            if (recruitmentQuery == null || !recruitmentQuery.Any())
                 throw new MyHttpException(StatusCodes.Status404NotFound, "Cannot find matching recruitment");
             return await recruitmentQuery.ProjectTo<RecruitmentViewModel>(_mapper).FirstOrDefaultAsync();
         }
@@ -100,18 +97,27 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
             SearchRecruitmentModel searchRecruitmentModel, int userId, bool isAdmin)
         {
             var queryRecruitments = _repository.GetAll();
-
-            if (!isAdmin)
-            {
-                var alumniGroupIds = _alumniGroupRepository.Get(ag => ag.AlumniId == userId).Select(ag => ag.GroupId);
-                queryRecruitments = queryRecruitments.Where(r => alumniGroupIds.Contains((int)r.GroupId) && r.Status == (byte)RecruitmentEnum.RecruitmentStatus.Active);
-            }
-            else if (searchRecruitmentModel.Status != null)
-            {
-                queryRecruitments = queryRecruitments.Where(r => r.Status == (byte?)searchRecruitmentModel.Status);
-            }
             if (searchRecruitmentModel.AlumniId != null)
+            {
                 queryRecruitments = queryRecruitments.Where(r => r.AlumniId == searchRecruitmentModel.AlumniId);
+                if (!isAdmin && userId != searchRecruitmentModel.AlumniId)
+                {
+                    var alumniGroupIds = _alumniGroupRepository.Get(ag => ag.AlumniId == userId).Select(ag => ag.GroupId);
+                    queryRecruitments = queryRecruitments.Where(r => alumniGroupIds.Contains((int)r.GroupId) && r.Status == (byte)RecruitmentEnum.RecruitmentStatus.Active);
+                }
+            }
+            else
+            {
+                if (!isAdmin)
+                {
+                    var alumniGroupIds = _alumniGroupRepository.Get(ag => ag.AlumniId == userId).Select(ag => ag.GroupId);
+                    queryRecruitments = queryRecruitments.Where(r => alumniGroupIds.Contains((int)r.GroupId) && r.Status == (byte)RecruitmentEnum.RecruitmentStatus.Active);
+                }
+                else if (searchRecruitmentModel.Status != null)
+                {
+                    queryRecruitments = queryRecruitments.Where(r => r.Status == (byte?)searchRecruitmentModel.Status);
+                }
+            }
             if (searchRecruitmentModel.MajorId != null)
                 queryRecruitments = queryRecruitments.Where(r => r.Group.MajorId == searchRecruitmentModel.MajorId);
             if (searchRecruitmentModel.CompanyId != null)
@@ -140,27 +146,51 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
             };
         }
 
-        public async Task<RecruitmentViewModel> UpdateRecruitment(RecruitmentUpdateRequest request, int userId, bool isAdmin)
+        public async Task<RecruitmentViewModel> UpdateRecruitment(RecruitmentUpdateRequest request, bool isAdmin)
         {
+            if (!isAdmin)
+                throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content");
             var recruitment = await _repository.GetFirstOrDefaultAsync(r => r.Id == request.Id);
             var mapper = _mapper.CreateMapper();
             if (recruitment != null)
             {
-                Group group = _groupRepositorty.GetById(recruitment.GroupOriginId);
-                if (group != null)
+                if (_groupRepositorty.GetAll().Any(g => g.Id == request.GroupId) && _groupRepositorty.GetAll().Any(g => g.Id == request.GroupOriginId))
                 {
-                    if (isAdmin || userId == group.GroupLeaderId)
-                    {
-                        recruitment = mapper.Map(request, recruitment);
-                        recruitment.UpdatedDate = DateTime.Now;
-                        _repository.Update(recruitment);
-                        await _repository.SaveChangesAsync();
-                        var viewModel = await _repository.Get(r => r.Id == recruitment.Id).ProjectTo<RecruitmentViewModel>(_mapper).FirstOrDefaultAsync();
-                        return viewModel;
-                    }
+                    recruitment = mapper.Map(request, recruitment);
+                    recruitment.UpdatedDate = DateTime.Now;
+                    _repository.Update(recruitment);
+                    await _repository.SaveChangesAsync();
+                    var viewModel = await _repository.Get(r => r.Id == recruitment.Id).ProjectTo<RecruitmentViewModel>(_mapper).FirstOrDefaultAsync();
+                    return viewModel;
+                }
+                else
+                {
+                    throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching groupa");
                 }
             }
-            return null;
+            else
+            {
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching recruitment");
+            }
+        }
+        public async Task<RecruitmentViewModel> UpdateRecruitmentStatus(RecruitmentUpdateStatusRequest request, bool isAdmin)
+        {
+            if (!isAdmin)
+                throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content");
+            var recruitment = await _repository.GetFirstOrDefaultAsync(r => r.Id == request.Id);
+            if (recruitment != null)
+            {
+                recruitment.Status = (byte)request.Status;
+                recruitment.UpdatedDate = DateTime.Now;
+                _repository.Update(recruitment);
+                await _repository.SaveChangesAsync();
+                var viewModel = await _repository.Get(r => r.Id == recruitment.Id).ProjectTo<RecruitmentViewModel>(_mapper).FirstOrDefaultAsync();
+                return viewModel;
+            }
+            else
+            {
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching recruitment");
+            }
         }
     }
 }
