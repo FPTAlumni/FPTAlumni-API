@@ -13,10 +13,12 @@ using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories.AlumniGroupRepo;
 using UniAlumni.DataTier.Repositories.AlumniRepo;
 using UniAlumni.DataTier.Repositories.GroupRepo;
+using UniAlumni.DataTier.Repositories.RecruitmentRepo;
 using UniAlumni.DataTier.Utility.Paging;
 using UniAlumni.DataTier.ViewModels.Alumni;
 using UniAlumni.DataTier.ViewModels.AlumniGroup;
 using UniAlumni.DataTier.ViewModels.Group;
+using UniAlumni.DataTier.ViewModels.Recruitment;
 
 namespace UniAlumni.Business.Services.GroupSrv
 {
@@ -26,13 +28,16 @@ namespace UniAlumni.Business.Services.GroupSrv
         private readonly IConfigurationProvider _mapper;
         private readonly IAlumniGroupRepository _alumniGroupRepository;
         private readonly IAlumniRepository _alumniRepository;
+        private readonly IRecruitmentRepository _recruitmentRepository;
 
-        public GroupService(IGroupRepository repository, IMapper mapper, IAlumniGroupRepository alumniGroupRepository, IAlumniRepository alumniRepository)
+        public GroupService(IGroupRepository repository, IMapper mapper, IAlumniGroupRepository alumniGroupRepository, IAlumniRepository alumniRepository,
+            IRecruitmentRepository recruitmentRepository)
         {
             _mapper = mapper.ConfigurationProvider;
             _repository = repository;
             _alumniGroupRepository = alumniGroupRepository;
             _alumniRepository = alumniRepository;
+            _recruitmentRepository = recruitmentRepository;
         }
         public async Task<GroupViewModel> CreateGroup(GroupCreateRequest request, int userId, bool isAdmin)
         {
@@ -232,18 +237,27 @@ namespace UniAlumni.Business.Services.GroupSrv
 
         public async Task<GroupViewModel> GetGroupById(int id, int userId, bool isAdmin)
         {
-            var groups = _repository.Get(g => g.Id == id);
+            IQueryable<Group> groups = _repository.Get(g => g.Id == id);
+            var groupRecruitments = _recruitmentRepository.Get(r => r.GroupId == id || r.GroupOriginId == id);
+               
             if (!isAdmin)
             {
                 //var alumniUniversityId = _alumniRepository.Get(a => a.Id == userId).Select(a => a.ClassMajor.Class.UniversityId).FirstOrDefault();
                 groups = groups.Where(g => g.AlumniGroups.Any(ag => ag.AlumniId == userId) && g.Status == (byte)GroupEnum.GroupStatus.Active);
+                groupRecruitments = groupRecruitments.Where(r => r.Status == (byte)RecruitmentEnum.RecruitmentStatus.Active);
             }
             if (groups == null || !groups.Any())
                 throw new MyHttpException(StatusCodes.Status404NotFound, "Cannot find matching group");
             if (isAdmin)
                 return await groups.ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();
             else
-                return await groups.ProjectTo<GroupDetailModel>(_mapper).FirstOrDefaultAsync();
+            {
+                var viewModel= await groups.ProjectTo<GroupDetailModel>(_mapper).FirstOrDefaultAsync();
+                viewModel.Recruitments = groupRecruitments.ProjectTo<RecruitmentViewModel>(_mapper)
+                    .GetWithSorting("CreatedDate",PagingConstant.OrderCriteria.DESC)
+                    .ToList();
+                return viewModel;
+            }
         }
 
         public async Task<GroupViewModel> UpdateGroup(GroupUpdateRequest request, int userId, bool isAdmin)
@@ -256,6 +270,7 @@ namespace UniAlumni.Business.Services.GroupSrv
                     var mapper = _mapper.CreateMapper();
                     group = mapper.Map(request, group);
                     group.UpdatedDate = DateTime.Now;
+
                     _repository.Update(group);
                     await _repository.SaveChangesAsync();
                     return await _repository.Get(g => g.Id == request.Id).ProjectTo<GroupViewModel>(_mapper).FirstOrDefaultAsync();

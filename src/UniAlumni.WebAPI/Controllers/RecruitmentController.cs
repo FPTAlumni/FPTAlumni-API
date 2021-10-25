@@ -70,7 +70,7 @@ namespace UniAlumni.WebAPI.Controllers
             }
             catch (MyHttpException e)
             {
-                return Ok(new BaseResponse<RecruitmentViewModel>
+                return BadRequest(new BaseResponse<RecruitmentViewModel>
                 {
                     Code = e.errorCode,
                     Msg = e.Message
@@ -84,14 +84,37 @@ namespace UniAlumni.WebAPI.Controllers
             });
         }
         [HttpPut]
-        [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
+        [Authorize(Roles = RolesConstants.ADMIN)]
         public async Task<IActionResult> UpdateRecruitment([FromBody] RecruitmentUpdateRequest item)
         {
-            var userId = int.Parse(User.FindFirst("id")?.Value);
             RecruitmentViewModel recruitmentModel;
             try
             {
-                recruitmentModel = await _recruitmetService.UpdateRecruitment(item, userId, User.IsInRole(RolesConstants.ADMIN));
+                recruitmentModel = await _recruitmetService.UpdateRecruitment(item, User.IsInRole(RolesConstants.ADMIN));
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<RecruitmentViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
+            return Ok(new BaseResponse<RecruitmentViewModel>()
+            {
+                Code = StatusCodes.Status200OK,
+                Msg = "Updated successfully",
+                Data = recruitmentModel
+            });
+        }
+        [HttpPatch]
+        [Authorize(Roles = RolesConstants.ADMIN)]
+        public async Task<IActionResult> UpdateRecruitmentStatus([FromBody] RecruitmentUpdateStatusRequest item)
+        {
+            RecruitmentViewModel recruitmentModel;
+            try
+            {
+                recruitmentModel = await _recruitmetService.UpdateRecruitmentStatus(item, User.IsInRole(RolesConstants.ADMIN));
             }
             catch (MyHttpException e)
             {
@@ -109,7 +132,7 @@ namespace UniAlumni.WebAPI.Controllers
             });
         }
         [HttpDelete("{id}")]
-        [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
+        [Authorize(Roles = RolesConstants.ADMIN)]
         public async Task<IActionResult> DeleteRecruitment([FromRoute] int id)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);
