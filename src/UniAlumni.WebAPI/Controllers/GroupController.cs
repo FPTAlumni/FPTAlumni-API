@@ -36,7 +36,7 @@ namespace UniAlumni.WebAPI.Controllers
             }
             catch (MyHttpException e)
             {
-                return Ok(new BaseResponse<GroupViewModel>
+                return Ok(new BaseResponse<GroupRequestViewModel>
                 {
                     Code = e.errorCode,
                     Msg = e.Message

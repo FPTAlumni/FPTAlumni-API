@@ -9,7 +9,7 @@ namespace UniAlumni.Business.Services.GroupSrv
 {
     public interface IGroupService
     {
-        ModelsResponse<GroupViewModel> GetGroups(PagingParam<GroupEnum.GroupSortCriteria> paginationModel,
+        ModelsResponse<GroupRequestViewModel> GetGroups(PagingParam<GroupEnum.GroupSortCriteria> paginationModel,
              SearchGroupModel searchGroupModel, int userId, bool isAdmin);
         Task<GroupViewModel> GetGroupById(int id, int userId, bool isAdmin);
         ModelsResponse<AlumniGroupViewModel> GetGroupMember(PagingParam<AlumniGroupEnum.AlumniGroupSortCriteria> paginationModel,

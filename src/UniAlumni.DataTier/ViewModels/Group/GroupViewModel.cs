@@ -40,7 +40,7 @@ namespace UniAlumni.DataTier.ViewModels.Group
     }
     public class GroupRequestViewModel : GroupViewModel
     {
-        public int? RequestStatus { get; set; }
+        public string RequestStatus { get; set; }
     }
     public class GroupDetailModel : GroupViewModel
     {

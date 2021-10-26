@@ -18,6 +18,7 @@ namespace UniAlumni.DataTier.ViewModels.Group
         public int? ParentGroupId { get; set; } = null;
         public int? MajorId { get; set; } = null;
         public int? UniversityId { get; set; } = null;
+        public bool? Joined { get; set; } = null;
 
         [DefaultValue(GroupEnum.GroupStatus.Active)]
         public GroupEnum.GroupStatus? Status { get; set; } = null;

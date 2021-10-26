@@ -16,8 +16,9 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
             SearchRecruitmentModel searchRecruitmentModel, int userId, bool isAdmin);
         Task<RecruitmentViewModel> GetRecruitmentById(int id, int userId, bool isAdmin);
         Task<RecruitmentViewModel> CreateRecruitment(RecruitmentCreateRequest request, int userId, bool isAdmin);
-        Task<RecruitmentViewModel> UpdateRecruitment(RecruitmentUpdateRequest request, bool isAdmin);
+        Task<RecruitmentViewModel> UpdateRecruitment(RecruitmentUpdateRequest request, int userId, bool isAdmin);
         Task<RecruitmentViewModel> UpdateRecruitmentStatus(RecruitmentUpdateStatusRequest request, bool isAdmin);
+        Task<RecruitmentViewModel> UpdateRecruitmentEndDate(RecruitmentUpdateEndDateRequest request, int userId, bool isAdmin);
         Task DeleteRecruitment(int id, int userId, bool isAdmin);
     }
 }

@@ -84,13 +84,14 @@ namespace UniAlumni.WebAPI.Controllers
             });
         }
         [HttpPut]
-        [Authorize(Roles = RolesConstants.ADMIN)]
+        [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public async Task<IActionResult> UpdateRecruitment([FromBody] RecruitmentUpdateRequest item)
         {
+            var userId = int.Parse(User.FindFirst("id")?.Value);
             RecruitmentViewModel recruitmentModel;
             try
             {
-                recruitmentModel = await _recruitmetService.UpdateRecruitment(item, User.IsInRole(RolesConstants.ADMIN));
+                recruitmentModel = await _recruitmetService.UpdateRecruitment(item, userId, User.IsInRole(RolesConstants.ADMIN));
             }
             catch (MyHttpException e)
             {
@@ -107,7 +108,7 @@ namespace UniAlumni.WebAPI.Controllers
                 Data = recruitmentModel
             });
         }
-        [HttpPatch]
+        [HttpPatch("status")]
         [Authorize(Roles = RolesConstants.ADMIN)]
         public async Task<IActionResult> UpdateRecruitmentStatus([FromBody] RecruitmentUpdateStatusRequest item)
         {
@@ -131,8 +132,36 @@ namespace UniAlumni.WebAPI.Controllers
                 Data = recruitmentModel
             });
         }
+
+
+        [HttpPatch("end-date")]
+        [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
+        public async Task<IActionResult> UpdateRecruitmentEndDate([FromBody] RecruitmentUpdateEndDateRequest item)
+        {
+            var userId = int.Parse(User.FindFirst("id")?.Value);
+            RecruitmentViewModel recruitmentModel;
+            try
+            {
+                recruitmentModel = await _recruitmetService.UpdateRecruitmentEndDate(item, userId, User.IsInRole(RolesConstants.ADMIN));
+            }
+            catch (MyHttpException e)
+            {
+                return Ok(new BaseResponse<RecruitmentViewModel>
+                {
+                    Code = e.errorCode,
+                    Msg = e.Message
+                });
+            }
+            return Ok(new BaseResponse<RecruitmentViewModel>()
+            {
+                Code = StatusCodes.Status200OK,
+                Msg = "Updated successfully",
+                Data = recruitmentModel
+            });
+        }
+
         [HttpDelete("{id}")]
-        [Authorize(Roles = RolesConstants.ADMIN)]
+        [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public async Task<IActionResult> DeleteRecruitment([FromRoute] int id)
         {
             var userId = int.Parse(User.FindFirst("id")?.Value);

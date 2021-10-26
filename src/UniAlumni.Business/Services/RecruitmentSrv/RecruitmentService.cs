@@ -43,7 +43,7 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
             var mapper = _mapper.CreateMapper();
             var recruitment = mapper.Map<Recruitment>(request);
             if (_groupRepositorty.GetAll().All(g => g.Id != request.GroupId) || _groupRepositorty.GetAll().All(g => g.Id != request.GroupOriginId))
-                throw new MyHttpException(StatusCodes.Status400NotFound, "Cannot find matching group");
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching group");
             if (isAdmin)
             {
                 recruitment.Status = (byte?)RecruitmentEnum.RecruitmentStatus.Active;
@@ -67,18 +67,17 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
             {
                 throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching recruitment");
             }
-            Group group = _groupRepositorty.GetById(recruitment.GroupOriginId);
-            if (group != null)
+
+            if (isAdmin || userId == recruitment.AlumniId)
             {
-                if (isAdmin || userId == group.GroupLeaderId || userId == recruitment.AlumniId)
-                {
-                    recruitment.Status = (byte?)RecruitmentEnum.RecruitmentStatus.Inactive;
-                    recruitment.UpdatedDate = DateTime.Now;
-                    _repository.Update(recruitment);
-                    await _repository.SaveChangesAsync();
-                }
+                recruitment.Status = (byte?)RecruitmentEnum.RecruitmentStatus.Inactive;
+                recruitment.UpdatedDate = DateTime.Now;
+                _repository.Update(recruitment);
+                await _repository.SaveChangesAsync();
             }
+            else throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content");
         }
+
 
         public async Task<RecruitmentViewModel> GetRecruitmentById(int id, int userId, bool isAdmin)
         {
@@ -146,18 +145,23 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
             };
         }
 
-        public async Task<RecruitmentViewModel> UpdateRecruitment(RecruitmentUpdateRequest request, bool isAdmin)
+        public async Task<RecruitmentViewModel> UpdateRecruitment(RecruitmentUpdateRequest request, int userId, bool isAdmin)
         {
-            if (!isAdmin)
-                throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content");
             var recruitment = await _repository.GetFirstOrDefaultAsync(r => r.Id == request.Id);
+            
             var mapper = _mapper.CreateMapper();
             if (recruitment != null)
             {
+                if (!isAdmin && userId != recruitment.AlumniId)
+                    throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content");
+                if (!isAdmin && recruitment.Status != (byte) RecruitmentEnum.RecruitmentStatus.Pending)
+                    throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content, only pending recruitment can be updated");
                 if (_groupRepositorty.GetAll().Any(g => g.Id == request.GroupId) && _groupRepositorty.GetAll().Any(g => g.Id == request.GroupOriginId))
                 {
                     recruitment = mapper.Map(request, recruitment);
                     recruitment.UpdatedDate = DateTime.Now;
+                    if (!isAdmin)
+                        recruitment.Status = (byte)RecruitmentEnum.RecruitmentStatus.Pending;
                     _repository.Update(recruitment);
                     await _repository.SaveChangesAsync();
                     var viewModel = await _repository.Get(r => r.Id == recruitment.Id).ProjectTo<RecruitmentViewModel>(_mapper).FirstOrDefaultAsync();
@@ -181,6 +185,25 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
             if (recruitment != null)
             {
                 recruitment.Status = (byte)request.Status;
+                recruitment.UpdatedDate = DateTime.Now;
+                _repository.Update(recruitment);
+                await _repository.SaveChangesAsync();
+                var viewModel = await _repository.Get(r => r.Id == recruitment.Id).ProjectTo<RecruitmentViewModel>(_mapper).FirstOrDefaultAsync();
+                return viewModel;
+            }
+            else
+            {
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching recruitment");
+            }
+        }
+        public async Task<RecruitmentViewModel> UpdateRecruitmentEndDate(RecruitmentUpdateEndDateRequest request, int userId, bool isAdmin)
+        {
+            var recruitment = await _repository.GetFirstOrDefaultAsync(r => r.Id == request.Id);
+            if (recruitment != null)
+            {
+                if (!isAdmin && userId != recruitment.AlumniId)
+                    throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content");
+                recruitment.EndDate = request.EndDate;
                 recruitment.UpdatedDate = DateTime.Now;
                 _repository.Update(recruitment);
                 await _repository.SaveChangesAsync();
