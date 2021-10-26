@@ -32,8 +32,9 @@ namespace UniAlumni.DataTier.AutoMapperModule
                     src => src.AlumniGroups.Where(ag => ag.Status == (int)AlumniGroupEnum.AlumniGroupStatus.Active)
                     .Count()))
                 .ForMember(des => des.StringStatus, opt => opt.MapFrom(
-                        src => ((GroupEnum.GroupStatus)src.Status).ToString()))
-                .ForMember(des => des.RequestStatus, opt => opt.Ignore());
+                        src => ((GroupEnum.GroupStatus)src.Status).ToString()));
+                //.ForMember(des => des.RequestStatus, opt => opt.MapFrom(
+                //    src => src.AlumniGroups.Where(ag => ag.AlumniId == userId)));
         }
     }
 }
