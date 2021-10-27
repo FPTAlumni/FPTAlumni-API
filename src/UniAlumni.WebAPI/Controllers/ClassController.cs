@@ -146,6 +146,27 @@ namespace UniAlumni.WebAPI.Controllers
             
         }
 
+        [HttpPut("{id}/majors")]
+        [Authorize(Roles = RolesConstants.ADMIN)]
+        public async Task<IActionResult> AddMajorsToClass(int id, [FromBody] ClassAddMajorsRequest request)
+        {
+            try
+            {
+                await _classSvc.AddMajorToClass(id, request);
+
+                return Ok(new BaseResponse<GetClassDetail>()
+                {
+                    Code = StatusCodes.Status200OK,
+                    Msg = "Update Successful"
+                });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+
+        }
+
         /// <summary>
         /// [Admin] Endpoint for Admin Delete a class.
         /// </summary>

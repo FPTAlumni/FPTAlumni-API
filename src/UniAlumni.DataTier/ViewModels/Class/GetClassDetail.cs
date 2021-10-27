@@ -12,4 +12,5 @@ namespace UniAlumni.DataTier.ViewModels.Class
         public int? UniversityId { get; set; }
         public string UniversityName { get; set; }
     }
+    
 }

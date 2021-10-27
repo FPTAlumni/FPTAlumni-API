@@ -9,7 +9,9 @@ using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Models;
+using UniAlumni.DataTier.Repositories.ClassMajorRepo;
 using UniAlumni.DataTier.Repositories.ClassRepo;
+using UniAlumni.DataTier.Repositories.MajorRepo;
 using UniAlumni.DataTier.Utility.Paging;
 using UniAlumni.DataTier.ViewModels.Class;
 
@@ -19,27 +21,31 @@ namespace UniAlumni.Business.Services.ClassService
     {
         private readonly IClassRepository _classRepository;
         private readonly IMapper _mapper;
+        private readonly IClassMajorRepository _classMajorRepository;
+        private readonly IMajorRepository _majorRepository;
 
-        public ClassSvc(IClassRepository classRepository, IMapper mapper)
+        public ClassSvc(IClassRepository classRepository, IMapper mapper, IClassMajorRepository classMajorRepository, IMajorRepository majorRepository)
         {
             _classRepository = classRepository;
             _mapper = mapper;
+            _classMajorRepository = classMajorRepository;
+            _majorRepository = majorRepository;
         }
 
         public IList<GetClassDetail> GetClassPage(PagingParam<ClassEnum.ClassSortCriteria> paginationModel,
             SearchClassModel searchClassModel)
         {
             IQueryable<Class> queryClass = _classRepository.Table
-                .Include(c=>c.University);
+                .Include(c => c.University);
 
-            if (searchClassModel.ClassOf is {Length: > 0})
+            if (searchClassModel.ClassOf is { Length: > 0 })
             {
                 queryClass = queryClass.Where(c => c.ClassOf.Contains(searchClassModel.ClassOf));
             }
-            
+
             // Apply Status
-            queryClass = queryClass.Where(c => c.Status == (int) ClassEnum.ClassStatus.Active);
-            
+            queryClass = queryClass.Where(c => c.Status == (int)ClassEnum.ClassStatus.Active);
+
             // Apply sort
             if (paginationModel.SortKey.ToString().Trim().Length > 0)
                 queryClass =
@@ -54,14 +60,14 @@ namespace UniAlumni.Business.Services.ClassService
 
         public async Task<GetClassDetail> GetClassById(int id)
         {
-            Class classes = await _classRepository.Get(c=>c.Id==id)
-                .Include(c=>c.University)
+            Class classes = await _classRepository.Get(c => c.Id == id)
+                .Include(c => c.University)
                 .FirstOrDefaultAsync();
             if (classes == null)
             {
                 throw new MyHttpException(StatusCodes.Status404NotFound, "Class not found");
             }
-            if (classes.Status == (int) ClassEnum.ClassStatus.Inactive) return null;
+            if (classes.Status == (int)ClassEnum.ClassStatus.Inactive) return null;
             GetClassDetail classDetail = _mapper.Map<GetClassDetail>(classes);
             return classDetail;
         }
@@ -70,7 +76,7 @@ namespace UniAlumni.Business.Services.ClassService
         {
             Class classes = _mapper.Map<Class>(requestBody);
             classes.CreatedDate = DateTime.Now;
-            classes.Status = (int) ClassEnum.ClassStatus.Active;
+            classes.Status = (int)ClassEnum.ClassStatus.Active;
             await _classRepository.InsertAsync(classes);
             await _classRepository.SaveChangesAsync();
 
@@ -100,13 +106,35 @@ namespace UniAlumni.Business.Services.ClassService
             {
                 throw new MyHttpException(StatusCodes.Status404NotFound, "Class not found");
             }
-            classes.Status = (int) ClassEnum.ClassStatus.Inactive;
+            classes.Status = (int)ClassEnum.ClassStatus.Inactive;
             await _classRepository.SaveChangesAsync();
         }
 
         public async Task<int> GetTotal()
         {
             return await _classRepository.GetAll().CountAsync();
+        }
+        public async Task AddMajorToClass(int classId, ClassAddMajorsRequest request)
+        {
+            Class _class = await _classRepository.Get(c => c.Id == classId).Include(c => c.ClassMajors).FirstOrDefaultAsync();
+            if (_class == null)
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching class");
+            var classInactiveMajors = _class.ClassMajors.Where(cm => request.ListClassId.Contains((int)cm.MajorId) && cm.Status == (byte)ClassMajorEnum.ClassMajorStatus.Inactive).ToList();
+            var addingMajorId = request.ListClassId.Where(_classId => classInactiveMajors.All(cm => cm.MajorId != _classId)).ToList();
+            foreach (var cm in classInactiveMajors)
+            {
+                cm.Status = (byte)ClassMajorEnum.ClassMajorStatus.Active;
+            }
+            List<ClassMajor> addingClassMajors = new List<ClassMajor>();
+
+            foreach (var majorId in addingMajorId)
+            {
+                if (_majorRepository.Get(m => m.Id == majorId).FirstOrDefault() == null)
+                    throw new MyHttpException(StatusCodes.Status400BadRequest, $"Cannot find major with id= {majorId}");
+                addingClassMajors.Add(new ClassMajor { ClassId = classId, MajorId = majorId, Status = (byte)ClassMajorEnum.ClassMajorStatus.Active });
+            }
+            _classMajorRepository.ClassMajor.AddRange(addingClassMajors);
+            await _classMajorRepository.SaveChangesAsync();
         }
     }
 }

@@ -109,7 +109,7 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
             {
                 if (!isAdmin)
                 {
-                    var alumniGroupIds = _alumniGroupRepository.Get(ag => ag.AlumniId == userId).Select(ag => ag.GroupId);
+                    var alumniGroupIds = _alumniGroupRepository.Get(ag => ag.AlumniId == userId && ag.Status == (byte)AlumniGroupEnum.AlumniGroupStatus.Active).Select(ag => ag.GroupId);
                     queryRecruitments = queryRecruitments.Where(r => alumniGroupIds.Contains((int)r.GroupId) && r.Status == (byte)RecruitmentEnum.RecruitmentStatus.Active);
                 }
                 else if (searchRecruitmentModel.Status != null)
