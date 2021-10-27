@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using UniAlumni.Business.Services.ClassService;
 using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
 using UniAlumni.DataTier.Object;
 using UniAlumni.DataTier.ViewModels.Class;
@@ -146,7 +147,7 @@ namespace UniAlumni.WebAPI.Controllers
             
         }
 
-        [HttpPut("{id}/majors")]
+        [HttpPut("{id:int}/majors")]
         [Authorize(Roles = RolesConstants.ADMIN)]
         public async Task<IActionResult> AddMajorsToClass(int id, [FromBody] ClassAddMajorsRequest request)
         {
@@ -160,11 +161,29 @@ namespace UniAlumni.WebAPI.Controllers
                     Msg = "Update Successful"
                 });
             }
-            catch (Exception e)
+            catch (MyHttpException e)
             {
                 return BadRequest(e);
             }
+        }
+        [HttpDelete("{classId:int}/majors/{majorId:int}")]
+        [Authorize(Roles = RolesConstants.ADMIN)]
+        public async Task<IActionResult> RemoveMajorsFromClass(int classId, int majorId)
+        {
+            try
+            {
+                await _classSvc.DeleteMajorToClass(classId, majorId);
 
+                return Ok(new BaseResponse<GetClassDetail>()
+                {
+                    Code = StatusCodes.Status200OK,
+                    Msg = "Update Successful"
+                });
+            }
+            catch (MyHttpException e)
+            {
+                return BadRequest(e);
+            }
         }
 
         /// <summary>

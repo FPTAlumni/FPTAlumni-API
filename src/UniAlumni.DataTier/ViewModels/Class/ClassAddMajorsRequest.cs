@@ -8,6 +8,6 @@ namespace UniAlumni.DataTier.ViewModels.Class
 {
     public class ClassAddMajorsRequest
     {
-        public List<int> ListClassId { get; set; }
+        public List<int> ListMajorId { get; set; }
     }
 }

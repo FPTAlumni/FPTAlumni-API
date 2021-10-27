@@ -119,8 +119,8 @@ namespace UniAlumni.Business.Services.ClassService
             Class _class = await _classRepository.Get(c => c.Id == classId).Include(c => c.ClassMajors).FirstOrDefaultAsync();
             if (_class == null)
                 throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching class");
-            var classInactiveMajors = _class.ClassMajors.Where(cm => request.ListClassId.Contains((int)cm.MajorId) && cm.Status == (byte)ClassMajorEnum.ClassMajorStatus.Inactive).ToList();
-            var addingMajorId = request.ListClassId.Where(_classId => classInactiveMajors.All(cm => cm.MajorId != _classId)).ToList();
+            var classInactiveMajors = _class.ClassMajors.Where(cm => request.ListMajorId.Contains((int)cm.MajorId) && cm.Status != (byte)ClassMajorEnum.ClassMajorStatus.Active).ToList();
+            var addingMajorId = request.ListMajorId.Where(_classId => _class.ClassMajors.All(cm => cm.MajorId != _classId)).ToList();
             foreach (var cm in classInactiveMajors)
             {
                 cm.Status = (byte)ClassMajorEnum.ClassMajorStatus.Active;
@@ -133,8 +133,26 @@ namespace UniAlumni.Business.Services.ClassService
                     throw new MyHttpException(StatusCodes.Status400BadRequest, $"Cannot find major with id= {majorId}");
                 addingClassMajors.Add(new ClassMajor { ClassId = classId, MajorId = majorId, Status = (byte)ClassMajorEnum.ClassMajorStatus.Active });
             }
+
             _classMajorRepository.ClassMajor.AddRange(addingClassMajors);
             await _classMajorRepository.SaveChangesAsync();
+        }
+        public async Task DeleteMajorToClass(int classId, int majorId)
+        {
+            Class _class = await _classRepository.Get(c => c.Id == classId).Include(c => c.ClassMajors).FirstOrDefaultAsync();
+            if (_class == null)
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching class");
+            var classMajor = _classMajorRepository.Get(cm => cm.ClassId == classId && cm.MajorId == majorId).FirstOrDefault();
+            if (classMajor != null)
+            {
+                classMajor.Status = (byte)ClassMajorEnum.ClassMajorStatus.Inactive;
+                _classMajorRepository.Update(classMajor);
+                await _classMajorRepository.SaveChangesAsync();
+            }
+            else
+            {
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching major in class to delete");
+            }
         }
     }
 }
