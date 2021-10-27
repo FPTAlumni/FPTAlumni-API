@@ -13,5 +13,6 @@ namespace UniAlumni.DataTier.Repositories.ClassMajorRepo
         public ClassMajorRepository(DbContext context) : base(context)
         {
         }
+        public DbSet<ClassMajor> ClassMajor => this.CurrentContext.Set<ClassMajor>();
     }
 }

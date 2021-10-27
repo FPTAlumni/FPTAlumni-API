@@ -47,7 +47,7 @@ namespace UniAlumni.Business.Services.AlumniGroupService
 
                 AlumniGroup newAlumniGroup = new AlumniGroup()
                 {
-                    AlumniId = alumniId, GroupId = groupId, Status = (byte?) AlumniGroupEnum.AlumniGroupStatus.Inactive
+                    AlumniId = alumniId, GroupId = groupId, Status = (byte?) AlumniGroupEnum.AlumniGroupStatus.Pending
                 };
                 await _alumniGroupRepository.InsertAsync(newAlumniGroup);
                 await _alumniGroupRepository.SaveChangesAsync();

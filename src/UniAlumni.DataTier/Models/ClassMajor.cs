@@ -20,6 +20,7 @@ namespace UniAlumni.DataTier.Models
         public int Id { get; set; }
         public int? ClassId { get; set; }
         public int? MajorId { get; set; }
+        public byte? Status { get; set; }
 
         [ForeignKey(nameof(ClassId))]
         [InverseProperty("ClassMajors")]

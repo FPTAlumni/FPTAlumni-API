@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,5 +11,6 @@ namespace UniAlumni.DataTier.Repositories.ClassMajorRepo
 {
     public interface IClassMajorRepository : IBaseRepository<ClassMajor>
     {
+        public DbSet<ClassMajor> ClassMajor { get; }
     }
 }

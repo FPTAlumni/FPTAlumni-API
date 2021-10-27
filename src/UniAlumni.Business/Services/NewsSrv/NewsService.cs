@@ -91,7 +91,7 @@ namespace UniAlumni.Business.Services.NewsSrv
             var queryNews = _newsRepository.GetAll();
             if (!isAdmin)
             {
-                var alumniGroupIds = _alumniGroupRepository.Get(ag => ag.AlumniId == userId).Select(ag => ag.GroupId);
+                var alumniGroupIds = _alumniGroupRepository.Get(ag => ag.AlumniId == userId && ag.Status == (byte)AlumniGroupEnum.AlumniGroupStatus.Active).Select(ag => ag.GroupId);
                 queryNews = queryNews.Where(n => alumniGroupIds.Contains((int)n.GroupId) && n.Status == (byte)NewsEnum.NewsStatus.Active);
             }
             else if (searchNewsModel.Status != null)

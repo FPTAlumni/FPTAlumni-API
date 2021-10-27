@@ -53,5 +53,8 @@ namespace UniAlumni.Business.Services.ClassService
         /// </summary>
         /// <returns>Total of Class</returns>
         public Task<int> GetTotal();
+
+        Task AddMajorToClass(int classId, ClassAddMajorsRequest request);
+        Task DeleteMajorToClass(int classId, int majorId);
     }
 }
