@@ -51,6 +51,7 @@ namespace UniAlumni.DataTier.Models
         public byte? Status { get; set; }
         public int? CompanyId { get; set; }
         public int? ClassMajorId { get; set; }
+        public string Image { get; set; }
 
         [ForeignKey(nameof(ClassMajorId))]
         [InverseProperty("Alumni")]

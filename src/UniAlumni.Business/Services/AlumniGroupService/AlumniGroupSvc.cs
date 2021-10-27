@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using UniAlumni.DataTier.Common.Enum;
+using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Repositories.AlumniGroupRepo;
 using UniAlumni.DataTier.Repositories.AlumniRepo;
@@ -52,6 +54,19 @@ namespace UniAlumni.Business.Services.AlumniGroupService
                 await _alumniGroupRepository.InsertAsync(newAlumniGroup);
                 await _alumniGroupRepository.SaveChangesAsync();
             }
+        }
+
+        public async Task CancelRequestJoinGroup(int alumniId, int groupId)
+        {
+            IQueryable<AlumniGroup> queryAlumniGroup =
+                _alumniGroupRepository.Get(ag => ag.AlumniId == alumniId && ag.GroupId == groupId);
+            AlumniGroup alumniGroup = await queryAlumniGroup.FirstOrDefaultAsync();
+            if (alumniGroup == null)
+            {
+                throw new MyHttpException(StatusCodes.Status400BadRequest, "Alumni has not been sent request");
+            }
+            _alumniGroupRepository.Delete(alumniGroup);
+            await _alumniGroupRepository.SaveChangesAsync();
         }
 
         public async Task LeaveGroup(int alumniId, int groupId)

@@ -36,5 +36,7 @@ namespace UniAlumni.DataTier.ViewModels.Alumni
         public int MajorId { get; set; }
         [Required]
         public int ClassId { get; set; }
+        
+        public string Image { get; set; }
     }
 }

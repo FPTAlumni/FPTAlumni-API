@@ -35,6 +35,8 @@ namespace UniAlumni.DataTier.ViewModels.Alumni
         public GetClassDetail Class { get; set; }
         
         public UniversityViewModel University { get; set; }
+        
+        public string Image { get; set; }
     }
     public class AlumniGroupAlumniModel : BaseAlumniModel
     {

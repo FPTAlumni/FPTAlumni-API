@@ -210,7 +210,7 @@ namespace UniAlumni.WebAPI.Controllers
         }
         
         /// <summary>
-        /// [Alumni] Alumni Join Group
+        /// [Alumni] Alumni Request to Join Group
         /// </summary>
         /// <permission cref="RolesConstants.ALUMNI"></permission>
         /// <response code="200">Success Fully Joined A Group</response>
@@ -231,6 +231,30 @@ namespace UniAlumni.WebAPI.Controllers
 
             return Ok();
         }
+        
+        /// <summary>
+        /// [Alumni] Alumni Cancel Request Join Group
+        /// </summary>
+        /// <permission cref="RolesConstants.ALUMNI"></permission>
+        /// <response code="204">Success Cancel Request Leave A Group</response>
+        /// <response code="400">Alumni has not been request in Group</response>
+        /// <response code="403">User Is Not Activated or Token UserId not match with alumni</response>
+        /// <response code="404">Requested alumni Not Found</response>
+        [HttpDelete("groups/cancel/{groupId:int}")]
+        [Authorize(Roles = RolesConstants.ALUMNI)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> CancelRequestJoinGroup(int groupId)
+        {
+            var value = User.FindFirst("id")?.Value;
+            if (value != null)
+            {
+                var alumniId = int.Parse(value);
+                await _alumniGroupSvc.CancelRequestJoinGroup(alumniId, groupId);
+            }
+
+            return NoContent();
+        }
+        
         
         /// <summary>
         /// [Alumni] Alumni Leave Group
