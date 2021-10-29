@@ -114,13 +114,21 @@ namespace UniAlumni.Business.Services.ClassService
         {
             return await _classRepository.GetAll().CountAsync();
         }
-        public async Task AddMajorToClass(int classId, ClassAddMajorsRequest request)
+        public async Task PutMajorsToClass(int classId, ClassAddMajorsRequest request)
         {
             Class _class = await _classRepository.Get(c => c.Id == classId).Include(c => c.ClassMajors).FirstOrDefaultAsync();
             if (_class == null)
                 throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching class");
+            //active majors in class but not in request list majors
+            var removingMajors = _class.ClassMajors.Where(cm => !request.ListMajorId.Contains((int)cm.MajorId) && cm.Status == (byte)ClassMajorEnum.ClassMajorStatus.Active).ToList();
+            //inactive majors in class but contain in request
             var classInactiveMajors = _class.ClassMajors.Where(cm => request.ListMajorId.Contains((int)cm.MajorId) && cm.Status != (byte)ClassMajorEnum.ClassMajorStatus.Active).ToList();
+            //majors in request but not in ClassMajors table
             var addingMajorId = request.ListMajorId.Where(_classId => _class.ClassMajors.All(cm => cm.MajorId != _classId)).ToList();
+            foreach (var cm in removingMajors)
+            {
+                cm.Status = (byte)ClassMajorEnum.ClassMajorStatus.Inactive;
+            }
             foreach (var cm in classInactiveMajors)
             {
                 cm.Status = (byte)ClassMajorEnum.ClassMajorStatus.Active;
