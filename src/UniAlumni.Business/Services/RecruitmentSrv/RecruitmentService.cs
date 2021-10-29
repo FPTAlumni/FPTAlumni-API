@@ -99,10 +99,15 @@ namespace UniAlumni.Business.Services.RecruitmentSrv
             if (searchRecruitmentModel.AlumniId != null)
             {
                 queryRecruitments = queryRecruitments.Where(r => r.AlumniId == searchRecruitmentModel.AlumniId && r.Status != (byte)RecruitmentEnum.RecruitmentStatus.Inactive);
+
                 if (!isAdmin && userId != searchRecruitmentModel.AlumniId)
                 {
                     var alumniGroupIds = _alumniGroupRepository.Get(ag => ag.AlumniId == userId).Select(ag => ag.GroupId);
                     queryRecruitments = queryRecruitments.Where(r => alumniGroupIds.Contains((int)r.GroupId) && r.Status == (byte)RecruitmentEnum.RecruitmentStatus.Active);
+                }
+                else if (searchRecruitmentModel.Status != null)
+                {
+                    queryRecruitments = queryRecruitments.Where(r => r.Status == (byte?)searchRecruitmentModel.Status);
                 }
             }
             else
