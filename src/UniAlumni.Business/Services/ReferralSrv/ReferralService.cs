@@ -127,5 +127,26 @@ namespace UniAlumni.Business.Services.ReferralSrv
             return await _repository.Get(r => r.Id == referral.Id).ProjectTo<ReferralViewModel>(_mapper).FirstOrDefaultAsync();
 
         }
+        
+        public async Task<Referral> ApproveReferral(ApproveReferralRequestBody requestBody)
+        {
+            try
+            {
+                Referral referral = await _repository.Get(r => r.Id == requestBody.Id)
+                    .Include(r=>r.Nominator)
+                    .FirstOrDefaultAsync();
+                if (referral == null)
+                    throw new MyHttpException(StatusCodes.Status404NotFound, "Referal is not found");
+                referral.Status = (byte?) requestBody.Status;
+                await _repository.SaveChangesAsync();
+                return referral;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw new MyHttpException(StatusCodes.Status403Forbidden, e.Message);
+            }
+        }
+        
     }
 }

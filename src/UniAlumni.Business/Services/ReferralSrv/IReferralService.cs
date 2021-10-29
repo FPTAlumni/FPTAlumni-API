@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.PaginationModel;
+using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.ViewModels.Referral;
 
 namespace UniAlumni.Business.Services.ReferralSrv
@@ -18,5 +19,12 @@ namespace UniAlumni.Business.Services.ReferralSrv
         Task<ReferralViewModel> CreateReferral(ReferralCreateRequest request);
         Task<ReferralViewModel> UpdateReferral(ReferralUpdateRequest request);
         Task DeleteReferral(int id, int userId, bool isAdmin);
+
+        /// <summary>
+        /// Approve Referral - Change Status of Referral
+        /// </summary>
+        /// <param name="requestBody">Model Approve Referral</param>
+        /// <returns></returns>
+        Task<Referral> ApproveReferral(ApproveReferralRequestBody requestBody);
     }
 }

@@ -4,13 +4,17 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Channels;
 using System.Threading.Tasks;
+using UniAlumni.Business.Services.PushNotification;
 using UniAlumni.Business.Services.ReferralSrv;
 using UniAlumni.DataTier.Common;
 using UniAlumni.DataTier.Common.Enum;
 using UniAlumni.DataTier.Common.Exception;
 using UniAlumni.DataTier.Common.PaginationModel;
+using UniAlumni.DataTier.Models;
 using UniAlumni.DataTier.Object;
+using UniAlumni.DataTier.ViewModels.Alumni;
 using UniAlumni.DataTier.ViewModels.Referral;
 
 namespace UniAlumni.WebAPI.Controllers
@@ -131,6 +135,39 @@ namespace UniAlumni.WebAPI.Controllers
                 Code = StatusCodes.Status204NoContent,
                 Msg = "Deleted successfully",
             });
+        }
+        
+        /// <summary>
+        /// [Admin] Endpoint to approve for Referral.
+        /// </summary>
+        /// <param name="requestBody">An obj contains Id and status of an Referral.</param>
+        /// <returns>204 status.</returns>
+        /// <response code="204">Returns NoContent status</response>
+        /// <response code="403">Returns Forbidden </response>
+        /// <response code="404">Returns Error status</response>
+        [HttpPatch("approve")]
+        [Authorize(Roles = RolesConstants.ADMIN)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> ApproveReferral([FromQuery] ApproveReferralRequestBody requestBody)
+        {
+            try
+            {
+                Referral referral = await _referralService.ApproveReferral(requestBody);
+                String message = "";
+                if (referral.Status != null)
+                {
+                    message = referral.FullName + " has been " +
+                                     Enum.GetNames<ReferralEnum.ReferralStatus>()[(int) referral.Status];
+                }
+                
+                await PushNotification
+                    .SendMessage(referral.Nominator.Uid, "Referral Status", message);
+                return NoContent();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
         }
     }
 }
