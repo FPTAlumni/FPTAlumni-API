@@ -153,7 +153,7 @@ namespace UniAlumni.WebAPI.Controllers
         {
             try
             {
-                await _classSvc.AddMajorToClass(id, request);
+                await _classSvc.PutMajorsToClass(id, request);
 
                 return Ok(new BaseResponse<GetClassDetail>()
                 {
