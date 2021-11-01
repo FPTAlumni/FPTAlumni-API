@@ -84,7 +84,9 @@ namespace UniAlumni.Business.Services.ReferralSrv
                 if (searchReferralModel.NominatorId != null)
                     referralQuery = referralQuery.Where(r => r.NominatorId == searchReferralModel.NominatorId);
             }
-
+            if (searchReferralModel.UniversityId != null) 
+                referralQuery = referralQuery.Where(r => r.Nominator.ClassMajor.Class.UniversityId == searchReferralModel.UniversityId);
+            
             if (searchReferralModel.MajorId != null)
                 referralQuery = referralQuery.Where(r => r.Nominator.ClassMajor.MajorId == searchReferralModel.MajorId);
             if (searchReferralModel.Status != null)
