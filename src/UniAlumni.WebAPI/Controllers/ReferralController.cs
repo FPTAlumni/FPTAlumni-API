@@ -90,13 +90,14 @@ namespace UniAlumni.WebAPI.Controllers
             });
         }
         [HttpPut]
-        [Authorize(Roles = RolesConstants.ADMIN)]
+        [Authorize(Roles = RolesConstants.ADMIN_ALUMNI)]
         public async Task<IActionResult> UpdateReferral([FromBody] ReferralUpdateRequest item)
         {
-            ReferralViewModel recruitmentModel;
+            ReferralViewModel referralModel;
+            var userId = int.Parse(User.FindFirst("id")?.Value);
             try
             {
-                recruitmentModel = await _referralService.UpdateReferral(item);
+                referralModel = await _referralService.UpdateReferral(item, User.IsInRole(RolesConstants.ADMIN), userId);
             }
             catch (MyHttpException e)
             {
@@ -110,7 +111,7 @@ namespace UniAlumni.WebAPI.Controllers
             {
                 Code = StatusCodes.Status200OK,
                 Msg = "Updated successfully",
-                Data = recruitmentModel
+                Data = referralModel
             });
         }
         [HttpDelete("{id}")]

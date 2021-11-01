@@ -111,7 +111,7 @@ namespace UniAlumni.Business.Services.ReferralSrv
             };
         }
 
-        public async Task<ReferralViewModel> UpdateReferral(ReferralUpdateRequest request)
+        public async Task<ReferralViewModel> UpdateReferral(ReferralUpdateRequest request, bool isAdmin, int userId)
         {
             var referral = await _repository.GetFirstOrDefaultAsync(r => r.Id == request.Id);
 
@@ -119,9 +119,18 @@ namespace UniAlumni.Business.Services.ReferralSrv
             {
                 throw new MyHttpException(StatusCodes.Status400BadRequest, "Cannot find matching referral");
             }
+            if (!isAdmin)
+            {
+                if (userId != referral.NominatorId)
+                    throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content");
+                if (referral.Status != (byte)ReferralEnum.ReferralStatus.Pending)
+                    throw new MyHttpException(StatusCodes.Status403Forbidden, "Does not have access rights to the content, only pending referral can be updated");
+                referral.Status = (byte)ReferralEnum.ReferralStatus.Pending;
+            }
             var mapper = _mapper.CreateMapper();
             referral = mapper.Map(request, referral);
             referral.UpdatedDate = DateTime.Now;
+
             _repository.Update(referral);
             await _repository.SaveChangesAsync();
             return await _repository.Get(r => r.Id == referral.Id).ProjectTo<ReferralViewModel>(_mapper).FirstOrDefaultAsync();

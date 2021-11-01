@@ -17,7 +17,7 @@ namespace UniAlumni.Business.Services.ReferralSrv
             SearchReferralModel searchReferralModel, int userId, bool isAdmin);
         Task<ReferralViewModel> GetReferralById(int id, int userId, bool isAdmin);
         Task<ReferralViewModel> CreateReferral(ReferralCreateRequest request);
-        Task<ReferralViewModel> UpdateReferral(ReferralUpdateRequest request);
+        Task<ReferralViewModel> UpdateReferral(ReferralUpdateRequest request, bool isAdmin, int userId);
         Task DeleteReferral(int id, int userId, bool isAdmin);
 
         /// <summary>
