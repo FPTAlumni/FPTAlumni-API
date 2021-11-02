@@ -13,6 +13,7 @@ using UniAlumni.Business.Services.MajorSrv;
 using UniAlumni.Business.Services.NewsSrv;
 using UniAlumni.Business.Services.RecruitmentSrv;
 using UniAlumni.Business.Services.ReferralSrv;
+using UniAlumni.Business.Services.TagSrv;
 using UniAlumni.Business.Services.UniversityService;
 using UniAlumni.Business.Services.VoucherSrv;
 
@@ -44,6 +45,7 @@ namespace UniAlumni.Business.Services
             services.AddScoped<IEventSvc, EventSvc>();
             services.AddScoped<IAlumniGroupSvc, AlumniGroupSvc>();
             services.AddScoped<IEventRegistrationSvc, EventRegistrationSvc>();
+            services.AddScoped<ITagService, TagService>();
         }
     }
 }

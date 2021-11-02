@@ -106,11 +106,12 @@ namespace UniAlumni.Business.Services.GroupSrv
             var groupLeaderId = _repository.Get(g => g.Id == groupId).Select(g => g.GroupLeaderId).FirstOrDefault();
 
             IQueryable<AlumniGroup> alumniGroupQuery = null;
-            if (!isAdmin && groupLeaderId != userId && userGroupIds.Contains(groupId))
+            
+            if (!isAdmin)
             {
-                alumniGroupQuery = _alumniGroupRepository.Get(ag => ag.GroupId == groupId && ag.Status == (byte)AlumniGroupEnum.AlumniGroupStatus.Active);
+                alumniGroupQuery = _alumniGroupRepository.Get(ag => ag.GroupId == groupId && (ag.AlumniId == userId || ag.Status == (byte) AlumniGroupEnum.AlumniGroupStatus.Active));
             }
-            else if (isAdmin || groupLeaderId == userId)
+            else
             {
                 alumniGroupQuery = _alumniGroupRepository.Get(ag => ag.GroupId == groupId);
                 if (searchAlumniGroupModel.Status != null)
