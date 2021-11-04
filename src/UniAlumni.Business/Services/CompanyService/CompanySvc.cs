@@ -103,7 +103,7 @@ namespace UniAlumni.Business.Services.CompanyService
 
         public async Task<int> GetTotal()
         {
-            return await _companyRepository.GetAll().CountAsync();
+            return await _companyRepository.Get(c=>c.Status == (byte?) CompanyEnum.CompanyStatus.Active).CountAsync();
         }
     }
 }

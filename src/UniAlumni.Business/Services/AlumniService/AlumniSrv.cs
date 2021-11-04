@@ -47,28 +47,43 @@ namespace UniAlumni.Business.Services.AlumniService
             SearchAlumniModel searchAlumniModel)
         {
             IQueryable<Alumnus> queryAlumni = _alumniRepository.Table
+                .Include(a=> a.Company)
                 .Include(a => a.ClassMajor)
                     .ThenInclude(cm => cm.Class)
                         .ThenInclude(c=>c.University)
                 .Include(a => a.Company)
                 .Include(a => a.ClassMajor)
                     .ThenInclude(cm=> cm.Major);
+            // Filter Email
             if (searchAlumniModel.Email is {Length: > 0})
                 queryAlumni = queryAlumni.Where(alu => alu.Email.Contains(searchAlumniModel.Email));
-
+            // Filter Phone
             if (searchAlumniModel.Phone is {Length: > 0})
                 queryAlumni = queryAlumni.Where(alu => alu.Phone.Contains(searchAlumniModel.Phone));
-
+            // Filter Fullname
             if (searchAlumniModel.FullName is {Length: > 0})
                 queryAlumni = queryAlumni.Where(alu => alu.FullName.Contains(searchAlumniModel.FullName));
-
+            // Filter Uid
             if (searchAlumniModel.Uid is {Length: > 0})
                 queryAlumni = queryAlumni.Where(alu => alu.Uid.Contains(searchAlumniModel.Uid));
-
+            // Filter Status
             if (searchAlumniModel.Status != null)
                 queryAlumni = queryAlumni.Where(alu => alu.Status == (byte?) searchAlumniModel.Status);
 
-            // Apply GroupId
+            // Filter Company
+            if (searchAlumniModel.CompanyId != null)
+            {
+                queryAlumni = queryAlumni.Where(alu => alu.Company.Id == searchAlumniModel.CompanyId);
+            }
+            // Filter University
+            if (searchAlumniModel.UniversityId != null)
+            {
+                queryAlumni = queryAlumni.Where(alu =>
+                    alu.ClassMajor.Class.University.Id == searchAlumniModel.UniversityId);
+            }
+            
+            
+            // Filter GroupId
             if (searchAlumniModel.GroupId != null)
             {
                 IQueryable<AlumniGroup> queryAlumniGroup =
@@ -81,8 +96,8 @@ namespace UniAlumni.Business.Services.AlumniService
                     queryAlumni = queryAlumni.Where(alu => listAlumniIdInGroup.Contains(alu.Id));
                 }
             }
-            
-            // Apply EventId
+
+            // Filter EventId
             if (searchAlumniModel.EventId != null)
             {
                 Event eventt = _eventRepository.Get(e => e.Id == searchAlumniModel.EventId && e.Status != (byte?) EventEnum.EventStatus.Delete).FirstOrDefault();
@@ -146,16 +161,17 @@ namespace UniAlumni.Business.Services.AlumniService
             {
                 alumnus.Status = (byte?) AlumniEnum.AlumniStatus.Pending;
                 alumnus = await _alumniRepository.CreateAlumniAsync(alumnus);
+                await _alumniRepository.SaveChangesAsync();
             }
             catch (Exception e)
             {
+                Console.WriteLine(e);
                 throw new MyHttpException(StatusCodes.Status404NotFound, e.Message);
             }
             alumnus = await _alumniRepository.Get(a => a.Id == alumnus.Id)
                 .Include(a => a.ClassMajor)   
                 .ThenInclude(cm => cm.Class)
                 .ThenInclude(c=>c.University)
-                .Include(a => a.Company)
                 .Include(a => a.ClassMajor)
                 .ThenInclude(cm=> cm.Major)
                 .FirstOrDefaultAsync();

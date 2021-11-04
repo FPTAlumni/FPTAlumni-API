@@ -22,6 +22,8 @@ namespace UniAlumni.DataTier.ViewModels.Alumni
 
         [DefaultValue("")] public int? EventId { get; set; } = null;
         
+        [DefaultValue("")] public int? CompanyId { get; set; } = null;
+        
         
         public AlumniEnum.AlumniStatus? Status { get; set; } = null;
     }

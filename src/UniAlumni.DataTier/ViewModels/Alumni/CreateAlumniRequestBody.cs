@@ -21,19 +21,9 @@ namespace UniAlumni.DataTier.ViewModels.Alumni
         public string FullName { get; set; }
         
         
-        [MaxLength(200)]
-        public string Address { get; set; }
-        
         [JsonProperty("dob")]
         public DateTime DoB { get; set; }
-        
-        public string Job { get; set; }
-        
-        [MaxLength(200)]
-        public string AboutMe { get; set; }
-        
-       
-        public int? CompanyId { get; set; }
+
         [Required]
         public int MajorId { get; set; }
         [Required]

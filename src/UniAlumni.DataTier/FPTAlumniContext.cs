@@ -16,7 +16,6 @@ namespace UniAlumni.DataTier.Models
             _configuration = configuration;
         }
 
-
         public FPTAlumniContext(DbContextOptions<FPTAlumniContext> options)
             : base(options)
         {

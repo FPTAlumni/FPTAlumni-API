@@ -32,7 +32,6 @@ namespace UniAlumni.DataTier.Models
         [Required]
         [StringLength(70)]
         public string FullName { get; set; }
-        [Required]
         [StringLength(150)]
         public string Address { get; set; }
         [Required]
