@@ -25,6 +25,7 @@ namespace UniAlumni.DataTier.ViewModels.Referral
         public BaseVoucherModel Voucher { get; set; }
         public BaseMajorModel Major { get; set; }
         public BaseUniversityModel University { get; set; }
+        public int? Year { get; set; }
         public string ParentName { get; set; }
         public string ParentPhone { get; set; }
         public string HighSchoolName { get; set; }

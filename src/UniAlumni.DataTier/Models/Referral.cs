@@ -31,6 +31,7 @@ namespace UniAlumni.DataTier.Models
         public byte? Status { get; set; }
         public int? NominatorId { get; set; }
         public int? VoucherId { get; set; }
+        public int? Year { get; set; }
         [StringLength(50)]
         public string ParentName { get; set; }
         [StringLength(15)]
