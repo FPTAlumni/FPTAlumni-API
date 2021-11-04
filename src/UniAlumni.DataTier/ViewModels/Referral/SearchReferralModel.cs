@@ -12,6 +12,7 @@ namespace UniAlumni.DataTier.ViewModels.Referral
         public int? NominatorId { get; set; } = null;
         public int? MajorId { get; set; } = null;
         public int? UniversityId { get; set; } = null;
+        public int? Year { get; set; } = null;
         public ReferralEnum.ReferralStatus? Status { get; set; } = null;
     }
 }
